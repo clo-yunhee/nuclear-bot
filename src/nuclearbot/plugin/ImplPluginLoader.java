@@ -46,7 +46,7 @@ import nuclearbot.utils.Logger;
  */
 public class ImplPluginLoader implements PluginLoader {
 
-	private static final String CONFIG_DELIMITER = ":>!";
+	private static final String CONFIG_DELIMITER = "!>";
 	
 	private static final String BUILTIN_PACKAGE_NAME = DummyPlugin.class.getPackage().getName();
 	
@@ -59,6 +59,8 @@ public class ImplPluginLoader implements PluginLoader {
 	public ImplPluginLoader()
 	{
 		m_defaultClassLoader = ImplPluginLoader.class.getClassLoader();
+		
+		loadPlugin(DummyPlugin.class.getName());
 		
 		// load the last loaded plugin
 		final String lastLoadedPlugin = Config.get("last_plugin");
