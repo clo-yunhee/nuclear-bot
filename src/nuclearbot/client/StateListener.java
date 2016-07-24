@@ -27,6 +27,7 @@ public interface StateListener {
 	
 	/**
 	 * Listener for client connected.
+	 * This method is called after the chat listener onStart method, before entering the client loop.
 	 * @param client the Twitch client
 	 */
 	public void onConnected(ChatClient client);

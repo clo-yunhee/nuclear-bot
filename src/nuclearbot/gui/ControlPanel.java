@@ -1,12 +1,20 @@
 package nuclearbot.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -50,8 +58,10 @@ import nuclearbot.utils.Logger;
  * Main window for the GUI.
  */
 public class ControlPanel extends JPanel {
-
+	
 	private static final long serialVersionUID = 1L;
+	
+	private static final String GITHUB_URL = "https://github.com/NuclearCoder/nuclear-bot/";
 	
 	private final DialogChangePluginExternal m_dialogChangePluginExternal;
 	private final DialogChangePluginBuiltin m_dialogChangePluginBuiltin;
@@ -61,6 +71,7 @@ public class ControlPanel extends JPanel {
 	private final JPanel m_paneTop;
 	private final JPanel m_paneSide;
 	private final JPanel m_paneSidePlugin;
+	private final JPanel m_paneBot;
 	
 	private final JButton m_buttonStart;
 	private final JButton m_buttonStop;
@@ -70,9 +81,14 @@ public class ControlPanel extends JPanel {
 	private final JButton m_buttonChangePluginExternal;
 	private final JButton m_buttonChangePluginBuiltin;
 	
+	private final JLabel m_labelCopyrightAndLicense;
+	private final JLabel m_labelLinkSource;
+	
 	private final PluginLoader m_pluginLoader;
 
-	public boolean m_doRestart;
+	private boolean m_doRestart;
+
+	private boolean m_clientRunning;
 	private ClientThread m_clientThread;
 	private ChatClient m_client;
 	
@@ -81,6 +97,7 @@ public class ControlPanel extends JPanel {
 		m_pluginLoader = new ImplPluginLoader();
 		
 		m_doRestart = false;
+		m_clientRunning = false;
 		m_clientThread = null;
 		m_client = null;
 		
@@ -136,9 +153,27 @@ public class ControlPanel extends JPanel {
 			m_paneSide.add(m_paneSidePlugin);
 		}
 		
+		m_paneBot = new JPanel();
+		{
+			m_labelCopyrightAndLicense = new JLabel("Copyright \u00a9 2016 NuclearCoder. Licensed under AGPLv3.");
+			m_labelLinkSource = new JLabel("<html><a href=\"\">Source code here</a></html>");
+			
+			m_labelCopyrightAndLicense.setFont(m_labelCopyrightAndLicense.getFont().deriveFont(10F));
+			
+			m_labelLinkSource.addMouseListener(new ControlPanelHyperlinkListener(GITHUB_URL));
+			m_labelLinkSource.setToolTipText(GITHUB_URL);
+			m_labelLinkSource.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			m_labelLinkSource.setFont(m_labelLinkSource.getFont().deriveFont(10F));
+			
+			m_paneBot.setLayout(new BorderLayout());
+			m_paneBot.add(m_labelCopyrightAndLicense, BorderLayout.WEST);
+			m_paneBot.add(m_labelLinkSource, BorderLayout.EAST);
+		}
+		
 		setLayout(new BorderLayout(5, 5));
 		add(m_paneTop, BorderLayout.NORTH);
 		add(m_paneSide, BorderLayout.EAST);
+		add(m_paneBot, BorderLayout.SOUTH);
 		
 		m_frame.setContentPane(this);
 		m_frame.pack();
@@ -202,6 +237,8 @@ public class ControlPanel extends JPanel {
 	
 	void clientStarted()
 	{
+		m_clientRunning = true;
+		
 		m_buttonStart.setEnabled(false);
 		m_buttonStop.setEnabled(true);
 		m_buttonRestart.setEnabled(true);
@@ -211,6 +248,8 @@ public class ControlPanel extends JPanel {
 	
 	void clientStopped()
 	{
+		m_clientRunning = false;
+		
 		m_buttonStart.setEnabled(true);
 		m_buttonStop.setEnabled(false);
 		m_buttonRestart.setEnabled(false);
@@ -235,12 +274,15 @@ public class ControlPanel extends JPanel {
 		{
 			m_labelPluginFilename.setText(plugin.getClass().getName());
 			
-			final int restart = JOptionPane.showConfirmDialog(m_frame, "The changes will be not effective until a restart.\nRestart now?", "Restart?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-			
-			if (restart == JOptionPane.YES_OPTION)
+			if (m_clientRunning)
 			{
-				m_doRestart = true;
-				stopClient();
+				final int restart = JOptionPane.showConfirmDialog(m_frame, "The changes will be not effective until a restart.\nRestart now?", "Restart?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				
+				if (restart == JOptionPane.YES_OPTION)
+				{
+					m_doRestart = true;
+					stopClient();
+				}
 			}
 		}
 		else
@@ -338,6 +380,46 @@ public class ControlPanel extends JPanel {
 		public void windowClosing(final WindowEvent event)
 		{
 			frameClosing();
+		}
+		
+	}
+	
+	private class ControlPanelHyperlinkListener extends MouseAdapter {
+		
+		private URI m_uri;
+		
+		public ControlPanelHyperlinkListener(final String url)
+		{
+			try
+			{
+				m_uri = new URL(url).toURI();
+			}
+			catch (MalformedURLException | URISyntaxException e)
+			{
+				Logger.error("(GUI) Bad URL \"" + url + "\":");
+				Logger.printStackTrace(e);
+			}
+		}
+		
+		@Override
+		public void mouseClicked(final MouseEvent event)
+		{
+			if (m_uri != null && Desktop.isDesktopSupported())
+			{
+				try
+				{
+					Desktop.getDesktop().browse(m_uri);
+				}
+				catch (IOException e)
+				{
+					Logger.error("(GUI) Browser issued an I/O exception (\"" + m_uri.toString() + "\"):");
+					Logger.printStackTrace(e);
+				}
+			}
+			else
+			{
+				Logger.error("(GUI) Desktop class not supported.");
+			}
 		}
 		
 	}

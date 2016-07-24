@@ -176,7 +176,6 @@ public class ImplChatClient implements ChatClient {
 				if (startsWithTmi(line, "376")) // this is the code for the last line of MOTD
 				{
 					Logger.info("(Twitch) Connected!");
-					notifyStateConnected();
 					break; // we're in
 				}
 				else if (startsWithTmi(line, "433"))
@@ -206,6 +205,8 @@ public class ImplChatClient implements ChatClient {
 				Logger.error("(Twitch) Exception in listener onStart:");
 				Logger.printStackTrace(e);
 			}
+
+			notifyStateConnected();
 			
 			while (!m_stop)
 			{
