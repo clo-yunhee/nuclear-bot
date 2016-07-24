@@ -53,7 +53,8 @@ public class ControlPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final DialogChangePlugin m_dialogChangePlugin;
+	private final DialogChangePluginExternal m_dialogChangePluginExternal;
+	private final DialogChangePluginBuiltin m_dialogChangePluginBuiltin;
 	
 	private final JFrame m_frame;
 	
@@ -66,7 +67,8 @@ public class ControlPanel extends JPanel {
 	private final JButton m_buttonRestart;
 
 	private final JLabel m_labelPluginFilename;
-	private final JButton m_buttonChangePlugin;
+	private final JButton m_buttonChangePluginExternal;
+	private final JButton m_buttonChangePluginBuiltin;
 	
 	private final PluginLoader m_pluginLoader;
 
@@ -91,7 +93,8 @@ public class ControlPanel extends JPanel {
 		m_frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		m_frame.addWindowListener(new ControlPanelWindowListener());
 		
-		m_dialogChangePlugin = new DialogChangePlugin(this, m_pluginLoader);
+		m_dialogChangePluginExternal = new DialogChangePluginExternal(this, m_pluginLoader);
+		m_dialogChangePluginBuiltin = new DialogChangePluginBuiltin(this, m_pluginLoader);
 		
 		m_paneTop = new JPanel();
 		{
@@ -117,13 +120,16 @@ public class ControlPanel extends JPanel {
 			m_paneSidePlugin = new JPanel();
 			{
 				m_labelPluginFilename = new JLabel(m_pluginLoader.getPlugin().getClass().getName());
-				m_buttonChangePlugin = new JButton("Change");	
+				m_buttonChangePluginExternal = new JButton("External");
+				m_buttonChangePluginBuiltin = new JButton("Built-in");
 				
-				m_buttonChangePlugin.addActionListener(action);
+				m_buttonChangePluginExternal.addActionListener(action);
+				m_buttonChangePluginBuiltin.addActionListener(action);
 				
 				m_paneSidePlugin.setLayout(new FlowLayout());
 				m_paneSidePlugin.add(m_labelPluginFilename);
-				m_paneSidePlugin.add(m_buttonChangePlugin);
+				m_paneSidePlugin.add(m_buttonChangePluginExternal);
+				m_paneSidePlugin.add(m_buttonChangePluginBuiltin);
 			}
 			
 			m_paneSide.setLayout(new BoxLayout(m_paneSide, BoxLayout.Y_AXIS));
@@ -178,11 +184,18 @@ public class ControlPanel extends JPanel {
 		m_client.stop();
 	}
 	
-	private void changePlugin()
+	private void changePluginExternal()
 	{
-		Logger.info("(GUI) Change plugin dialog opened.");
+		Logger.info("(GUI) Change plugin external dialog opened.");
 		
-		m_dialogChangePlugin.open();
+		m_dialogChangePluginExternal.open();
+	}
+	
+	private void changePluginBuiltin()
+	{
+		Logger.info("(GUI) Change plugin built-in dialog opened.");
+		
+		m_dialogChangePluginBuiltin.open();
 	}
 
 	/* **** notifies **** */
@@ -211,7 +224,7 @@ public class ControlPanel extends JPanel {
 	void frameClosing()
 	{
 		stopClient();
-		m_dialogChangePlugin.dispose();
+		m_dialogChangePluginExternal.dispose();
 		m_frame.dispose();
 	}
 	
@@ -258,9 +271,13 @@ public class ControlPanel extends JPanel {
 				m_doRestart = true;
 				stopClient();
 			}
-			else if (source == m_buttonChangePlugin)
+			else if (source == m_buttonChangePluginExternal)
 			{
-				changePlugin();
+				changePluginExternal();
+			}
+			else if (source == m_buttonChangePluginBuiltin)
+			{
+				changePluginBuiltin();
 			}
 		}
 	}

@@ -58,5 +58,13 @@ public interface PluginLoader {
 	 * @return true if the plugin was loaded succesfully, false otherwise
 	 */
 	public boolean loadPlugin(File file);
+
+	/**
+	 * Returns an array filled with the class names of all built-in plugins.
+	 * The built-in plugins are found in package and sub-packages
+	 * nuclearbot.builtin, in constructor.
+	 * @return built-in plugins' class names
+	 */
+	public String[] getBuiltinPlugins();
 	
 }

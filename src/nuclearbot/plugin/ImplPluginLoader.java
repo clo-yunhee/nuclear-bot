@@ -6,9 +6,14 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -39,12 +44,85 @@ import nuclearbot.utils.Logger;
  * Implementation of the plugin loader.
  */
 public class ImplPluginLoader implements PluginLoader {
+
+	private static final String BUILTIN_PACKAGE_NAME = DummyPlugin.class.getPackage().getName();
+	
+	private final ClassLoader m_defaultClassLoader;
+	
+	private final String[] m_builtinPlugins;
 	
 	private Plugin m_plugin;
 	
 	public ImplPluginLoader()
 	{
 		m_plugin = new DummyPlugin();
+
+		m_defaultClassLoader = DummyPlugin.class.getClassLoader();
+		
+		final List<String> classes = new ArrayList<String>(10);
+		try
+		{
+			final String path = BUILTIN_PACKAGE_NAME.replace('.', '/');
+			final Enumeration<URL> resources = m_defaultClassLoader.getResources(path);
+			while (resources.hasMoreElements())
+			{
+				final URL resource = resources.nextElement();
+				classes.addAll(findPlugins(new File(resource.toURI()), BUILTIN_PACKAGE_NAME));
+			}
+		}
+		catch (IOException | URISyntaxException e)
+		{
+			Logger.printStackTrace(e);
+		}
+		m_builtinPlugins = classes.toArray(new String[0]);
+	}
+	
+	private List<String> findPlugins(final File dir, final String packageName)
+	{
+		final List<String> classes = new ArrayList<String>();
+		if (dir.exists())
+		{
+			final File[] files = dir.listFiles();
+			for (final File file : files)
+			{
+				final String name = file.getName();
+				if (file.isDirectory() && !name.contains("."))
+				{
+					classes.addAll(findPlugins(file, packageName + '.' + name));
+				}
+				else if (name.endsWith(".class"))
+				{
+					try
+					{
+						final String className = packageName + '.' + name.substring(0, name.length() - 6);
+						final Class<?> classFound = Class.forName(className, false, m_defaultClassLoader);
+						if (Modifier.isPublic(classFound.getModifiers())) // must be public
+						{
+							final Class<?>[] interfaces = classFound.getInterfaces();
+							boolean isPlugin = false; // must implement Plugin
+							for (Class<?> impl : interfaces)
+							{
+								if (impl == Plugin.class)
+								{
+									isPlugin = true;
+									break;
+								}
+							}
+							if (isPlugin)
+							{
+								Logger.info("(ploader) Built-in plugin found: " + classFound.getName());
+								classes.add(className);
+							}
+						}
+					}
+					catch (ClassNotFoundException e)
+					{
+						Logger.printStackTrace(e);
+					}
+				}
+			}
+		}
+		return classes;
 	}
 	
 	private ClassLoader getJarLoader(final File file)
@@ -120,6 +198,12 @@ public class ImplPluginLoader implements PluginLoader {
 	}
 	
 	@Override
+	public String[] getBuiltinPlugins()
+	{
+		return m_builtinPlugins;
+	}
+	
+	@Override
 	public Plugin getPlugin()
 	{
 		return m_plugin;
@@ -128,7 +212,7 @@ public class ImplPluginLoader implements PluginLoader {
 	@Override
 	public boolean loadPlugin(final String className)
 	{
-		return loadPlugin(className, Plugin.class.getClassLoader());
+		return loadPlugin(className, m_defaultClassLoader);
 	}
 	
 	@Override

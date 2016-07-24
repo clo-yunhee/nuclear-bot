@@ -56,7 +56,7 @@ public class OSUtils {
 			os = OSType.UNKNOWN;
 		}
 		
-		workingDir = Paths.get("").toAbsolutePath().toString();
+		workingDir = Paths.get(".").toAbsolutePath().toString();
 	}
 	
 	/**
