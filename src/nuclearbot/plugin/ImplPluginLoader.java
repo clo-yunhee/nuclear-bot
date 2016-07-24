@@ -18,6 +18,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import nuclearbot.builtin.DummyPlugin;
+import nuclearbot.utils.Config;
 import nuclearbot.utils.Logger;
 
 /*
@@ -45,6 +46,8 @@ import nuclearbot.utils.Logger;
  */
 public class ImplPluginLoader implements PluginLoader {
 
+	private static final String CONFIG_DELIMITER = ":>!";
+	
 	private static final String BUILTIN_PACKAGE_NAME = DummyPlugin.class.getPackage().getName();
 	
 	private final ClassLoader m_defaultClassLoader;
@@ -55,10 +58,24 @@ public class ImplPluginLoader implements PluginLoader {
 	
 	public ImplPluginLoader()
 	{
-		m_plugin = new DummyPlugin();
-
-		m_defaultClassLoader = DummyPlugin.class.getClassLoader();
+		m_defaultClassLoader = ImplPluginLoader.class.getClassLoader();
 		
+		// load the last loaded plugin
+		final String lastLoadedPlugin = Config.get("last_plugin");
+		if (lastLoadedPlugin == null || lastLoadedPlugin.isEmpty())
+		{
+			loadPlugin(DummyPlugin.class.getName());
+		}
+		else if (lastLoadedPlugin.startsWith(CONFIG_DELIMITER))
+		{
+			loadPlugin(lastLoadedPlugin.substring(CONFIG_DELIMITER.length()));
+		}
+		else
+		{
+			loadPlugin(new File(lastLoadedPlugin));
+		}
+
+		// look for built-in plugins in the 'builtin' package
 		final List<String> classes = new ArrayList<String>(10);
 		try
 		{
@@ -197,6 +214,11 @@ public class ImplPluginLoader implements PluginLoader {
 		return success;
 	}
 	
+	private void writeConfig(String value)
+	{
+		Config.set("last_plugin", value);
+	}
+	
 	@Override
 	public String[] getBuiltinPlugins()
 	{
@@ -212,22 +234,24 @@ public class ImplPluginLoader implements PluginLoader {
 	@Override
 	public boolean loadPlugin(final String className)
 	{
-		return loadPlugin(className, m_defaultClassLoader);
+		final boolean success;
+		if (success = loadPlugin(className, m_defaultClassLoader))
+		{
+			writeConfig(CONFIG_DELIMITER + className);
+		}
+		return success;
 	}
 	
 	@Override
 	public boolean loadPlugin(final File file, final String className)
 	{
 		final ClassLoader classLoader = getJarLoader(file);
-		if (classLoader != null)
+		final boolean success;
+		if (success = (classLoader != null && loadPlugin(className, classLoader)))
 		{
-			// then call method
-			return loadPlugin(className, classLoader);
+			writeConfig(file.getAbsolutePath() + CONFIG_DELIMITER + className);
 		}
-		else
-		{
-			return false;
-		}
+		return success;
 	}
 
 	@Override
@@ -251,7 +275,12 @@ public class ImplPluginLoader implements PluginLoader {
 					sb.append(buffer);
 				}
 				
-				success = loadPlugin(file, sb.toString());
+				final String className = sb.toString();
+				final ClassLoader classLoader = getJarLoader(file);
+				if (success = (classLoader != null && loadPlugin(className, classLoader)))
+				{
+					writeConfig(file.getAbsolutePath() + CONFIG_DELIMITER + className);
+				}
 			}
 			else
 			{

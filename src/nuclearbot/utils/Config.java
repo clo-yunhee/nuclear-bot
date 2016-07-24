@@ -121,7 +121,7 @@ public class Config {
 	public static void saveConfig() throws IOException
 	{
 		FileWriter out = new FileWriter(configFile);
-		prop.store(out, "please do not attempt to edit anything manually");
+		prop.store(out, "please do not attempt to edit anything manually unless explicitly directed otherwise");
 		try
 		{
 			out.close();

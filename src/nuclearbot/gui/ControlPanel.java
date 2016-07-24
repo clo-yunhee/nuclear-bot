@@ -179,6 +179,11 @@ public class ControlPanel extends JPanel {
 		m_frame.pack();
 	}
 	
+	public PluginLoader getPluginLoader()
+	{
+		return m_pluginLoader;
+	}
+	
 	public JFrame getFrame()
 	{
 		return m_frame;
