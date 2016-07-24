@@ -225,6 +225,7 @@ public class ControlPanel extends JPanel {
 	{
 		stopClient();
 		m_dialogChangePluginExternal.dispose();
+		m_dialogChangePluginBuiltin.dispose();
 		m_frame.dispose();
 	}
 	
