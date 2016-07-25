@@ -173,7 +173,7 @@ public class ImplChatClient implements ChatClient {
 			while ((line = m_in.readLine()) != null)
 			{
 				// skip the prefix which is ':tmi.twitch.tv ' (15 characters long)
-				if (startsWithTmi(line, "376")) // this is the code for the last line of MOTD
+				if (startsWithTmi(line, "376")) // this is the code of MOTD's last line
 				{
 					Logger.info("(Twitch) Connected!");
 					break; // we're in

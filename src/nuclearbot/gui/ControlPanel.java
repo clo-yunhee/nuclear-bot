@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -16,13 +18,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import javax.swing.BoxLayout;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.text.DefaultCaret;
 
 import nuclearbot.client.ChatClient;
 import nuclearbot.client.ChatListener;
@@ -69,14 +74,17 @@ public class ControlPanel extends JPanel {
 	private final JFrame m_frame;
 	
 	private final JPanel m_paneTop;
+	private final JPanel m_paneCenter;
 	private final JPanel m_paneSide;
-	private final JPanel m_paneSidePlugin;
+	private final JPanel m_paneSideChangePlugin;
 	private final JPanel m_paneBot;
 	
 	private final JButton m_buttonStart;
 	private final JButton m_buttonStop;
 	private final JButton m_buttonRestart;
 
+	private final JTextArea m_textAreaConsole;
+	
 	private final JLabel m_labelPluginFilename;
 	private final JButton m_buttonChangePluginExternal;
 	private final JButton m_buttonChangePluginBuiltin;
@@ -120,10 +128,11 @@ public class ControlPanel extends JPanel {
 			m_buttonRestart = new JButton("Restart");
 			
 			m_buttonStart.addActionListener(action);
-			m_buttonStop.addActionListener(action);
-			m_buttonRestart.addActionListener(action);
 			
+			m_buttonStop.addActionListener(action);
 			m_buttonStop.setEnabled(false);
+			
+			m_buttonRestart.addActionListener(action);
 			m_buttonRestart.setEnabled(false);
 			
 			m_paneTop.setLayout(new FlowLayout());
@@ -132,25 +141,47 @@ public class ControlPanel extends JPanel {
 			m_paneTop.add(m_buttonRestart);
 		}
 		
+		m_paneCenter = new JPanel();
+		{
+			m_textAreaConsole = new JTextArea();
+			final DefaultCaret caret = (DefaultCaret) m_textAreaConsole.getCaret();
+			final JScrollPane textAreaConsoleScrollPane = new JScrollPane(m_textAreaConsole);
+			
+			m_textAreaConsole.setEditable(false);
+			m_textAreaConsole.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+			m_textAreaConsole.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+			Logger.redirectSystemOut(m_textAreaConsole.getDocument());
+		
+			caret.setVisible(true);
+			caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+			
+			textAreaConsoleScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			textAreaConsoleScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			
+			m_paneCenter.setLayout(new BorderLayout(5, 5));
+			m_paneCenter.setBorder(BorderFactory.createLoweredBevelBorder());
+			m_paneCenter.add(textAreaConsoleScrollPane);
+		}
+		
 		m_paneSide = new JPanel();
 		{
-			m_paneSidePlugin = new JPanel();
+			m_labelPluginFilename = new JLabel(m_pluginLoader.getPlugin().getClass().getName());
+			m_paneSideChangePlugin = new JPanel();
 			{
-				m_labelPluginFilename = new JLabel(m_pluginLoader.getPlugin().getClass().getName());
 				m_buttonChangePluginExternal = new JButton("External");
 				m_buttonChangePluginBuiltin = new JButton("Built-in");
 				
 				m_buttonChangePluginExternal.addActionListener(action);
 				m_buttonChangePluginBuiltin.addActionListener(action);
 				
-				m_paneSidePlugin.setLayout(new FlowLayout());
-				m_paneSidePlugin.add(m_labelPluginFilename);
-				m_paneSidePlugin.add(m_buttonChangePluginExternal);
-				m_paneSidePlugin.add(m_buttonChangePluginBuiltin);
+				m_paneSideChangePlugin.setLayout(new FlowLayout());
+				m_paneSideChangePlugin.add(m_buttonChangePluginExternal);
+				m_paneSideChangePlugin.add(m_buttonChangePluginBuiltin);
 			}
 			
-			m_paneSide.setLayout(new BoxLayout(m_paneSide, BoxLayout.Y_AXIS));
-			m_paneSide.add(m_paneSidePlugin);
+			m_paneSide.setLayout(new GridLayout(0, 1));
+			m_paneSide.add(m_labelPluginFilename);
+			m_paneSide.add(m_paneSideChangePlugin);
 		}
 		
 		m_paneBot = new JPanel();
@@ -172,6 +203,7 @@ public class ControlPanel extends JPanel {
 		
 		setLayout(new BorderLayout(5, 5));
 		add(m_paneTop, BorderLayout.NORTH);
+		add(m_paneCenter, BorderLayout.CENTER);
 		add(m_paneSide, BorderLayout.EAST);
 		add(m_paneBot, BorderLayout.SOUTH);
 		
@@ -368,13 +400,13 @@ public class ControlPanel extends JPanel {
 		@Override
 		public void onConnected(final ChatClient client)
 		{
-			SwingUtilities.invokeLater(() -> clientStarted());
+			SwingUtilities.invokeLater(ControlPanel.this::clientStarted);
 		}
 
 		@Override
 		public void onDisconnected(final ChatClient client)
 		{
-			SwingUtilities.invokeLater(() -> clientStopped());
+			SwingUtilities.invokeLater(ControlPanel.this::clientStopped);
 		}
 	
 	}

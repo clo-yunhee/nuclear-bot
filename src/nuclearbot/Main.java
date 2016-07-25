@@ -3,6 +3,7 @@ package nuclearbot;
 import java.io.IOException;
 
 import nuclearbot.gui.ControlPanel;
+import nuclearbot.utils.Logger;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -31,6 +32,8 @@ public class Main {
 	
 	public static void main(final String[] args) throws IOException
 	{
+		Logger.class.getName(); // run Logger class static init block
+		
 		new ControlPanel().open();
 	}
 	

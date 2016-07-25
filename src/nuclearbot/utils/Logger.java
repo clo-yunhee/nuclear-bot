@@ -2,10 +2,15 @@ package nuclearbot.utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.swing.text.Document;
+
+import nuclearbot.gui.DocumentOutputStream;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -54,70 +59,79 @@ public class Logger {
 	}
 	
 	/**
-	 * Logs raw text.
-	 * @param str the text to log
+	 * Changes <code>System.out</code> to also write all output to a Swing Document.
+	 * @param document the Document to redirect to
 	 */
-	public synchronized static void write(String str)
+	public synchronized static void redirectSystemOut(final Document document)
 	{
-		System.out.print(str);
-		fileOut.print(str);
+		System.setOut(new PrintStream(new DocumentOutputStream(document, System.out), true));
+	}
+	
+	/**
+	 * Logs raw text.
+	 * @param string the text to log
+	 */
+	public synchronized static void write(String string)
+	{
+		System.out.print(string);
+		fileOut.print(string);
 	}
 	
 	/**
 	 * Logs raw text, followed by a line break.
-	 * @param str the text to log
+	 * @param string the text to log
 	 */
-	public synchronized static void writeln(String str)
+	public synchronized static void writeln(String string)
 	{
-		System.out.println(str);
-		fileOut.println(str);
+		System.out.println(string);
+		fileOut.println(string);
 	}
 	
 	/**
 	 * Logs text with timestamp and specified prefix.
-	 * @param str the text to log
+	 * @param string the text to log
 	 * @param level the prefix to put
 	 */
-	public synchronized static void log(String log, String level)
+	public synchronized static void log(String string, String level)
 	{
-		writeln(String.format(LOG, timeFormat.format(new Date()), level, log));
+		writeln(String.format(LOG, timeFormat.format(new Date()), level, string));
 	}
 	
 	/**
 	 * Logs text at INFO level
-	 * @param str the text to log
+	 * @param string the text to log
 	 */
-	public synchronized static void info(String str)
+	public synchronized static void info(String string)
 	{
-		log(str, "INFO");
+		log(string, "INFO");
 	}
 	
 	/**
 	 * Logs text at WARNING level
-	 * @param str the text to log
+	 * @param string the text to log
 	 */
-	public synchronized static void warning(String str)
+	public synchronized static void warning(String string)
 	{
-		log(str, "WARNING");
+		log(string, "WARNING");
 	}
 	
 	/**
 	 * Logs text at ERROR level
-	 * @param str the text to log
+	 * @param string the text to log
 	 */
-	public synchronized static void error(String str)
+	public synchronized static void error(String string)
 	{
-		log(str, "ERROR");
+		log(string, "ERROR");
 	}
 	
 	/**
 	 * Logs a Throwable and its backtrace.
-	 * @param thr the Throwable to log
+	 * @param throwable the Throwable to log
 	 */
-	public synchronized static void printStackTrace(Throwable thr)
+	public synchronized static void printStackTrace(Throwable throwable)
 	{
-		thr.printStackTrace(System.out);
-		thr.printStackTrace(fileOut);
+		throwable.printStackTrace(System.out);
+		throwable.printStackTrace(fileOut);
 	}
 	
 	private static class LoggerShutdownHook implements Runnable {
@@ -128,6 +142,7 @@ public class Logger {
 			Logger.info("(Exit) Closing log file...");
 			fileOut.close();
 		}
+		
 	}
 	
 	private static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
