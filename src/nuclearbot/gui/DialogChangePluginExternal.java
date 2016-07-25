@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FilenameFilter;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -55,6 +56,8 @@ public class DialogChangePluginExternal extends JDialog implements ActionListene
 	
 	private final PluginLoader m_pluginLoader;
 	
+	private final FileDialog m_fileDialog;
+	
 	private final JOptionPane m_optionPane;
 	private final JPanel m_pane;
 	
@@ -84,6 +87,12 @@ public class DialogChangePluginExternal extends JDialog implements ActionListene
 			m_pane.add(m_buttonBrowse);
 		}
 		
+		m_fileDialog = new FileDialog(this, "Choose a file", FileDialog.LOAD);
+		m_fileDialog.setLocationRelativeTo(this);
+		m_fileDialog.setDirectory(m_lastFile != null ? m_lastFile.getParent() : OSUtils.workingDir());
+		m_fileDialog.setFile("*.jar");
+		m_fileDialog.setFilenameFilter(new FileDialogFilter());
+		
 		m_optionPane = new JOptionPane(m_pane, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 		m_optionPane.addPropertyChangeListener(this);
 		
@@ -110,19 +119,15 @@ public class DialogChangePluginExternal extends JDialog implements ActionListene
 	
 	private void chooseFile()
 	{
-		final FileDialog fd = new FileDialog(this, "Choose a file", FileDialog.LOAD);
-		fd.setLocationRelativeTo(this);
-		fd.setDirectory(m_lastFile != null ? m_lastFile.getParent() : OSUtils.workingDir());
-		fd.setFile("*.jar");
-		fd.setFilenameFilter((dir, name) -> name.endsWith(".jar"));
-		fd.setVisible(true);
-		final String filename = fd.getFile();
+		m_fileDialog.pack();
+		m_fileDialog.setVisible(true);
+		final String filename = m_fileDialog.getFile();
 		if (filename != null)
 		{
-			m_lastFile = new File(fd.getDirectory(), filename);
+			m_lastFile = new File(m_fileDialog.getDirectory(), filename);
 			m_textFieldFile.setText(m_lastFile.getPath());
 		}
-		fd.dispose();
+		m_fileDialog.dispose();
 	}
 
 	@Override
@@ -193,7 +198,17 @@ public class DialogChangePluginExternal extends JDialog implements ActionListene
 		}
 	}
 	
-	public class WindowClosingListener extends WindowAdapter {
+	private class FileDialogFilter implements FilenameFilter {
+	
+		@Override
+		public boolean accept(File dir, String name)
+		{
+			return name.endsWith(".jar");
+		}
+		
+	}
+	
+	private class WindowClosingListener extends WindowAdapter {
 
 		@Override
 		public void windowClosing(WindowEvent event)
@@ -203,7 +218,7 @@ public class DialogChangePluginExternal extends JDialog implements ActionListene
 		
 	}
 	
-	public class ComponentShownListener extends ComponentAdapter {
+	private class ComponentShownListener extends ComponentAdapter {
 
 		@Override
 		public void componentShown(ComponentEvent event)

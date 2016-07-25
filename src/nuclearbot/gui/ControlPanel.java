@@ -397,18 +397,38 @@ public class ControlPanel extends JPanel {
 	
 	private class ControlPanelStateListener implements StateListener {
 
+		private class ClientConnectedRunnable implements Runnable {
+		
+			@Override
+			public void run()
+			{
+				clientStarted();
+			}
+			
+		};
+		
+		private class ClientDisconnectedRunnable implements Runnable {
+			
+			@Override
+			public void run()
+			{
+				clientStopped();
+			}
+			
+		};
+		
 		@Override
 		public void onConnected(final ChatClient client)
 		{
-			SwingUtilities.invokeLater(ControlPanel.this::clientStarted);
+			SwingUtilities.invokeLater(new ClientConnectedRunnable());
 		}
 
 		@Override
 		public void onDisconnected(final ChatClient client)
 		{
-			SwingUtilities.invokeLater(ControlPanel.this::clientStopped);
+			SwingUtilities.invokeLater(new ClientDisconnectedRunnable());
 		}
-	
+		
 	}
 	
 	private class ControlPanelWindowListener extends WindowAdapter {
