@@ -2,8 +2,6 @@ package nuclearbot.plugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -14,6 +12,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -39,8 +38,8 @@ import nuclearbot.utils.Logger;
  */
 
 /**
- * NuclearBot (https://osu.ppy.sh/forum/t/479653)<br>
- * @author NuclearCoder (contact on the forum)<br>
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)<br>
  * <br>
  * Implementation of the plugin loader.
  */
@@ -54,7 +53,7 @@ public class ImplPluginLoader implements PluginLoader {
 	
 	private final String[] m_builtinPlugins;
 	
-	private Plugin m_plugin;
+	private JavaPlugin m_plugin;
 	
 	public ImplPluginLoader()
 	{
@@ -156,64 +155,56 @@ public class ImplPluginLoader implements PluginLoader {
 		}
 	}
 	
-	private boolean loadPlugin(final String className, final ClassLoader classLoader)
+	private Plugin loadPlugin(final String className, final ClassLoader classLoader)
 	{
-		final Class<?> pluginClass;
+		Plugin plugin = null;
 		try
 		{
-			pluginClass = Class.forName(className, true, classLoader);
+			final Class<?> pluginClass = Class.forName(className, true, classLoader);
+			
+			// check it implements Plugin
+			final Class<?>[] interfaces = pluginClass.getInterfaces();
+			boolean isPlugin = false;
+			for (Class<?> impl : interfaces)
+			{
+				if (impl == Plugin.class)
+				{
+					isPlugin = true;
+					break;
+				}
+			}
+			if (!isPlugin)
+			{
+				Logger.error("(ploader) Class " + className + " must implement " + Plugin.class.getName() + " with a nullary constructor.");
+			}
+			else
+			{
+				// finally load it
+				try
+				{
+					final Constructor<?> ctor = pluginClass.getDeclaredConstructor();
+					ctor.setAccessible(true);
+					plugin = (Plugin) ctor.newInstance();
+				}
+				catch (InstantiationException e)
+				{
+					Logger.error("(ploader) Class " + className + " must not be abstract or interface.");
+					Logger.printStackTrace(e);
+				}
+				catch (NoSuchMethodException | IllegalArgumentException e)
+				{
+					Logger.error("(ploader) Class " + className + " must have a nullary constructor.");
+					Logger.printStackTrace(e);
+				}
+				catch (IllegalAccessException | SecurityException | InvocationTargetException e) {}
+			}
 		}
 		catch (ClassNotFoundException e)
 		{
 			Logger.error("(ploader) Class " + className + " is not loaded.");
 			Logger.printStackTrace(e);
-			return false;
 		}
-		
-		boolean success;
-		
-		// check it implements Plugin
-		final Class<?>[] interfaces = pluginClass.getInterfaces();
-		boolean isPlugin = false;
-		for (Class<?> impl : interfaces)
-		{
-			if (impl == Plugin.class)
-			{
-				isPlugin = true;
-				break;
-			}
-		}
-		if (!(success = isPlugin))
-		{
-			Logger.error("(ploader) Class " + className + " must implement " + Plugin.class.getName() + " with a nullary constructor.");
-		}
-		else
-		{
-			// finally load it
-			try
-			{
-				final Constructor<?> ctor = pluginClass.getDeclaredConstructor();
-				ctor.setAccessible(true);
-				m_plugin = (Plugin) ctor.newInstance();
-			}
-			catch (InstantiationException e)
-			{
-				Logger.error("(ploader) Class " + className + " must not be abstract or interface.");
-				Logger.printStackTrace(e);
-				success = false;
-			}
-			catch (NoSuchMethodException | IllegalArgumentException e)
-			{
-				Logger.error("(ploader) Class " + className + " must have a nullary constructor.");
-				Logger.printStackTrace(e);
-				success = false;
-			}
-			catch (IllegalAccessException | SecurityException | InvocationTargetException e)
-			{
-				success = false;
-			}
-		}
-		return success;
+		return plugin;
 	}
 	
 	private void writeConfig(String value)
@@ -228,7 +219,7 @@ public class ImplPluginLoader implements PluginLoader {
 	}
 	
 	@Override
-	public Plugin getPlugin()
+	public JavaPlugin getPlugin()
 	{
 		return m_plugin;
 	}
@@ -236,52 +227,47 @@ public class ImplPluginLoader implements PluginLoader {
 	@Override
 	public boolean loadPlugin(final String className)
 	{
-		final boolean success;
-		if (success = loadPlugin(className, m_defaultClassLoader))
+		final Plugin plugin = loadPlugin(className, m_defaultClassLoader);
+		final boolean success = (plugin != null);
+		if (success)
 		{
 			writeConfig(CONFIG_DELIMITER + className);
+			m_plugin = new ClasspathPlugin(plugin, className);
 		}
 		return success;
 	}
 	
 	@Override
-	public boolean loadPlugin(final File file, final String className)
-	{
-		final ClassLoader classLoader = getJarLoader(file);
-		final boolean success;
-		if (success = (classLoader != null && loadPlugin(className, classLoader)))
-		{
-			writeConfig(file.getAbsolutePath() + CONFIG_DELIMITER + className);
-		}
-		return success;
-	}
-
-	@Override
 	public boolean loadPlugin(final File file)
 	{
 		boolean success;
+		final Plugin plugin;
 		JarFile jar = null;
-		Reader in = null;
 		try
 		{
 			jar = new JarFile(file);
-			final JarEntry entry = jar.getJarEntry("plugininfo");
+			final JarEntry entry = jar.getJarEntry("plugin.properties");
 			if (entry != null)
 			{
-				in = new InputStreamReader(jar.getInputStream(entry));
-				final StringBuffer sb = new StringBuffer();
+				final Properties properties = new Properties();
+				properties.load(jar.getInputStream(entry));
 				
-				final char[] buffer = new char[32];
-				while (in.read(buffer) != -1)
+				final String className = properties.getProperty("main");
+				if (className != null)
 				{
-					sb.append(buffer);
+					final ClassLoader classLoader = getJarLoader(file);
+					plugin = loadPlugin(className, classLoader);
+					success = (plugin != null);
+					if (success)
+					{
+						writeConfig(CONFIG_DELIMITER + className);
+						m_plugin = new JarPlugin(plugin, properties);
+					}
 				}
-				
-				final String className = sb.toString();
-				final ClassLoader classLoader = getJarLoader(file);
-				if (success = (classLoader != null && loadPlugin(className, classLoader)))
+				else
 				{
-					writeConfig(file.getAbsolutePath() + CONFIG_DELIMITER + className);
+					Logger.error("(ploader) There is no \"main\" property in the plugin.properties file.");
+					success = false;
 				}
 			}
 			else
@@ -298,14 +284,6 @@ public class ImplPluginLoader implements PluginLoader {
 		}
 		finally
 		{
-			if (in != null)
-			{
-				try
-				{
-					in.close();
-				}
-				catch (IOException e) {}
-			}
 			if (jar != null)
 			{
 				try

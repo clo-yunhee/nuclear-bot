@@ -3,6 +3,7 @@ package nuclearbot.gui;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -12,6 +13,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -20,24 +23,29 @@ import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultCaret;
 
+import nuclearbot.builtin.DummyPlugin;
 import nuclearbot.client.ChatClient;
 import nuclearbot.client.ChatListener;
 import nuclearbot.client.ImplChatClient;
 import nuclearbot.client.StateListener;
 import nuclearbot.plugin.ImplPluginLoader;
-import nuclearbot.plugin.Plugin;
+import nuclearbot.plugin.JavaPlugin;
 import nuclearbot.plugin.PluginLoader;
 import nuclearbot.utils.Config;
 import nuclearbot.utils.Logger;
+import nuclearbot.utils.OSUtils;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -57,40 +65,31 @@ import nuclearbot.utils.Logger;
  */
 
 /**
- * NuclearBot (https://osu.ppy.sh/forum/t/479653)<br>
- * @author NuclearCoder (contact on the forum)<br>
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)<br>
  * <br>
  * Main window for the GUI.
  */
-public class ControlPanel extends JPanel {
+public class ControlPanel extends JPanel implements ActionListener {
 	
 	private static final long serialVersionUID = 1L;
 	
 	private static final String GITHUB_URL = "https://github.com/NuclearCoder/nuclear-bot/";
 	
-	private final DialogChangePluginExternal m_dialogChangePluginExternal;
-	private final DialogChangePluginBuiltin m_dialogChangePluginBuiltin;
+	// GUI components
+	private final JLabel m_pluginLabelName;
+	private final FileDialog m_pluginExternalFileDialog;
+	private final JComboBox<String> m_pluginBuiltinBuiltinList;
+	// activable components
+	private final JButton m_controlStartButton;
+	private final JButton m_controlStopButton;
+	private final JButton m_controlRestartButton;
+	private final JTextField m_pluginExternalFilePath;
+	private final JButton m_pluginExternalBrowseButton;
+	private final JButton m_pluginExternalLoadButton;
+	private final JButton m_pluginBuiltinLoadButton;
 	
-	private final JFrame m_frame;
-	
-	private final JPanel m_paneTop;
-	private final JPanel m_paneCenter;
-	private final JPanel m_paneSide;
-	private final JPanel m_paneSideChangePlugin;
-	private final JPanel m_paneBot;
-	
-	private final JButton m_buttonStart;
-	private final JButton m_buttonStop;
-	private final JButton m_buttonRestart;
-
-	private final JTextArea m_textAreaConsole;
-	
-	private final JLabel m_labelPluginFilename;
-	private final JButton m_buttonChangePluginExternal;
-	private final JButton m_buttonChangePluginBuiltin;
-	
-	private final JLabel m_labelCopyrightAndLicense;
-	private final JLabel m_labelLinkSource;
+	private final JFrame m_container;
 	
 	private final PluginLoader m_pluginLoader;
 
@@ -111,104 +110,131 @@ public class ControlPanel extends JPanel {
 		
 		Logger.info("(GUI) Constructing window...");
 
-		final ActionListener action = new ActionButtons();
+		m_container = new JFrame("NuclearBot - Control Panel");
+		m_container.setLocationRelativeTo(null);
+		m_container.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		m_container.addWindowListener(new ControlPanelWindowListener());
 
-		m_frame = new JFrame("NuclearBot - Control Panel");
-		m_frame.setLocationRelativeTo(null);
-		m_frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		m_frame.addWindowListener(new ControlPanelWindowListener());
+		m_pluginExternalFileDialog = new FileDialog(m_container, "Choose a file", FileDialog.LOAD);
+		m_pluginExternalFileDialog.setLocationRelativeTo(m_container);
+		m_pluginExternalFileDialog.setDirectory(OSUtils.workingDir());
+		m_pluginExternalFileDialog.setFile("*.jar");
+		m_pluginExternalFileDialog.setFilenameFilter(new PluginFilenameFilter());
 		
-		m_dialogChangePluginExternal = new DialogChangePluginExternal(this, m_pluginLoader);
-		m_dialogChangePluginBuiltin = new DialogChangePluginBuiltin(this, m_pluginLoader);
-		
-		m_paneTop = new JPanel();
+		final JTabbedPane body = new JTabbedPane();
 		{
-			m_buttonStart = new JButton("Start");
-			m_buttonStop = new JButton("Stop");
-			m_buttonRestart = new JButton("Restart");
-			
-			m_buttonStart.addActionListener(action);
-			
-			m_buttonStop.addActionListener(action);
-			m_buttonStop.setEnabled(false);
-			
-			m_buttonRestart.addActionListener(action);
-			m_buttonRestart.setEnabled(false);
-			
-			m_paneTop.setLayout(new FlowLayout());
-			m_paneTop.add(m_buttonStart);
-			m_paneTop.add(m_buttonStop);
-			m_paneTop.add(m_buttonRestart);
-		}
-		
-		m_paneCenter = new JPanel();
-		{
-			m_textAreaConsole = new JTextArea();
-			final DefaultCaret caret = (DefaultCaret) m_textAreaConsole.getCaret();
-			final JScrollPane textAreaConsoleScrollPane = new JScrollPane(m_textAreaConsole);
-			
-			m_textAreaConsole.setEditable(false);
-			m_textAreaConsole.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-			m_textAreaConsole.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
-			Logger.redirectSystemOut(m_textAreaConsole.getDocument());
-		
-			caret.setVisible(true);
-			caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-			
-			textAreaConsoleScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			textAreaConsoleScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			
-			m_paneCenter.setLayout(new BorderLayout(5, 5));
-			m_paneCenter.setBorder(BorderFactory.createLoweredBevelBorder());
-			m_paneCenter.add(textAreaConsoleScrollPane);
-		}
-		
-		m_paneSide = new JPanel();
-		{
-			m_labelPluginFilename = new JLabel(m_pluginLoader.getPlugin().getClass().getName());
-			m_paneSideChangePlugin = new JPanel();
+			final JPanel tabControl = new JPanel();
 			{
-				m_buttonChangePluginExternal = new JButton("External");
-				m_buttonChangePluginBuiltin = new JButton("Built-in");
+				m_controlStartButton = new JButton("Start");
+				m_controlStopButton = new JButton("Stop");
+				m_controlRestartButton = new JButton("Restart");
 				
-				m_buttonChangePluginExternal.addActionListener(action);
-				m_buttonChangePluginBuiltin.addActionListener(action);
+				m_controlStartButton.addActionListener(this);
 				
-				m_paneSideChangePlugin.setLayout(new FlowLayout());
-				m_paneSideChangePlugin.add(m_buttonChangePluginExternal);
-				m_paneSideChangePlugin.add(m_buttonChangePluginBuiltin);
+				m_controlStopButton.addActionListener(this);
+				m_controlStopButton.setEnabled(false);
+				
+				m_controlRestartButton.addActionListener(this);
+				m_controlRestartButton.setEnabled(false);
+				
+				tabControl.setLayout(new FlowLayout());
+				tabControl.add(m_controlStartButton);
+				tabControl.add(m_controlStopButton);
+				tabControl.add(m_controlRestartButton);
 			}
 			
-			m_paneSide.setLayout(new GridLayout(0, 1));
-			m_paneSide.add(m_labelPluginFilename);
-			m_paneSide.add(m_paneSideChangePlugin);
+			final JScrollPane tabConsole = new JScrollPane();
+			{
+				final JTextArea consoleTextArea = new JTextArea();
+				final DefaultCaret caret = new DefaultCaret();
+	
+				caret.setVisible(true);
+				caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+	
+				tabConsole.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+				tabConsole.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+				
+				consoleTextArea.setEditable(false);
+				consoleTextArea.setCaret(caret);
+				consoleTextArea.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+				consoleTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+				
+				Logger.info("(GUI) Linking GUI console to system console...");
+				Logger.redirectSystemOut(consoleTextArea.getDocument());
+				
+				tabConsole.setViewportView(consoleTextArea);
+			}
+			
+			final JPanel tabPlugins = new JPanel();
+			{
+				m_pluginLabelName = new JLabel();
+				final JPanel pluginExternal = new JPanel();
+				{
+					m_pluginExternalFilePath = new JTextField(16);
+					m_pluginExternalBrowseButton = new JButton("Browse...");
+					m_pluginExternalLoadButton = new JButton("Load");
+					
+					m_pluginExternalFilePath.addActionListener(this);
+					m_pluginExternalBrowseButton.addActionListener(this);
+					m_pluginExternalLoadButton.addActionListener(this);
+					
+					pluginExternal.setBorder(BorderFactory.createTitledBorder("Change (external)"));
+					pluginExternal.setLayout(new FlowLayout());
+					pluginExternal.add(m_pluginExternalFilePath);
+					pluginExternal.add(m_pluginExternalBrowseButton);
+					pluginExternal.add(m_pluginExternalLoadButton);
+				}
+				final JPanel pluginBuiltin = new JPanel();
+				{
+					m_pluginBuiltinBuiltinList = new JComboBox<String>(m_pluginLoader.getBuiltinPlugins());
+					m_pluginBuiltinLoadButton = new JButton("Load");
+					
+					m_pluginBuiltinBuiltinList.setEditable(false);
+					m_pluginBuiltinBuiltinList.setSelectedItem(DummyPlugin.class.getName());
+					m_pluginBuiltinLoadButton.addActionListener(this);
+					
+					pluginBuiltin.setBorder(BorderFactory.createTitledBorder("Change (built-in)"));
+					pluginBuiltin.setLayout(new FlowLayout());
+					pluginBuiltin.add(m_pluginBuiltinBuiltinList);
+					pluginBuiltin.add(m_pluginBuiltinLoadButton);
+				}
+				
+				m_pluginLabelName.setHorizontalAlignment(JLabel.CENTER);
+				
+				tabPlugins.setLayout(new GridLayout(0, 1));
+				tabPlugins.add(m_pluginLabelName);
+				tabPlugins.add(pluginExternal);
+				tabPlugins.add(pluginBuiltin);
+			}
+			
+			body.addTab("Controls", tabControl);
+			body.addTab("Plugins", tabPlugins);
+			body.addTab("Console", tabConsole);
 		}
 		
-		m_paneBot = new JPanel();
+		final JPanel footer = new JPanel();
 		{
-			m_labelCopyrightAndLicense = new JLabel("Copyright \u00a9 2016 NuclearCoder. Licensed under AGPLv3.");
-			m_labelLinkSource = new JLabel("<html><a href=\"\">Source code here</a></html>");
+			final JLabel footerLabelCopyrightAndLicense = new JLabel("Copyright \u00a9 2016 NuclearCoder. Licensed under AGPLv3.");
+			final JLabel footerLabelSourceLink = new JLabel("<html><a href=\"\">Source code here</a></html>");
 			
-			m_labelCopyrightAndLicense.setFont(m_labelCopyrightAndLicense.getFont().deriveFont(10F));
+			footerLabelCopyrightAndLicense.setFont(footerLabelCopyrightAndLicense.getFont().deriveFont(10F));
 			
-			m_labelLinkSource.addMouseListener(new ControlPanelHyperlinkListener(GITHUB_URL));
-			m_labelLinkSource.setToolTipText(GITHUB_URL);
-			m_labelLinkSource.setCursor(new Cursor(Cursor.HAND_CURSOR));
-			m_labelLinkSource.setFont(m_labelLinkSource.getFont().deriveFont(10F));
+			footerLabelSourceLink.addMouseListener(new ControlPanelHyperlinkListener(GITHUB_URL));
+			footerLabelSourceLink.setToolTipText(GITHUB_URL);
+			footerLabelSourceLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			footerLabelSourceLink.setFont(footerLabelSourceLink.getFont().deriveFont(10F));
 			
-			m_paneBot.setLayout(new BorderLayout());
-			m_paneBot.add(m_labelCopyrightAndLicense, BorderLayout.WEST);
-			m_paneBot.add(m_labelLinkSource, BorderLayout.EAST);
+			footer.setLayout(new BorderLayout());
+			footer.add(footerLabelCopyrightAndLicense, BorderLayout.WEST);
+			footer.add(footerLabelSourceLink, BorderLayout.EAST);
 		}
 		
 		setLayout(new BorderLayout(5, 5));
-		add(m_paneTop, BorderLayout.NORTH);
-		add(m_paneCenter, BorderLayout.CENTER);
-		add(m_paneSide, BorderLayout.EAST);
-		add(m_paneBot, BorderLayout.SOUTH);
+		add(body, BorderLayout.CENTER);
+		add(footer, BorderLayout.SOUTH);
 		
-		m_frame.setContentPane(this);
-		m_frame.pack();
+		m_container.setContentPane(this);
+		m_container.pack();
 	}
 	
 	public PluginLoader getPluginLoader()
@@ -218,20 +244,53 @@ public class ControlPanel extends JPanel {
 	
 	public JFrame getFrame()
 	{
-		return m_frame;
+		return m_container;
 	}
 	
 	public void open()
 	{
-		m_frame.setVisible(true);
+		m_container.setVisible(true);
 		startClient();
 	}
 	
 	/* **** events **** */
 	
+	@Override
+	public void actionPerformed(final ActionEvent event)
+	{
+		final Object source = event.getSource();
+		
+		if (source == m_controlStartButton)
+		{
+			startClient();
+		}
+		else if (source == m_controlStopButton)
+		{
+			m_doRestart = false;
+			stopClient();
+		}
+		else if (source == m_controlRestartButton)
+		{
+			m_doRestart = true;
+			stopClient();
+		}
+		else if (source == m_pluginExternalFilePath || source == m_pluginExternalBrowseButton)
+		{
+			choosePluginFile();
+		}
+		else if (source == m_pluginExternalLoadButton)
+		{
+			changePluginExternal();
+		}
+		else if (source == m_pluginBuiltinLoadButton)
+		{
+			changePluginBuiltin();
+		}
+	}
+	
 	private void startClient()
 	{
-		m_buttonStart.setEnabled(false);
+		m_controlStartButton.setEnabled(false);
 		
 		Logger.info("(GUI) Starting client...");
 		
@@ -241,44 +300,62 @@ public class ControlPanel extends JPanel {
 		final ChatListener listener = m_pluginLoader.getPlugin().init();
 		
 		m_client = new ImplChatClient(twitchUser, twitchOauthKey, listener);
-		m_client.addStateListener(new ControlPanelStateListener());
+		m_client.addStateListener(new ClientStateListener());
 		m_clientThread = new ClientThread(m_client);
 		m_clientThread.start();
 	}
 	
 	private void stopClient()
 	{
-		m_buttonStop.setEnabled(false);
-		m_buttonRestart.setEnabled(false);
-
 		Logger.info("(GUI) Stopping client...");
 		
+		m_controlStopButton.setEnabled(false);
+		m_controlRestartButton.setEnabled(false);
+		
 		m_client.stop();
+	}
+
+	private void choosePluginFile()
+	{
+		Logger.info("(GUI) Opening plugin file dialog...");
+		
+		m_pluginExternalFileDialog.setVisible(true);
+		final String filename = m_pluginExternalFileDialog.getFile();
+		if (filename != null)
+		{
+			m_pluginExternalFilePath.setText(new File(m_pluginExternalFileDialog.getFile()).getAbsolutePath());
+		}
 	}
 	
 	private void changePluginExternal()
 	{
-		Logger.info("(GUI) Change plugin external dialog opened.");
-		
-		m_dialogChangePluginExternal.open();
+		final File file = new File(m_pluginExternalFilePath.getText());
+		if (file.isFile())
+		{
+			pluginChanged(m_pluginLoader.loadPlugin(file) ? m_pluginLoader.getPlugin() : null);
+		}
+		else
+		{
+			Logger.error("(GUI) Provided path \"" + file.getAbsolutePath() + "\" that wasn't a file.");
+			JOptionPane.showMessageDialog(this, "This is not a file!", "Not a file", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 	
 	private void changePluginBuiltin()
 	{
-		Logger.info("(GUI) Change plugin built-in dialog opened.");
-		
-		m_dialogChangePluginBuiltin.open();
+		final String pluginClassName = m_pluginBuiltinBuiltinList.getItemAt(m_pluginBuiltinBuiltinList.getSelectedIndex());
+		pluginChanged(m_pluginLoader.loadPlugin(pluginClassName) ? m_pluginLoader.getPlugin() : null);
 	}
-
+	
 	/* **** notifies **** */
 	
 	void clientStarted()
 	{
 		m_clientRunning = true;
 		
-		m_buttonStart.setEnabled(false);
-		m_buttonStop.setEnabled(true);
-		m_buttonRestart.setEnabled(true);
+		m_controlStartButton.setEnabled(false);
+		m_controlStopButton.setEnabled(true);
+		m_controlRestartButton.setEnabled(true);
 		
 		m_doRestart = false;
 	}
@@ -287,9 +364,9 @@ public class ControlPanel extends JPanel {
 	{
 		m_clientRunning = false;
 		
-		m_buttonStart.setEnabled(true);
-		m_buttonStop.setEnabled(false);
-		m_buttonRestart.setEnabled(false);
+		m_controlStartButton.setEnabled(true);
+		m_controlStopButton.setEnabled(false);
+		m_controlRestartButton.setEnabled(false);
 		
 		if (m_doRestart)
 		{
@@ -300,20 +377,23 @@ public class ControlPanel extends JPanel {
 	void frameClosing()
 	{
 		stopClient();
-		m_dialogChangePluginExternal.dispose();
-		m_dialogChangePluginBuiltin.dispose();
-		m_frame.dispose();
+		m_pluginExternalFileDialog.dispose();
+		m_container.dispose();
 	}
 	
-	void pluginChanged(final Plugin plugin)
+	void pluginChanged(final JavaPlugin plugin)
 	{
 		if (plugin != null)
-		{
-			m_labelPluginFilename.setText(plugin.getClass().getName());
-			
+		{			
+			// italic name if built-in plugin
+			m_pluginLabelName.setText(plugin.getName());
+			m_pluginLabelName.setToolTipText(plugin.getClassName());
+			final Font fontLabelPlugin = m_pluginLabelName.getFont().deriveFont(plugin.isBuiltin() ? Font.ITALIC : Font.PLAIN);
+			m_pluginLabelName.setFont(fontLabelPlugin);
+
 			if (m_clientRunning)
 			{
-				final int restart = JOptionPane.showConfirmDialog(m_frame, "The changes will be not effective until a restart.\nRestart now?", "Restart?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				final int restart = JOptionPane.showConfirmDialog(m_container, "The changes will be not effective until a restart.\nRestart now?", "Restart?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 				
 				if (restart == JOptionPane.YES_OPTION)
 				{
@@ -324,44 +404,12 @@ public class ControlPanel extends JPanel {
 		}
 		else
 		{
-			JOptionPane.showMessageDialog(m_frame, "Couldn't load the plugin. See logs for details.", "Error while loading plugin", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(m_container, "Couldn't load the plugin. See logs for details.", "Error while loading plugin", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	
 	/* **** classes **** */
-	
-	private class ActionButtons implements ActionListener {
-		
-		@Override
-		public void actionPerformed(final ActionEvent event)
-		{
-			final Object source = event.getSource();
-			
-			if (source == m_buttonStart)
-			{
-				startClient();
-			}
-			else if (source == m_buttonStop)
-			{
-				m_doRestart = false;
-				stopClient();
-			}
-			else if (source == m_buttonRestart)
-			{
-				m_doRestart = true;
-				stopClient();
-			}
-			else if (source == m_buttonChangePluginExternal)
-			{
-				changePluginExternal();
-			}
-			else if (source == m_buttonChangePluginBuiltin)
-			{
-				changePluginBuiltin();
-			}
-		}
-	}
-	
+
 	private class ClientThread implements Runnable {
 		
 		private Thread m_thread;
@@ -395,7 +443,7 @@ public class ControlPanel extends JPanel {
 		
 	}
 	
-	private class ControlPanelStateListener implements StateListener {
+	private class ClientStateListener implements StateListener {
 
 		private class ClientConnectedRunnable implements Runnable {
 		
@@ -477,6 +525,16 @@ public class ControlPanel extends JPanel {
 			{
 				Logger.error("(GUI) Desktop class not supported.");
 			}
+		}
+		
+	}
+
+	private class PluginFilenameFilter implements FilenameFilter {
+	
+		@Override
+		public boolean accept(File dir, String name)
+		{
+			return name.endsWith(".jar");
 		}
 		
 	}

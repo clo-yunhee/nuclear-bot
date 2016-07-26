@@ -20,8 +20,8 @@ import java.nio.file.Paths;
  */
 
 /**
- * NuclearBot (https://osu.ppy.sh/forum/t/479653)<br>
- * @author NuclearCoder (contact on the forum)<br>
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)<br>
  * <br>
  * Static class for some OS utility methods.
  */

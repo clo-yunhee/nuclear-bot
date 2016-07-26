@@ -1,8 +1,4 @@
-package nuclearbot.builtin.osu;
-
-import nuclearbot.client.ChatListener;
-import nuclearbot.plugin.Plugin;
-import nuclearbot.utils.Config;
+package nuclearbot.plugin;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -25,18 +21,28 @@ import nuclearbot.utils.Config;
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)<br>
  * <br>
- * Built-in osu! plugin.
+ * Plugin wrapper for a Plugin loaded from classpath.
  */
-public class OsuPlugin implements Plugin {
+public class ClasspathPlugin extends JavaPlugin {
+	
+	private final String m_className;
+	
+	public ClasspathPlugin(final Plugin plugin, final String className)
+	{
+		super(plugin, true);
+		m_className = className;
+	}
 
 	@Override
-	public ChatListener init()
+	public String getName()
 	{
-		final String osuUser = Config.get("osu_user");
-		final String osuApiKey = Config.get("osu_api_key");
-		final String osuIrcKey = Config.get("osu_irc_key");
-		
-		return new OsuClient(osuApiKey, osuUser, osuIrcKey);
+		return m_className;
+	}
+
+	@Override
+	public String getVersion()
+	{
+		return null;
 	}
 
 }

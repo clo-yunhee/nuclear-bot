@@ -21,8 +21,8 @@ import nuclearbot.plugin.Plugin;
  */
 
 /**
- * NuclearBot (https://osu.ppy.sh/forum/t/479653)<br>
- * @author NuclearCoder (contact on the forum)<br>
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)<br>
  * <br>
  * A dummy client plugin that doesn't do anything.
  */

@@ -24,8 +24,8 @@ import javax.swing.text.Document;
  */
 
 /**
- * NuclearBot (https://osu.ppy.sh/forum/t/479653)<br>
- * @author NuclearCoder (contact on the forum)<br>
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)<br>
  * <br>
  * Custom OutputStream wrapper that writes output to both OutputStream and Document.
  */

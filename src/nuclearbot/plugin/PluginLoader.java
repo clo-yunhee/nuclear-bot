@@ -20,8 +20,8 @@ import java.io.File;
  */
 
 /**
- * NuclearBot (https://osu.ppy.sh/forum/t/479653)<br>
- * @author NuclearCoder (contact on the forum)<br>
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)<br>
  * <br>
  * Public API interface for the plugin loader.
  */
@@ -31,29 +31,20 @@ public interface PluginLoader {
 	 * Returns the current loaded plugin.
 	 * @return the current loaded plugin
 	 */
-	public Plugin getPlugin();
+	public JavaPlugin getPlugin();
 	
 	/**
-	 * Loads a plugin from class name with the specified classloader. To load a plugin from a jar file,
-	 * see <code>loadPlugin(File file, String className)</code> or <code>loadPlugin(File file)</code>.
+	 * Loads a plugin from class name. Class must belong to classpath.
+	 * To load a plugin from a jar file, see <code>loadPlugin(File file)</code>.
 	 * @param className the plugin's full class name
 	 * @return true if the plugin was loaded succesfully, false otherwise
 	 */
 	public boolean loadPlugin(String className);
-	
-	/**
-	 * Loads a plugin from jar file and given class name.
-	 * The method first adds the jar file to the system classloader, then loads from class name.
-	 * @param file the jar file to load
-	 * @param the plugin's full class name
-	 * @return true if the plugin was loaded succesfully, false otherwise
-	 */
-	public boolean loadPlugin(File file, String className);
-	
+
 	/**
 	 * Loads a plugin from jar file.
 	 * The method first seeks the class name inside the plugininfo file inside the jar,
-	 * then calls <code>loadPlugin(File file, String className)</code>.
+	 * then calls <code>loadPlugin(File file)</code>.
 	 * @param file the jar file to load
 	 * @return true if the plugin was loaded succesfully, false otherwise
 	 */
