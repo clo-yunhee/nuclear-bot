@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -44,9 +45,10 @@ import nuclearbot.utils.Logger;
  */
 public class ImplPluginLoader implements PluginLoader {
 
-	private static final String CONFIG_DELIMITER = "!>";
+	private static final String CONFIG_DELIMITER = "!/";
 	
 	private static final String BUILTIN_PACKAGE_NAME = DummyPlugin.class.getPackage().getName();
+	private static final String BUILTIN_PACKAGE_PATH = BUILTIN_PACKAGE_NAME.replace('.', '/');
 	
 	private final ClassLoader m_defaultClassLoader;
 	
@@ -57,8 +59,27 @@ public class ImplPluginLoader implements PluginLoader {
 	public ImplPluginLoader()
 	{
 		m_defaultClassLoader = ImplPluginLoader.class.getClassLoader();
-		
 		m_plugin = new ClasspathPlugin(new DummyPlugin(), DummyPlugin.class.getName());
+
+		// look for built-in plugins in the 'builtin' package
+		final List<String> classes = new ArrayList<String>(5);
+		try
+		{
+			final URL resource = m_defaultClassLoader.getResource(BUILTIN_PACKAGE_PATH);
+			if(resource.toString().startsWith("jar:"))
+			{
+				classes.addAll(findPluginsJar(resource, BUILTIN_PACKAGE_PATH));
+			}
+			else
+			{
+				classes.addAll(findPluginsDir(new File(resource.toURI()), BUILTIN_PACKAGE_PATH));
+			}
+		}
+		catch (URISyntaxException e)
+		{
+			Logger.printStackTrace(e);
+		}
+		m_builtinPlugins = classes.toArray(new String[0]);
 		
 		// load the last loaded plugin
 		final String lastLoadedPlugin = Config.get("last_plugin");
@@ -74,62 +95,32 @@ public class ImplPluginLoader implements PluginLoader {
 		{
 			loadPlugin(new File(lastLoadedPlugin));
 		}
-
-		// look for built-in plugins in the 'builtin' package
-		final List<String> classes = new ArrayList<String>(10);
-		try
-		{
-			final String path = BUILTIN_PACKAGE_NAME.replace('.', '/');
-			final Enumeration<URL> resources = m_defaultClassLoader.getResources(path);
-			while (resources.hasMoreElements())
-			{
-				final URL resource = resources.nextElement();
-				classes.addAll(findPlugins(new File(resource.getFile()), BUILTIN_PACKAGE_NAME));
-			}
-		}
-		catch (IOException e)
-		{
-			Logger.printStackTrace(e);
-		}
-		m_builtinPlugins = classes.toArray(new String[0]);
 	}
 	
-	private List<String> findPlugins(final File dir, final String packageName)
+	private List<String> findPluginsJar(final URL resource, String packageName)
 	{
 		final List<String> classes = new ArrayList<String>();
-		if (dir.exists())
+		final String packagePath = packageName.replace('.', '/');
+		try
 		{
-			final File[] files = dir.listFiles();
-			for (final File file : files)
+			final String filename = resource.getPath().replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
+			final JarFile jarFile = new JarFile(filename);
+			final Enumeration<JarEntry> entries = jarFile.entries();
+			while (entries.hasMoreElements())
 			{
-				final String name = file.getName();
-				if (file.isDirectory() && !name.contains("."))
+				final JarEntry entry = entries.nextElement();
+				final String entryName = entry.getName();
+				if (entryName.startsWith(packagePath) && entryName.endsWith(".class"))
 				{
-					classes.addAll(findPlugins(file, packageName + '.' + name));
-				}
-				else if (name.endsWith(".class"))
-				{
+					final String className = entryName.substring(0, entryName.length() - 6).replace('/', '.').replace('\\', '.');
 					try
 					{
-						final String className = packageName + '.' + name.substring(0, name.length() - 6);
 						final Class<?> classFound = Class.forName(className, false, m_defaultClassLoader);
-						if (Modifier.isPublic(classFound.getModifiers())) // must be public
+						final String classError = isPluginClass(classFound);
+						if (classError == null)
 						{
-							final Class<?>[] interfaces = classFound.getInterfaces();
-							boolean isPlugin = false; 
-							for (Class<?> implement : interfaces)
-							{
-								if (implement == Plugin.class) // must implement Plugin
-								{
-									isPlugin = true;
-									break;
-								}
-							}
-							if (isPlugin)
-							{
-								Logger.info("(ploader) Built-in plugin found: " + classFound.getName());
-								classes.add(className);
-							}
+							Logger.info("(ploader) Built-in plugin found: " + classFound.getName());
+							classes.add(className);
 						}
 					}
 					catch (ClassNotFoundException e)
@@ -138,8 +129,93 @@ public class ImplPluginLoader implements PluginLoader {
 					}
 				}
 			}
+			jarFile.close();
+		}
+		catch (IOException e)
+		{
+			Logger.error("(ploader) Error while searching for built-in plugins:");
+			Logger.printStackTrace(e);
+		}
+		
+		return classes;
+	}
+	
+	private List<String> findPluginsDir(final File directory, final String packageName)
+	{
+		final List<String> classes = new ArrayList<String>();
+		final File[] files = directory.listFiles();
+		for (final File file : files)
+		{
+			final String filename = file.getName();
+			if (file.isDirectory())
+			{
+				classes.addAll(findPluginsDir(file, packageName + '.' + file.getName()));
+			}
+			else if (filename.endsWith(".class"))
+			{
+				final String filePath = packageName + '/' + filename;
+				// remove the .class extension
+				final String className = filePath.substring(0, filePath.length() - 6).replace('/', '.');
+				try
+				{
+					final Class<?> classFound = Class.forName(className, false, m_defaultClassLoader);
+					final String classError = isPluginClass(classFound);
+					if (classError == null)
+					{
+						Logger.info("(ploader) Built-in plugin found: " + classFound.getName());
+						classes.add(className);
+					}
+				}
+				catch (ClassNotFoundException e)
+				{
+					Logger.printStackTrace(e);
+				}
+			}
 		}
 		return classes;
+	}
+	
+	// returns a String with the error, or null if it is a plugin
+	private String isPluginClass(final Class<?> pluginClass)
+	{
+		final String className = pluginClass.getName();
+		
+		// check if it implements Plugin
+		final Class<?>[] interfaces = pluginClass.getInterfaces();
+		boolean isPlugin = false;
+		for (Class<?> impl : interfaces)
+		{
+			if (impl == Plugin.class)
+			{
+				isPlugin = true;
+				break;
+			}
+		}
+		if (!isPlugin)
+		{
+			return "Class " + className + " must implement " + Plugin.class.getName() + " with a nullary constructor.";
+		}
+		else
+		{
+			final int mod = pluginClass.getModifiers();
+			if (Modifier.isAbstract(mod) || Modifier.isInterface(mod))
+			{
+				return "Class " + className + " must not be abstract or interface.";
+			}
+			try
+			{
+				if (Modifier.isPublic(mod))
+				{
+					pluginClass.getDeclaredConstructor();
+					return null;
+				}
+				return "Class " + className + " must be public.";
+			}
+			catch (NoSuchMethodException e)
+			{
+				return "Class " + className + " must have a nullary constructor.";
+			}
+		}
 	}
 	
 	private ClassLoader getJarLoader(final File file)
@@ -160,21 +236,10 @@ public class ImplPluginLoader implements PluginLoader {
 		try
 		{
 			final Class<?> pluginClass = Class.forName(className, true, classLoader);
-			
-			// check it implements Plugin
-			final Class<?>[] interfaces = pluginClass.getInterfaces();
-			boolean isPlugin = false;
-			for (Class<?> impl : interfaces)
+			final String classError = isPluginClass(pluginClass);
+			if (classError != null)
 			{
-				if (impl == Plugin.class)
-				{
-					isPlugin = true;
-					break;
-				}
-			}
-			if (!isPlugin)
-			{
-				Logger.error("(ploader) Class " + className + " must implement " + Plugin.class.getName() + " with a nullary constructor.");
+				Logger.error("(ploader) " + classError);
 			}
 			else
 			{
@@ -185,17 +250,11 @@ public class ImplPluginLoader implements PluginLoader {
 					ctor.setAccessible(true);
 					plugin = (Plugin) ctor.newInstance();
 				}
-				catch (InstantiationException e)
+				catch (InstantiationException | NoSuchMethodException | IllegalArgumentException
+						| IllegalAccessException | SecurityException | InvocationTargetException e)
 				{
-					Logger.error("(ploader) Class " + className + " must not be abstract or interface.");
-					Logger.printStackTrace(e);
+					// We should never reach this block.
 				}
-				catch (NoSuchMethodException | IllegalArgumentException e)
-				{
-					Logger.error("(ploader) Class " + className + " must have a nullary constructor.");
-					Logger.printStackTrace(e);
-				}
-				catch (IllegalAccessException | SecurityException | InvocationTargetException e) {}
 			}
 		}
 		catch (ClassNotFoundException e)
