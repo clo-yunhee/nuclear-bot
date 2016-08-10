@@ -6,7 +6,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -85,10 +84,10 @@ public class ImplPluginLoader implements PluginLoader {
 			while (resources.hasMoreElements())
 			{
 				final URL resource = resources.nextElement();
-				classes.addAll(findPlugins(new File(resource.toURI()), BUILTIN_PACKAGE_NAME));
+				classes.addAll(findPlugins(new File(resource.getFile()), BUILTIN_PACKAGE_NAME));
 			}
 		}
-		catch (IOException | URISyntaxException e)
+		catch (IOException e)
 		{
 			Logger.printStackTrace(e);
 		}
