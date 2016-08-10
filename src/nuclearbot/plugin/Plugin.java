@@ -1,6 +1,8 @@
 package nuclearbot.plugin;
 
-import nuclearbot.client.ChatListener;
+import java.io.IOException;
+
+import nuclearbot.client.ChatClient;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -20,19 +22,45 @@ import nuclearbot.client.ChatListener;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Public API interface for a plugin.<br>
  * <br>
- * Public API interface for a plugin.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface Plugin {
 	
 	/**
-	 * Initializes the plugin.
-	 * Please avoid using the constructor, as it may cause problems with not-built-in plugins.
-	 * This method returns a chat listener which will be used to create the chat client.
-	 * @return the chat listener to be bound to the chat client
+	 * Listener for a chat message.
+	 * @param client the Twitch client
+	 * @param username the sender's username
+	 * @param message the message
+	 * @throws IOException delegate exception handling to the client 
 	 */
-	public ChatListener init();
+	public void onMessage(ChatClient client, String username, String message) throws IOException;
+
+	/**
+	 * Listener for client load.
+	 * Please avoid using the constructor, as it may cause problems with not-built-in plugins.
+	 * @param client the Twitch client
+	 * @throws IOException delegate exception handling to the client
+	 */
+	public void onLoad(ChatClient client) throws IOException;
+	
+	/**
+	 * Listener for client start.
+	 * This method is called before entering the client loop, after joining the channel.
+	 * @param client the Twitch client
+	 * @throws IOException delegate exception handling to the client 
+	 */
+	public void onStart(ChatClient client) throws IOException;
+	
+	/**
+	 * Listener for client stop.
+	 * This method is called before the Twitch chat connection is closed,
+	 * the client is not listening anymore at this point.
+	 * @param client the Twitch client
+	 * @throws IOException delegate exception handling to the client 
+	 */
+	public void onStop(ChatClient client) throws IOException;
 	
 }

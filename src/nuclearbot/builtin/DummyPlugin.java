@@ -1,6 +1,8 @@
 package nuclearbot.builtin;
 
-import nuclearbot.client.ChatListener;
+import java.io.IOException;
+
+import nuclearbot.client.ChatClient;
 import nuclearbot.plugin.Plugin;
 
 /*
@@ -21,17 +23,16 @@ import nuclearbot.plugin.Plugin;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * A dummy client plugin that doesn't do anything.<br>
  * <br>
- * A dummy client plugin that doesn't do anything.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class DummyPlugin implements Plugin {
-
-	@Override
-	public ChatListener init()
-	{
-		return ChatListener.DUMMY;
-	}
+	
+	public void onMessage(final ChatClient client, final String username, final String message) throws IOException {}
+	public void onLoad(final ChatClient client) throws IOException {}
+	public void onStart(final ChatClient client) throws IOException {}
+	public void onStop(final ChatClient client) throws IOException {}
 
 }

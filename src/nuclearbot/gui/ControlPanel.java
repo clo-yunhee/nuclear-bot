@@ -37,11 +37,11 @@ import javax.swing.text.DefaultCaret;
 
 import nuclearbot.builtin.DummyPlugin;
 import nuclearbot.client.ChatClient;
-import nuclearbot.client.ChatListener;
 import nuclearbot.client.ImplChatClient;
 import nuclearbot.client.StateListener;
 import nuclearbot.plugin.ImplPluginLoader;
 import nuclearbot.plugin.JavaPlugin;
+import nuclearbot.plugin.Plugin;
 import nuclearbot.plugin.PluginLoader;
 import nuclearbot.utils.Config;
 import nuclearbot.utils.Logger;
@@ -65,10 +65,10 @@ import nuclearbot.utils.OSUtils;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Main window for the GUI.<br>
  * <br>
- * Main window for the GUI.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class ControlPanel extends JPanel implements ActionListener {
 	
@@ -77,6 +77,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 	private static final String GITHUB_URL = "https://github.com/NuclearCoder/nuclear-bot/";
 	
 	// GUI components
+	private final JTabbedPane m_body;
 	private final JLabel m_pluginLabelName;
 	private final FileDialog m_pluginExternalFileDialog;
 	private final JComboBox<String> m_pluginBuiltinBuiltinList;
@@ -121,7 +122,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 		m_pluginExternalFileDialog.setFile("*.jar");
 		m_pluginExternalFileDialog.setFilenameFilter(new PluginFilenameFilter());
 		
-		final JTabbedPane body = new JTabbedPane();
+		m_body = new JTabbedPane();
 		{
 			final JPanel tabControl = new JPanel();
 			{
@@ -160,7 +161,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 				consoleTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
 				
 				Logger.info("(GUI) Linking GUI console to system console...");
-				Logger.redirectSystemOut(consoleTextArea.getDocument());
+				DocumentOutputStream.redirectSystemOut(consoleTextArea.getDocument());
 				
 				tabConsole.setViewportView(consoleTextArea);
 			}
@@ -168,6 +169,13 @@ public class ControlPanel extends JPanel implements ActionListener {
 			final JPanel tabPlugins = new JPanel();
 			{
 				m_pluginLabelName = new JLabel();
+				// italic name if built-in plugin
+				final JavaPlugin plugin = m_pluginLoader.getPlugin();
+				m_pluginLabelName.setText(plugin.getName());
+				m_pluginLabelName.setToolTipText(plugin.getClassName());
+				final Font fontLabelPlugin = m_pluginLabelName.getFont().deriveFont(plugin.isBuiltin() ? Font.ITALIC : Font.PLAIN);
+				m_pluginLabelName.setFont(fontLabelPlugin);
+
 				final JPanel pluginExternal = new JPanel();
 				{
 					m_pluginExternalFilePath = new JTextField(16);
@@ -207,9 +215,9 @@ public class ControlPanel extends JPanel implements ActionListener {
 				tabPlugins.add(pluginBuiltin);
 			}
 			
-			body.addTab("Controls", tabControl);
-			body.addTab("Plugins", tabPlugins);
-			body.addTab("Console", tabConsole);
+			m_body.addTab("Controls", tabControl);
+			m_body.addTab("Plugins", tabPlugins);
+			m_body.addTab("Console", tabConsole);
 		}
 		
 		final JPanel footer = new JPanel();
@@ -230,7 +238,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 		}
 		
 		setLayout(new BorderLayout(5, 5));
-		add(body, BorderLayout.CENTER);
+		add(m_body, BorderLayout.CENTER);
 		add(footer, BorderLayout.SOUTH);
 		
 		m_container.setContentPane(this);
@@ -259,7 +267,6 @@ public class ControlPanel extends JPanel implements ActionListener {
 	public void actionPerformed(final ActionEvent event)
 	{
 		final Object source = event.getSource();
-		
 		if (source == m_controlStartButton)
 		{
 			startClient();
@@ -296,11 +303,10 @@ public class ControlPanel extends JPanel implements ActionListener {
 		
 		final String twitchUser = Config.get("twitch_user");
 		final String twitchOauthKey = Config.get("twitch_oauth_key");
+		final Plugin plugin = m_pluginLoader.getPlugin();
 		
-		final ChatListener listener = m_pluginLoader.getPlugin().init();
-		
-		m_client = new ImplChatClient(twitchUser, twitchOauthKey, listener);
-		m_client.addStateListener(new ClientStateListener());
+		m_client = new ImplChatClient(twitchUser, twitchOauthKey, plugin);
+		m_client.registerStateListener(new ClientStateListener());
 		m_clientThread = new ClientThread(m_client);
 		m_clientThread.start();
 	}
@@ -323,7 +329,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 		final String filename = m_pluginExternalFileDialog.getFile();
 		if (filename != null)
 		{
-			m_pluginExternalFilePath.setText(new File(m_pluginExternalFileDialog.getFile()).getAbsolutePath());
+			m_pluginExternalFilePath.setText(new File(m_pluginExternalFileDialog.getDirectory(), filename).getAbsolutePath());
 		}
 	}
 	
@@ -394,10 +400,10 @@ public class ControlPanel extends JPanel implements ActionListener {
 			if (m_clientRunning)
 			{
 				final int restart = JOptionPane.showConfirmDialog(m_container, "The changes will be not effective until a restart.\nRestart now?", "Restart?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-				
 				if (restart == JOptionPane.YES_OPTION)
 				{
 					m_doRestart = true;
+					m_body.setSelectedIndex(0);
 					stopClient();
 				}
 			}
@@ -409,6 +415,26 @@ public class ControlPanel extends JPanel implements ActionListener {
 	}
 	
 	/* **** classes **** */
+
+	private class ClientConnectedRunnable implements Runnable {
+	
+		@Override
+		public void run()
+		{
+			clientStarted();
+		}
+		
+	};
+	
+	private class ClientDisconnectedRunnable implements Runnable {
+		
+		@Override
+		public void run()
+		{
+			clientStopped();
+		}
+		
+	};
 
 	private class ClientThread implements Runnable {
 		
@@ -444,26 +470,6 @@ public class ControlPanel extends JPanel implements ActionListener {
 	}
 	
 	private class ClientStateListener implements StateListener {
-
-		private class ClientConnectedRunnable implements Runnable {
-		
-			@Override
-			public void run()
-			{
-				clientStarted();
-			}
-			
-		};
-		
-		private class ClientDisconnectedRunnable implements Runnable {
-			
-			@Override
-			public void run()
-			{
-				clientStopped();
-			}
-			
-		};
 		
 		@Override
 		public void onConnected(final ChatClient client)

@@ -27,10 +27,10 @@ import nuclearbot.utils.Logger;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Implementation of the chat output thread.<br>
  * <br>
- * Implementation of the chat output thread.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class ImplChatOut implements ChatOut {
 	

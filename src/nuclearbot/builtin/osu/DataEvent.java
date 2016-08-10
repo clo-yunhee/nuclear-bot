@@ -18,10 +18,10 @@ package nuclearbot.builtin.osu;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Data container for an osu! user event.<br>
  * <br>
- * Data container for an osu! user event.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class DataEvent {
 	

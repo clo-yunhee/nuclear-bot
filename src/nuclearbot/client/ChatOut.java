@@ -18,10 +18,10 @@ package nuclearbot.client;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Public API interface for a chat output thread.<br>
  * <br>
- * Public API interface for a chat output thread.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface ChatOut extends Runnable {
 

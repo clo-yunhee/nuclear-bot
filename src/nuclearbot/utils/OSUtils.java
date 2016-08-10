@@ -20,10 +20,10 @@ import java.nio.file.Paths;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Static class for some OS utility methods.<br>
  * <br>
- * Static class for some OS utility methods.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class OSUtils {
 	

@@ -5,11 +5,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nuclearbot.plugin.CommandExecutor;
+import nuclearbot.plugin.Plugin;
 import nuclearbot.utils.Logger;
 
 /*
@@ -30,13 +34,13 @@ import nuclearbot.utils.Logger;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Implementation of the bot client.<br>
  * <br>
- * Implementation of the bot client.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class ImplChatClient implements ChatClient {
-	
+
 	// only compile the regex once
 	private static final Pattern REGEX_MESSAGE = Pattern.compile("^:([a-zA-Z0-9_]+)\\![a-zA-Z0-9_]+@[a-zA-Z0-9_]+\\.tmi\\.twitch\\.tv PRIVMSG #[a-zA-Z0-9_]+ :(.+)$");
 	
@@ -48,16 +52,20 @@ public class ImplChatClient implements ChatClient {
 	private final String m_username;
 	private final String m_authToken;
 	private final String m_channel;
-	private final ChatListener m_chatListener;
+	private final Plugin m_chatListener;
 	private final List<StateListener> m_stateListeners;
+	private final Map<String, CommandExecutor> m_commands;
+	
+	private final CommandExecutor m_systemCallExecutor;
+	
+	private final int m_usernameLength;
 	
 	private Socket m_socket;
-	private BufferedReader m_in;
-	private ChatOut m_out;
+	private BufferedReader m_reader;
+	private ChatOut m_chatOut;
 	
-	private boolean m_reconnect; // true to attempt to reconnect when the socket is closed
-	
-	private volatile boolean m_stop; // if true, the client will exit at next loop.
+	private boolean m_doReconnect; // true to attempt to reconnect when the socket is closed
+	private volatile boolean m_doStop; // if true, the client will exit at next loop.
 	
 	/**
 	 * Instantiates a Twitch client with specified Twitch IRC account.
@@ -67,21 +75,24 @@ public class ImplChatClient implements ChatClient {
 	 * @param authToken the Twitch oauth token
 	 * @param listener the client listener
 	 */
-	public ImplChatClient(final String userName, final String authToken, final ChatListener listener)
+	public ImplChatClient(final String userName, final String authToken, final Plugin listener)
 	{
 		Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ChatClientShutdownHook()));
 		// final and intern strings for memory efficiency
 		// user name and channel must be lower-case
 		m_username = userName.toLowerCase().intern();
+		m_usernameLength = userName.length();
 		m_authToken = authToken.intern();
 		m_channel = ('#' + m_username).intern();
 		m_chatListener = listener;
 		m_stateListeners = new LinkedList<StateListener>();
+		m_commands = new HashMap<String, CommandExecutor>();
+		m_systemCallExecutor = new CommandSystemCalls();
 		m_socket = null;
-		m_in = null;
-		m_out = null;
-		m_reconnect = false;
-		m_stop = false;
+		m_reader = null;
+		m_chatOut = null;
+		m_doReconnect = false;
+		m_doStop = false;
 	}
 	
 	private void notifyStateConnected()
@@ -101,53 +112,71 @@ public class ImplChatClient implements ChatClient {
 	}
 	
 	@Override
-	public void addStateListener(final StateListener listener)
+	public void registerCommand(final String command, final CommandExecutor executor)
 	{
+		if (m_commands.containsKey(command))
+		{
+			throw new IllegalArgumentException("Registered an already registered command \"" + command + "\".");
+		}
+		m_commands.put(command, executor);
+		Logger.info("(Twitch) Registered command \"" + command + "\".");
+	}
+	
+	@Override
+	public void unregisterCommand(final String command)
+	{
+		if (!m_commands.containsKey(command))
+		{
+			throw new IllegalArgumentException("Unregistered not-registered command \"" + command + "\".");
+		}
+		m_commands.remove(command);
+		Logger.info("(Twitch) Unregistered command \"" + command + "\".");
+	}
+	
+	@Override
+	public void registerStateListener(final StateListener listener)
+	{
+		if (m_stateListeners.contains(listener))
+		{
+			throw new IllegalArgumentException("Registered an already registered StateListener.");
+		}
 		m_stateListeners.add(listener);
 		Logger.info("(Twitch) Registered state listener.");
 	}
 	
 	@Override
-	public void removeStateListener(final StateListener listener)
+	public void unregisterStateListener(final StateListener listener)
 	{
+		if (!m_stateListeners.contains(listener))
+		{
+			throw new IllegalArgumentException("Unregistered a not-registered StateListener.");
+		}
 		m_stateListeners.remove(listener);
 		Logger.info("(Twitch) Unregistered state listener.");
 	}
 	
 	@Override
-	public void removeAllStateListeners()
+	public void unregisterAllStateListeners()
 	{
 		m_stateListeners.clear();
 		Logger.info("(Twitch) Cleared all state listeners.");
 	}
-
-	// shorthand to skip the ':tmi.twitch.tv ' part (will be inlined in released versions)
-	private boolean startsWithTmi(final String str, final String prefix)
-	{
-		return str.startsWith(prefix, 15);
-	}
 	
-	// shorthand to skip the ':user.tmi.twitch.tv ' part (will be inlined in released versions)
-	private boolean startsWithUserTmi(final String str, final String prefix)
+	private void send(final String msg) throws IOException
 	{
-		return str.startsWith(prefix, m_username.length() + 16);
-	}
-	
-	private void writeln(final String msg) throws IOException
-	{
-		m_out.write(msg + "\r\n");
+		m_chatOut.write(msg + "\r\n");
 	}
 	
 	@Override
 	public void sendMessage(final String msg) throws IOException
 	{
-		m_out.write("PRIVMSG " + m_channel + " :" + msg + "\r\n");
+		m_chatOut.write("PRIVMSG " + m_channel + " :" + msg + "\r\n");
 	}
 	
 	@Override
 	public void stop()
 	{
-		m_stop = true;
+		m_doStop = true;
 	}
 	
 	@Override
@@ -155,195 +184,235 @@ public class ImplChatClient implements ChatClient {
 	{
 		String line = null;
 		
+		m_commands.clear();
+		
+		registerCommand("stop", m_systemCallExecutor);
+		registerCommand("restart", m_systemCallExecutor);
+		
+		try
+		{
+			// call the load listener
+			m_chatListener.onLoad(this);
+		}
+		catch (Exception e) // catch exceptions here to not leave the loop
+		{
+			Logger.error("(Twitch) Exception in listener onLoad:");
+			Logger.printStackTrace(e);
+		}
+
 		do
 		{
 			Logger.info("(Twitch) Connecting...");
 			
 			// open connection and I/O objects
 			m_socket = new Socket(SERVER, PORT);
-			m_in = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
-			m_out = new ImplChatOut(m_socket.getOutputStream(), "twitch");
-			m_reconnect = false;
+			m_reader = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
+			m_chatOut = new ImplChatOut(m_socket.getOutputStream(), "twitch");
+			m_doReconnect = false;
+			m_doStop = true;
 			
 			// send connection data
-			writeln("PASS " + m_authToken);
-			writeln("NICK " + m_username);
+			send("PASS " + m_authToken);
+			send("NICK " + m_username);
 			
 			// wait for response
-			while ((line = m_in.readLine()) != null)
+			while ((line = m_reader.readLine()) != null)
 			{
 				// skip the prefix which is ':tmi.twitch.tv ' (15 characters long)
-				if (startsWithTmi(line, "376")) // this is the code of MOTD's last line
+				if (line.startsWith("376", 15)) // this is the code of MOTD's last line
 				{
 					Logger.info("(Twitch) Connected!");
+					m_doStop = false;
 					break; // we're in
 				}
-				else if (startsWithTmi(line, "433"))
+				else if (line.startsWith("433", 15))
 				{
-					Logger.info("(Twitch) Nickname is already in use.");
-					return;
+					Logger.error("(Twitch) Nickname is already in use.");
+					break;
 				}
 			}
-			
-			Logger.info("(Twitch) Requesting commands capability...");
-			// ask for commands, allows for RECONNECT message
-			writeln("CAP REQ :twitch.tv/commands");
-			
-			Logger.info("(Twitch) Joining channel...");
-			// join the user's channel
-			writeln("JOIN " + m_channel);
-			
-			sendMessage("Bot running...");
-			
-			try
+			if (!m_doStop)
 			{
-				// call the start listener
-				m_chatListener.onStart(this);
-			}
-			catch (Exception e) // catch exceptions here to not leave the loop
-			{
-				Logger.error("(Twitch) Exception in listener onStart:");
-				Logger.printStackTrace(e);
-			}
-
-			notifyStateConnected();
-			
-			while (!m_stop)
-			{
-				if (!m_in.ready())
-				{
-					Thread.yield();
-					continue;
-				}
+				Logger.info("(Twitch) Requesting reconnect message capability...");
+				// ask for commands, allows for RECONNECT message
+				send("CAP REQ :twitch.tv/commands");
 				
-				line = m_in.readLine();
+				Logger.info("(Twitch) Joining channel...");
+				// join the user's channel
+				send("JOIN " + m_channel);
 				
-				if (line.startsWith("PING")) // ping request
+				sendMessage("Bot running...");
+				
+				try
 				{
-					writeln("PONG " + line.substring(5));
+					// call the start listener
+					m_chatListener.onStart(this);
 				}
-				else if (line.startsWith("RECONNECT")) // twitch reconnect message
+				catch (Exception e) // catch exceptions here to not leave the loop
 				{
-					m_reconnect = true;
-					Logger.warning("(Twitch) Received a reconnect notice!");
+					Logger.error("(Twitch) Exception in listener onStart:");
+					Logger.printStackTrace(e);
 				}
-				else if (startsWithTmi(line, "CAP * ACK"))
+	
+				notifyStateConnected();
+				
+				while (!m_doStop)
 				{
-					Logger.info("(Twitch) Request for commands capability validated.");
-				}
-				else
-				{
-					final Matcher matcher = REGEX_MESSAGE.matcher(line);
-					if (matcher.matches()) // if the message is a chat message
+					if (!m_reader.ready())
 					{
-						final String username = matcher.group(1);
-						final String message = matcher.group(2);
-						
-						if (message.charAt(0) == '!') // if it's a command
-						{
-							final String[] params = message.split("\\s+");
-							// strip the ! from the first argument
-							final String command = params[0].substring(1);
-							
-							Logger.info(String.format("(Twitch) Command from %s: %s", username, Arrays.toString(params)));
-							
-							// system calls (like in the Alicization arc SAO, lol)
-							if (username.equalsIgnoreCase(m_username))
-							{
-								if (message.equalsIgnoreCase("!restart"))
-								{
-									Logger.info("(Twitch) Restart command issued.");
-									m_reconnect = true;
-									m_stop = true;
-								}
-								else if (message.equalsIgnoreCase("!stop"))
-								{
-									Logger.info("(Twitch) Stop command issued.");
-									m_reconnect = false;
-									m_stop = true;
-								}
-							}
-						
-							try
-							{
-								// call the command listener
-								m_chatListener.onCommand(this, username, command, params);
-							}
-							catch (Exception e) // catch exceptions here to not leave the loop
-							{
-								Logger.error("(Twitch) Exception in listener onCommand:");
-								Logger.printStackTrace(e);
-							}
-						
-						}
-						else
-						{
-							Logger.info(String.format("(Twitch) Message from %s: %s", username, message));
-							try
-							{
-								// call the message listener
-								m_chatListener.onMessage(this, username, message);
-							}
-							catch (Exception e) // catch exceptions here to not leave the loop
-							{
-								Logger.error("(Twitch) Exception in listener onMessage:");
-								Logger.printStackTrace(e);
-							}
-						}
+						Thread.yield();
+						continue;
 					}
-					else if (startsWithUserTmi(line, "353")
-							|| startsWithUserTmi(line, "366")
-							|| startsWithTmi(line, "ROOMSTATE")
-							|| startsWithTmi(line, "USERSTATE")) // types of messages to ignore
+					
+					line = m_reader.readLine();
+					
+					if (line.startsWith("PING")) // ping request
 					{
+						send("PONG " + line.substring(5));
+					}
+					else if (line.startsWith("RECONNECT")) // twitch reconnect message
+					{
+						m_doReconnect = true;
+						Logger.info("(Twitch) Received a reconnect notice!");
+					}
+					else if (line.startsWith("CAP * ACK", 15))
+					{
+						Logger.info("(Twitch) Request for commands capability validated.");
 					}
 					else
 					{
-						Logger.info("(Twitch) " + line);
+						final Matcher matcher = REGEX_MESSAGE.matcher(line);
+						if (matcher.matches()) // if the message is a chat message
+						{
+							final String username = matcher.group(1);
+							final String message = matcher.group(2);
+							
+							if (message.charAt(0) == '!') // if it's a command
+							{
+								final String[] params = message.split("\\s+");
+								// strip the ! from the first argument
+								final String command = params[0].substring(1);
+								
+								Logger.info(String.format("(Twitch) Command from %s: %s", username, Arrays.toString(params)));
+							
+								try
+								{
+									// call the command listener
+									final CommandExecutor executor = m_commands.get(command);
+									if (executor != null)
+									{
+										executor.onCommand(this, username, command, params);
+									}
+									else
+									{
+										Logger.warning("(Twitch) Unknown command.");
+									}
+								}
+								catch (Exception e) // catch exceptions here to not leave the loop
+								{
+									Logger.error("(Twitch) Exception in listener onCommand:");
+									Logger.printStackTrace(e);
+								}
+							}
+							else
+							{
+								Logger.info(String.format("(Twitch) Message from %s: %s", username, message));
+								try
+								{
+									// call the message listener
+									m_chatListener.onMessage(this, username, message);
+								}
+								catch (Exception e) // catch exceptions here to not leave the loop
+								{
+									Logger.error("(Twitch) Exception in listener onMessage:");
+									Logger.printStackTrace(e);
+								}
+							}
+						}
+						else if (line.startsWith("353", 16 + m_usernameLength)
+								|| line.startsWith("366", 16 + m_usernameLength)
+								|| line.startsWith("ROOMSTATE", 15)
+								|| line.startsWith("USERSTATE", 15)) // types of messages to ignore
+						{
+						}
+						else
+						{
+							Logger.info("(Twitch) " + line);
+						}
 					}
 				}
+	
+				sendMessage(m_doReconnect ? "Restarting bot..." : "Stopping bot...");
+				
+				try
+				{
+					// call the stop listener
+					m_chatListener.onStop(this);
+				}
+				catch (Exception e) // catch exceptions here to not leave the method 
+				{
+					Logger.error("(Twith) Exception in listener onStop:");
+					Logger.printStackTrace(e);
+				}
+				
+				try
+				{
+					Thread.sleep(800L); // give it some time to finish tasks
+				}
+				catch (InterruptedException e) {}
 			}
-
-			sendMessage(m_reconnect ? "Restarting bot..." : "Stopping bot...");
-			
-			try
-			{
-				// call the stop listener
-				m_chatListener.onStop(this);
-			}
-			catch (Exception e) // catch exceptions here to not leave the method 
-			{
-				Logger.error("(Twith) Exception in listener onStop:");
-				Logger.printStackTrace(e);
-			}
-			
-			try
-			{
-				Thread.sleep(800L); // give it some time to finish tasks
-			}
-			catch (InterruptedException e) {}
 			
 			Logger.info("(Twitch) Releasing resources...");
 			
 			// close resources and socket
-			m_out.close();
-			m_in.close();
+			m_chatOut.close();
+			m_reader.close();
 			m_socket.close();
 			m_socket = null;
-			m_in = null;
-			m_out = null;
+			m_reader = null;
+			m_chatOut = null;
 			
 			// call garbage collector for memory efficiency
 			System.gc();
 			
 			fireStateDisconnected();
 			
-		} while (m_reconnect);
+		} while (m_doReconnect);
 		
 		// we exited properly, unregister shutdown hook.
 		Runtime.getRuntime().removeShutdownHook(m_shutdownHook);
 		
 		Logger.info("(Twitch) Exiting client loop...");
+	}
+	
+	public class CommandSystemCalls implements CommandExecutor {
+
+		@Override
+		public void onCommand(final ChatClient client, final String username, final String command, final String[] params) throws IOException
+		{
+			// system calls (like in the Alicization arc SAO, lol)
+			if (username.equalsIgnoreCase(m_username))
+			{
+				if (command.equalsIgnoreCase("restart"))
+				{
+					Logger.info("(Twitch) Restart command issued.");
+					m_doReconnect = true;
+					m_doStop = true;
+				}
+				else if (command.equalsIgnoreCase("stop"))
+				{
+					Logger.info("(Twitch) Stop command issued.");
+					m_doReconnect = false;
+					m_doStop = true;
+				}
+			}
+			else
+			{
+				Logger.warning("Unauthorized command.");
+				sendMessage("Unauthorized command.");
+			}
+		}
+
 	}
 	
 	private class ChatClientShutdownHook implements Runnable {
@@ -353,9 +422,9 @@ public class ImplChatClient implements ChatClient {
 		{	
 			Logger.info("(Exit) (Twitch) Closing resources...");
 		
-			if (m_out != null)
+			if (m_chatOut != null)
 			{
-				m_out.close(); // attempt to close output thread cleanly
+				m_chatOut.close(); // attempt to close output thread cleanly
 			}
 			try
 			{

@@ -20,10 +20,10 @@ import java.io.File;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Public API interface for the plugin loader.<br>
  * <br>
- * Public API interface for the plugin loader.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface PluginLoader {
 

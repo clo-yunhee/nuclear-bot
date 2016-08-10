@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import com.google.gson.Gson;
 
@@ -26,10 +27,10 @@ import com.google.gson.Gson;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Static class for HTTP POST requests.<br>
  * <br>
- * Static class for HTTP POST requests.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class HTTP {
 
@@ -42,26 +43,29 @@ public class HTTP {
 	 * @param class the class of the returned object
 	 * @return the parsed output
 	 */
-	public static <T> T fetchData(String targetUrl, String urlParameters, Class<T> clazz)
+	public static <T> T fetchData(final String targetUrl, final String urlParameters, final Class<T> clazz)
 	{
 		HttpURLConnection connection = null;
 		try
 		{
-			URL url = new URL(targetUrl);
+			final String paramData = URLEncoder.encode(urlParameters, "UTF-8");
+			final int paramLength = paramData.getBytes().length;
+			
+			final URL url = new URL(targetUrl);
 			connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod("POST"); // for higher param length limit
 			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-			connection.setRequestProperty("Content-Length", String.valueOf(urlParameters.getBytes().length));
+			connection.setRequestProperty("Content-Length", String.valueOf(paramLength));
 			connection.setUseCaches(false);
 			connection.setDoOutput(true);
 			
 			// send post data
-			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-			out.writeBytes(urlParameters);
+			final DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			out.writeBytes(paramData);
 			out.close();
 			
 			// now the response
-			BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
 			return new Gson().fromJson(reader, clazz);
 		}

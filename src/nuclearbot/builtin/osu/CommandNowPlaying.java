@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import nuclearbot.client.ChatClient;
+import nuclearbot.plugin.CommandExecutor;
 import nuclearbot.utils.Logger;
 import nuclearbot.utils.OSUtils;
 
@@ -25,13 +27,13 @@ import nuclearbot.utils.OSUtils;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Command "np" to display the currently playing song.<br>
  * <br>
- * Static class to get osu!'s current song with a cross-platform call.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
-public class NowPlaying {
-	
+public class CommandNowPlaying implements CommandExecutor {
+
 	private static final String UNKNOWN_OS = "Couldn't determine the operating system.";
 	
 	private static final String NOT_RUNNING = "osu! isn't running.";
@@ -39,7 +41,7 @@ public class NowPlaying {
 	private static final String ERROR = "An error occurred while fetching osu! window title.";
 	private static final String NOW_PLAYING = "Now playing \"%s\".";
 	
-	private static String parseTitle(final String windowTitle)
+	private String parseTitle(final String windowTitle)
 	{
 		final String[] titleArray = windowTitle.split(" - ", 2); // remove the heading 'osu! - ' prefix
 		if (titleArray.length < 2)
@@ -51,8 +53,8 @@ public class NowPlaying {
 			return String.format(NOW_PLAYING, titleArray[1]);
 		}
 	}
-	
-	private static String linux()
+
+	private String getLinuxCurrentSong()
 	{
 		String windowTitle = null;
 		try // first, list osu! windows
@@ -61,13 +63,18 @@ public class NowPlaying {
 			final BufferedReader inWin = new BufferedReader(new InputStreamReader(processWin.getInputStream()));
 			boolean foundOsuWindow = false;
 			String lineWin = null;
-	        while (!foundOsuWindow && (lineWin = inWin.readLine()) != null)
-	        {
-	        	final int window = Integer.parseInt(lineWin.trim()); // for each window, check the title
-	        	final Process processTitle = Runtime.getRuntime().exec("xdotool getwindowname " + window);
-				final BufferedReader inTitle = new BufferedReader(new InputStreamReader(processTitle.getInputStream()));
+			
+			int window;
+			Process processTitle;
+			BufferedReader inTitle;
+			String name;
+			while (!foundOsuWindow && (lineWin = inWin.readLine()) != null)
+			{
+				window = Integer.parseInt(lineWin.trim()); // for each window, check the title
+				processTitle = Runtime.getRuntime().exec("xdotool getwindowname " + window);
+				inTitle = new BufferedReader(new InputStreamReader(processTitle.getInputStream()));
 				
-				final String name = inTitle.readLine().trim();
+				name = inTitle.readLine().trim();
 				
 				inTitle.close();
 				// only one should have "osu!" in it (windows should be: X container, .NET container, actual osu! game)
@@ -76,7 +83,7 @@ public class NowPlaying {
 					windowTitle = name;
 					foundOsuWindow = true;
 				}
-	        }
+			}
 			inWin.close();
 			
 			if (windowTitle == null)
@@ -100,7 +107,7 @@ public class NowPlaying {
 		return parseTitle(windowTitle);
 	}
 	
-	private static String windows()
+	private String getWindowsCurrentSong()
 	{
 		String output = "";
 		try
@@ -108,10 +115,10 @@ public class NowPlaying {
 			final Process process = Runtime.getRuntime().exec("tasklist /fo csv /nh /fi \"imagename eq osu!.exe\" /v");
 			final BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
-	        while ((line = in.readLine()) != null)
-	        {
-	        	output += line + '\n';
-	        }
+			while ((line = in.readLine()) != null)
+			{
+				output += line + '\n';
+			}
 			in.close();
 		}
 		catch (IOException e)
@@ -133,23 +140,24 @@ public class NowPlaying {
 		return parseTitle(windowTitle);
 	}
 	
-	/**
-	 * Cross-platform method, delegates to platform-dependent methods depending on the OS.
-	 * Currently only Linux and Windows 8+ are supported for sure. (W7 wasn't tested yet)
-	 * @return a chat-ready text
-	 */
-	public static String getCurrentSong()
+	@Override
+	public void onCommand(ChatClient client, String username, String command, String[] params) throws IOException
 	{
+		final String message;
 		switch (OSUtils.getOS())
 		{
 		case LINUX:
-			return linux();
+			message = getLinuxCurrentSong();
+			break;
 		case WINDOWS:
-			return windows();
+			message = getWindowsCurrentSong();
+			break;
 		case UNKNOWN:
 		default:
-			return UNKNOWN_OS;
+			message = UNKNOWN_OS;
+			break;
 		}
+		client.sendMessage(message);
 	}
-	
+
 }

@@ -2,6 +2,7 @@ package nuclearbot.gui;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -24,21 +25,36 @@ import javax.swing.text.Document;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Custom OutputStream wrapper that writes output to both OutputStream and Document.<br>
  * <br>
- * Custom OutputStream wrapper that writes output to both OutputStream and Document.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class DocumentOutputStream extends OutputStream {
 
 	private final Document m_document;
 	private final OutputStream m_outputStream;
 	
-    public DocumentOutputStream(final Document document, final OutputStream outputStream)
-    {
-        m_outputStream = outputStream;
-        m_document = document;
-    }
+	/**
+	 * Instantiates a DocumentOutputStream
+	 * with the specified document and output stream.
+	 * @param document the document to copy output to
+	 * @param outputStream the original output stream 
+	 */
+	public DocumentOutputStream(final Document document, final OutputStream outputStream)
+	{
+		m_outputStream = outputStream;
+		m_document = document;
+	}
+	
+	/**
+	 * Changes <code>System.out</code> to also write all output to a Swing Document.
+	 * @param document the document to redirect to
+	 */
+	public synchronized static void redirectSystemOut(final Document document)
+	{
+		System.setOut(new PrintStream(new DocumentOutputStream(document, System.out), true));
+	}
 
 	@Override
 	public void close() throws IOException

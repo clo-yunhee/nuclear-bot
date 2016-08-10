@@ -20,12 +20,12 @@ import java.util.Properties;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Plugin wrapper for a Plugin loaded from a JAR file.<br>
  * <br>
- * Plugin wrapper for a Plugin loaded from a JAR file.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
-public class JarPlugin extends JavaPlugin {
+public class JarPlugin extends ImplJavaPlugin {
 	
 	private final String m_name;
 	private final String m_version;

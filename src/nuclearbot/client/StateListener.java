@@ -18,10 +18,10 @@ package nuclearbot.client;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Public API interface for a state listener.<br>
  * <br>
- * Public API interface for a state listener.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface StateListener {
 	

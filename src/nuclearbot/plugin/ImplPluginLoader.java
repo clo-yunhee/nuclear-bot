@@ -38,10 +38,10 @@ import nuclearbot.utils.Logger;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Implementation of the plugin loader.<br>
  * <br>
- * Implementation of the plugin loader.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class ImplPluginLoader implements PluginLoader {
 
@@ -59,7 +59,7 @@ public class ImplPluginLoader implements PluginLoader {
 	{
 		m_defaultClassLoader = ImplPluginLoader.class.getClassLoader();
 		
-		loadPlugin(DummyPlugin.class.getName());
+		m_plugin = new ClasspathPlugin(new DummyPlugin(), DummyPlugin.class.getName());
 		
 		// load the last loaded plugin
 		final String lastLoadedPlugin = Config.get("last_plugin");
@@ -117,10 +117,10 @@ public class ImplPluginLoader implements PluginLoader {
 						if (Modifier.isPublic(classFound.getModifiers())) // must be public
 						{
 							final Class<?>[] interfaces = classFound.getInterfaces();
-							boolean isPlugin = false; // must implement Plugin
-							for (Class<?> impl : interfaces)
+							boolean isPlugin = false; 
+							for (Class<?> implement : interfaces)
 							{
-								if (impl == Plugin.class)
+								if (implement == Plugin.class) // must implement Plugin
 								{
 									isPlugin = true;
 									break;
@@ -231,8 +231,8 @@ public class ImplPluginLoader implements PluginLoader {
 		final boolean success = (plugin != null);
 		if (success)
 		{
-			writeConfig(CONFIG_DELIMITER + className);
 			m_plugin = new ClasspathPlugin(plugin, className);
+			writeConfig(CONFIG_DELIMITER + className);
 		}
 		return success;
 	}
@@ -260,8 +260,8 @@ public class ImplPluginLoader implements PluginLoader {
 					success = (plugin != null);
 					if (success)
 					{
-						writeConfig(CONFIG_DELIMITER + className);
 						m_plugin = new JarPlugin(plugin, properties);
+						writeConfig(file.getAbsolutePath());
 					}
 				}
 				else

@@ -21,10 +21,10 @@ import java.util.List;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Data container for an osu! beatmap.<br>
  * <br>
- * Data container for an osu! beatmap.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class DataBeatmap {
 	
@@ -54,56 +54,56 @@ public class DataBeatmap {
 	
 	// Circle size value (CS)
 	private float diff_size;
-    
-	// Overall difficulty (OD)
-    private float diff_overall;
-
-    // Approach Rate (AR)
-    private float diff_approach;
-
-    // Healthdrain (HP)
-    private float diff_drain;
 	
-    // seconds from first note to last note not including breaks
-    private int hit_length;
-    
-    private String source;
-    
-    // 0 = any, 1 = unspecified, 2 = video game, 3 = anime, 4 = rock, 5 = pop, 6 = other, 7 = novelty, 9 = hip hop, 10 = electronic (note that there's no 8)
-    private int genre_id;
-    
-    // 0 = any, 1 = other, 2 = english, 3 = japanese, 4 = chinese, 5 = instrumental, 6 = korean, 7 = french, 8 = german, 9 = swedish, 10 = spanish, 11 = italian
-    private int language_id;
-    
-    // song name
-    private String title;
-    
-    // seconds from first note to last note including breaks
-    private int total_length;
-    
-    // difficulty name
-    private String version;
-    
-    // md5 hash of the beatmap
-    private String file_md5;
-    
-    // game mode
-    private int mode;
-    
-    // Beatmap tags separated by spaces.
-    private String tags;
-    
-    // Number of times the beatmap was favourited. (americans: notice the ou!)
-    private int favourite_count;
-    
+	// Overall difficulty (OD)
+	private float diff_overall;
+
+	// Approach Rate (AR)
+	private float diff_approach;
+
+	// Healthdrain (HP)
+	private float diff_drain;
+	
+	// seconds from first note to last note not including breaks
+	private int hit_length;
+	
+	private String source;
+	
+	// 0 = any, 1 = unspecified, 2 = video game, 3 = anime, 4 = rock, 5 = pop, 6 = other, 7 = novelty, 9 = hip hop, 10 = electronic (note that there's no 8)
+	private int genre_id;
+	
+	// 0 = any, 1 = other, 2 = english, 3 = japanese, 4 = chinese, 5 = instrumental, 6 = korean, 7 = french, 8 = german, 9 = swedish, 10 = spanish, 11 = italian
+	private int language_id;
+	
+	// song name
+	private String title;
+	
+	// seconds from first note to last note including breaks
+	private int total_length;
+	
+	// difficulty name
+	private String version;
+	
+	// md5 hash of the beatmap
+	private String file_md5;
+	
+	// game mode
+	private int mode;
+	
+	// Beatmap tags separated by spaces.
+	private String tags;
+	
+	// Number of times the beatmap was favourited. (americans: notice the ou!)
+	private int favourite_count;
+	
 	// Number of times the beatmap was played
-    private int playcount;
-    
-    // Number of times the beatmap was passed, completed (the user didn't fail or retry)
-    private int passcount;
-    
-    // The maximum combo a user can reach playing this beatmap.
-    private int max_combo;
+	private int playcount;
+	
+	// Number of times the beatmap was passed, completed (the user didn't fail or retry)
+	private int passcount;
+	
+	// The maximum combo a user can reach playing this beatmap.
+	private int max_combo;
 
 	public int getApproved()
 	{
@@ -235,5 +235,5 @@ public class DataBeatmap {
 	{
 		return max_combo;
 	}
-    
+	
 }

@@ -26,10 +26,10 @@ import java.util.Properties;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Static class for configuration.<br>
  * <br>
- * Static class for configuration.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class Config {
 
@@ -120,11 +120,11 @@ public class Config {
 	 */
 	public static void saveConfig() throws IOException
 	{
-		FileWriter out = new FileWriter(configFile);
-		prop.store(out, "please do not attempt to edit anything manually unless explicitly directed otherwise");
+		FileWriter writer = new FileWriter(configFile);
+		prop.store(writer, "please do not attempt to edit anything manually unless explicitly directed otherwise");
 		try
 		{
-			out.close();
+			writer.close();
 		}
 		catch (IOException e) {}
 	}
@@ -138,11 +138,11 @@ public class Config {
 	 */
 	public static void reloadConfig() throws IOException
 	{
-		FileReader in = new FileReader(configFile);
-		prop.load(in);
+		FileReader reader = new FileReader(configFile);
+		prop.load(reader);
 		try
 		{
-			in.close();
+			reader.close();
 		}
 		catch (IOException e) {}
 	}

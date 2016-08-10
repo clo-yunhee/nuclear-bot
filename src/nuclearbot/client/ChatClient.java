@@ -2,6 +2,8 @@ package nuclearbot.client;
 
 import java.io.IOException;
 
+import nuclearbot.plugin.CommandExecutor;
+
 /*
  * Copyright (C) 2016 NuclearCoder
  * 
@@ -20,30 +22,46 @@ import java.io.IOException;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Public API interface for the bot client.<br>
  * <br>
- * Public API interface for the bot client.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface ChatClient {
 	
 	/**
-	 * Registers a new state listener.
-	 * @param stateListener the listener to add
+	 * Registers a new command.
+	 * @param command the command name
+	 * @param executor the command executor
+	 * @throws IllegalArgumentException if the command was already registered
 	 */
-	public void addStateListener(StateListener stateListener);
+	public void registerCommand(String command, CommandExecutor executor);
+	
+	/**
+	 * Unregisters a command.
+	 * @param command the command name
+	 * @throws IllegalArgumentException if the command was not registered
+	 */
+	public void unregisterCommand(String command);
+	
+	/**
+	 * Registers a new state listener.
+	 * @param stateListener the listener
+	 * @throws IllegalArgumentException if the listener was already registered
+	 */
+	public void registerStateListener(StateListener stateListener);
 	
 	/**
 	 * Unregisters the given state listener.
-	 * Fails silently if it was not present.
-	 * @param stateListener the listener to remove
+	 * @param stateListener the listener
+	 * @throws IllegalArgumentException if the listener was not registered
 	 */
-	public void removeStateListener(StateListener stateListener);
+	public void unregisterStateListener(StateListener stateListener);
 	
 	/**
-	 * Removes all state listeners.
+	 * Unregisters all state listeners.
 	 */
-	public void removeAllStateListeners();
+	public void unregisterAllStateListeners();
 
 	/**
 	 * Sends a chat message to the Twitch channel.

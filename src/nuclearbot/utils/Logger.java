@@ -2,15 +2,10 @@ package nuclearbot.utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import javax.swing.text.Document;
-
-import nuclearbot.gui.DocumentOutputStream;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -30,10 +25,10 @@ import nuclearbot.gui.DocumentOutputStream;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Static class for a custom logger.<br>
  * <br>
- * Static class for a custom logger.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class Logger {
 	
@@ -46,7 +41,7 @@ public class Logger {
 	{
 		Runtime.getRuntime().addShutdownHook(new Thread(new LoggerShutdownHook()));
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
-		timeFormat = new SimpleDateFormat("hh:mm:ss");
+		timeFormat = new SimpleDateFormat("yyyy-MM-d hh:mm:ss");
 		try
 		{
 			fileOut = new PrintWriter(new FileWriter("nuclearbot.log", true), true);
@@ -56,15 +51,6 @@ public class Logger {
 			System.err.println("Couldn't open the log file. Logging to console only.");
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * Changes <code>System.out</code> to also write all output to a Swing Document.
-	 * @param document the Document to redirect to
-	 */
-	public synchronized static void redirectSystemOut(final Document document)
-	{
-		System.setOut(new PrintStream(new DocumentOutputStream(document, System.out), true));
 	}
 	
 	/**
@@ -148,7 +134,7 @@ public class Logger {
 	private static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
 		@Override
-		public void uncaughtException(Thread thread, Throwable throwable)
+		public void uncaughtException(final Thread thread, final Throwable throwable)
 		{
 			Logger.error("Uncaught exception in thread \"" + thread.getName() + "\":");
 			Logger.printStackTrace(throwable);

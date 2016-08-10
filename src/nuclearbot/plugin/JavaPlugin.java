@@ -1,7 +1,5 @@
 package nuclearbot.plugin;
 
-import nuclearbot.client.ChatListener;
-
 /*
  * Copyright (C) 2016 NuclearCoder
  * 
@@ -20,60 +18,35 @@ import nuclearbot.client.ChatListener;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Public API interface for a plugin wrapper with name, version, and built-in flag.<br>
  * <br>
- * Plugin wrapper for a Plugin with a built-in flag.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
-public abstract class JavaPlugin implements Plugin {
+public interface JavaPlugin extends Plugin {
 
-	private final Plugin m_plugin;
-	private final boolean m_builtin;
-	
-	private final String m_className;
-	
-	public JavaPlugin(final Plugin plugin, final boolean builtin)
-	{
-		m_plugin = plugin;
-		m_builtin = builtin;
-		
-		m_className = plugin.getClass().getName();
-	}
-	
-	@Override
-	public ChatListener init()
-	{
-		return m_plugin.init();
-	}
-	
 	/**
 	 * Returns the plugin name.
 	 * @return the plugin name
 	 */
-	public abstract String getName();
+	public String getName();
 	
 	/**
 	 * Returns the plugin version.
 	 * @return the plugin version
 	 */
-	public abstract String getVersion();
+	public String getVersion();
 	
 	/**
 	 * Returns the plugin main class name.
 	 * @return the plugin main class name
 	 */
-	public String getClassName()
-	{
-		return m_className;
-	}
+	public String getClassName();
 	
 	/**
 	 * Returns true if the plugin was loaded like a built-in plugin.
 	 * @return the plugin built-in status
 	 */
-	public boolean isBuiltin()
-	{
-		return m_builtin;
-	}
+	public boolean isBuiltin();
 
 }

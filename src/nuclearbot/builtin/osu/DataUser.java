@@ -20,10 +20,10 @@ import java.util.List;
  */
 
 /**
- * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
- * @author NuclearCoder (contact on the GitHub repo)<br>
+ * Data container for an osu! user data.<br>
  * <br>
- * Data container for an osu! user data.
+ * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ * @author NuclearCoder (contact on the GitHub repo)
  */
 public class DataUser {
 	
