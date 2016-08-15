@@ -120,7 +120,7 @@ public class Config {
 	 */
 	public static void saveConfig() throws IOException
 	{
-		FileWriter writer = new FileWriter(configFile);
+		final FileWriter writer = new FileWriter(configFile);
 		prop.store(writer, "please do not attempt to edit anything manually unless explicitly directed otherwise");
 		try
 		{
@@ -138,7 +138,7 @@ public class Config {
 	 */
 	public static void reloadConfig() throws IOException
 	{
-		FileReader reader = new FileReader(configFile);
+		final FileReader reader = new FileReader(configFile);
 		prop.load(reader);
 		try
 		{
@@ -154,7 +154,7 @@ public class Config {
 	 * @param key the property key
 	 * @return the value in this property list with the specified key
 	 */
-	public static String get(String key)
+	public static String get(final String key)
 	{
 		return prop.getProperty(key);
 	}
@@ -167,7 +167,7 @@ public class Config {
 	 * @param value the new value
 	 * @return the previous value, or null
 	 */
-	public static String set(String key, Object value)
+	public static String set(final String key, final Object value)
 	{
 		return (String) prop.setProperty(key, String.valueOf(value));
 	}

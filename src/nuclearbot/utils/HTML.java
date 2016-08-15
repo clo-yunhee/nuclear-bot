@@ -1,9 +1,4 @@
-package nuclearbot.plugin;
-
-import java.io.IOException;
-
-import nuclearbot.client.ChatClient;
-import nuclearbot.client.Command;
+package nuclearbot.utils;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -23,23 +18,46 @@ import nuclearbot.client.Command;
  */
 
 /**
- * Public API interface for a chat command executor.<br>
+ * Static class for escaping HTML text.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public interface CommandExecutor {
-
+public class HTML {
+	
 	/**
-	 * Listener for the commands this executor is bound to.
-	 * @param client the Twitch client
-	 * @param username the sender's username
-	 * @param command the command instance
-	 * @param label the command name
-	 * @param args the argument array
-	 * @return true if the command succeeded
-	 * @throws IOException delegate exception handling to the client 
+	 * Escapes characters in an HTML string.
+	 * This method assumes that the string is encoded in UTF-8,
+	 * thus nothng other than &amp;&lt;&gt; need to be escaped.
+	 * @param s the string to HTML-escape
+	 * @return the corrected string
 	 */
-	public boolean onCommand(ChatClient client, String username, Command command, String label, String[] args) throws IOException;
+	public static String escapeText(final String s)
+	{
+		final int length = s.length();
+		final StringBuilder out = new StringBuilder(Math.max(16, length));
+		char c;
+		for (int i = 0; i < length; i++)
+		{
+			c = s.charAt(i);
+			if (c == '&')
+			{
+				out.append("&amp;");
+			}
+			else if (c == '<')
+			{
+				out.append("&lt;");
+			}
+			else if (c == '>')
+			{
+				out.append("&gt;");
+			}
+			else
+			{
+				out.append(c);
+			}
+		}
+		return out.toString();
+	}
 	
 }

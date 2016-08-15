@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import nuclearbot.client.ChatClient;
+import nuclearbot.client.Command;
 import nuclearbot.plugin.CommandExecutor;
 import nuclearbot.utils.Logger;
 import nuclearbot.utils.OSUtils;
@@ -141,7 +142,7 @@ public class CommandNowPlaying implements CommandExecutor {
 	}
 	
 	@Override
-	public void onCommand(ChatClient client, String username, String command, String[] params) throws IOException
+	public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
 	{
 		final String message;
 		switch (OSUtils.getOS())
@@ -158,6 +159,7 @@ public class CommandNowPlaying implements CommandExecutor {
 			break;
 		}
 		client.sendMessage(message);
+		return true;
 	}
 
 }

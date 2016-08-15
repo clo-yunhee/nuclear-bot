@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nuclearbot.client.ChatClient;
+import nuclearbot.client.Command;
 import nuclearbot.plugin.CommandExecutor;
 
 /*
@@ -52,15 +53,15 @@ public class CommandRequest implements CommandExecutor {
 	}
 	
 	@Override
-	public void onCommand(final ChatClient client, final String username, final String command, final String[] params) throws IOException
+	public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
 	{
-		if (params.length < 2)
+		if (args.length < 2)
 		{
-			client.sendMessage("Invalid usage of command: !req <link> [message]");
+			return false;
 		}
 		else
 		{
-			final String beatmapUrl = params[1].toLowerCase();
+			final String beatmapUrl = args[1].toLowerCase();
 			final Matcher matcher = REGEX_BEATMAP_URL.matcher(beatmapUrl);
 			if (matcher.matches())
 			{
@@ -72,7 +73,7 @@ public class CommandRequest implements CommandExecutor {
 					if (beatmapset == null || beatmapset.length == 0)
 					{
 						client.sendMessage(MSG_REQUEST_NOT_FOUND);
-						return;
+						return true;
 					}
 					else
 					{
@@ -88,7 +89,7 @@ public class CommandRequest implements CommandExecutor {
 					if (beatmap == null)
 					{
 						client.sendMessage(MSG_REQUEST_NOT_FOUND);
-						return;
+						return true;
 					}
 					else
 					{
@@ -109,16 +110,17 @@ public class CommandRequest implements CommandExecutor {
 				client.sendMessage(String.format(MSG_REQUEST_OTHER, beatmapUrl));
 				m_osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_OTHER, username, beatmapUrl));
 			}
-			if (params.length > 2)
+			if (args.length > 2)
 			{
 				final StringBuffer sb = new StringBuffer();
-				for (int i = 2; i < params.length; i++)
+				for (int i = 2; i < args.length; i++)
 				{
-					sb.append(params[i]);
+					sb.append(args[i]);
 					sb.append(' ');
 				}
 				m_osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_MESSAGE, sb.toString().trim()));
 			}
+			return true;
 		}
 	}
 

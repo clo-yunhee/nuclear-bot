@@ -18,25 +18,34 @@ package nuclearbot.client;
  */
 
 /**
- * Public API interface for a state listener.<br>
+ * Public API interface for a chat listener.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public interface StateListener {
+public interface ChatListener {
 	
 	/**
 	 * Listener for client connected.
-	 * This method is called after the chat listener onStart method, before entering the client loop.
+	 * This method is called after the plugin's onStart method, before entering the client loop.
 	 * @param client the Twitch client
 	 */
 	public void onConnected(ChatClient client);
 	
 	/**
 	 * Listener for client disconnected.
-	 * This method is called after the chat listener onStop method, and after resources are released.
+	 * This method is called after the plugin's onStop method, and after resources are released.
 	 * @param client the Twitch client
 	 */
 	public void onDisconnected(ChatClient client);
+	
+	/**
+	 * Listener for client chat message.
+	 * This method is called after the plugin's onMessage method.
+	 * @param client the Twitch client
+	 * @param username the sender's username
+	 * @param message the message
+	 */
+	public void onChat(ChatClient client, String username, String message);
 	
 }

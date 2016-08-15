@@ -1,9 +1,6 @@
-package nuclearbot.plugin;
+package nuclearbot.client;
 
-import java.io.IOException;
-
-import nuclearbot.client.ChatClient;
-import nuclearbot.client.Command;
+import nuclearbot.plugin.CommandExecutor;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -23,23 +20,40 @@ import nuclearbot.client.Command;
  */
 
 /**
- * Public API interface for a chat command executor.<br>
+ * Implementation of Command.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public interface CommandExecutor {
-
-	/**
-	 * Listener for the commands this executor is bound to.
-	 * @param client the Twitch client
-	 * @param username the sender's username
-	 * @param command the command instance
-	 * @param label the command name
-	 * @param args the argument array
-	 * @return true if the command succeeded
-	 * @throws IOException delegate exception handling to the client 
-	 */
-	public boolean onCommand(ChatClient client, String username, Command command, String label, String[] args) throws IOException;
+public class ImplCommand implements Command {
 	
+	private final String m_label;
+	private final String m_usage;
+	private final CommandExecutor m_executor;
+	
+	public ImplCommand(final String label, final String usage, final CommandExecutor executor)
+	{
+		m_label = label.intern();
+		m_usage = usage.intern();
+		m_executor = executor;
+	}
+	
+	@Override
+	public String getLabel()
+	{
+		return m_label;
+	}
+	
+	@Override
+	public String getUsage()
+	{
+		return m_usage;
+	}
+	
+	@Override
+	public CommandExecutor getExecutor()
+	{
+		return m_executor;
+	}
+
 }

@@ -31,37 +31,38 @@ public interface ChatClient {
 	
 	/**
 	 * Registers a new command.
-	 * @param command the command name
+	 * @param label the command name
+	 * @param usage the command usage
 	 * @param executor the command executor
 	 * @throws IllegalArgumentException if the command was already registered
 	 */
-	public void registerCommand(String command, CommandExecutor executor);
+	public void registerCommand(String label, String usage, CommandExecutor executor);
 	
 	/**
 	 * Unregisters a command.
-	 * @param command the command name
+	 * @param label the command instance
 	 * @throws IllegalArgumentException if the command was not registered
 	 */
-	public void unregisterCommand(String command);
+	public void unregisterCommand(String label);
 	
 	/**
 	 * Registers a new state listener.
 	 * @param stateListener the listener
 	 * @throws IllegalArgumentException if the listener was already registered
 	 */
-	public void registerStateListener(StateListener stateListener);
+	public void registerChatListener(ChatListener stateListener);
 	
 	/**
 	 * Unregisters the given state listener.
 	 * @param stateListener the listener
 	 * @throws IllegalArgumentException if the listener was not registered
 	 */
-	public void unregisterStateListener(StateListener stateListener);
+	public void unregisterChatListener(ChatListener stateListener);
 	
 	/**
 	 * Unregisters all state listeners.
 	 */
-	public void unregisterAllStateListeners();
+	public void unregisterAllChatListeners();
 
 	/**
 	 * Sends a chat message to the Twitch channel.

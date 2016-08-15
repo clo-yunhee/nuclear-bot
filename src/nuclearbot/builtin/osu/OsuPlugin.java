@@ -139,9 +139,9 @@ public class OsuPlugin implements Plugin {
 		m_reader = null;
 		m_chatOut = null;
 
-		client.registerCommand("np", new CommandNowPlaying());
-		client.registerCommand("req", new CommandRequest(this));
-		client.registerCommand("stats", new CommandStats(this));
+		client.registerCommand("np", "!np", new CommandNowPlaying());
+		client.registerCommand("req", "!req <url> [comment]", new CommandRequest(this));
+		client.registerCommand("stats", "!stats [user]", new CommandStats(this));
 	}
 
 	@Override

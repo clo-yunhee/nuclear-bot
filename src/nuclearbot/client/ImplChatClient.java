@@ -47,14 +47,14 @@ public class ImplChatClient implements ChatClient {
 	private static final String SERVER = "irc.chat.twitch.tv";
 	private static final int PORT = 6667;
 	
-	private final Thread m_shutdownHook;
+	private Thread m_shutdownHook;
 	
 	private final String m_username;
 	private final String m_authToken;
 	private final String m_channel;
-	private final Plugin m_chatListener;
-	private final List<StateListener> m_stateListeners;
-	private final Map<String, CommandExecutor> m_commands;
+	private final Plugin m_plugin;
+	private final List<ChatListener> m_chatListeners;
+	private final Map<String, Command> m_commands;
 	
 	private final CommandExecutor m_systemCallExecutor;
 	
@@ -73,20 +73,19 @@ public class ImplChatClient implements ChatClient {
 	 * Undefined behavior if the listener is forcefully changed using reflection.
 	 * @param userName the Twitch username
 	 * @param authToken the Twitch oauth token
-	 * @param listener the client listener
+	 * @param plugin the client listener
 	 */
-	public ImplChatClient(final String userName, final String authToken, final Plugin listener)
+	public ImplChatClient(final String userName, final String authToken, final Plugin plugin)
 	{
-		Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ChatClientShutdownHook()));
 		// final and intern strings for memory efficiency
 		// user name and channel must be lower-case
 		m_username = userName.toLowerCase().intern();
 		m_usernameLength = userName.length();
 		m_authToken = authToken.intern();
 		m_channel = ('#' + m_username).intern();
-		m_chatListener = listener;
-		m_stateListeners = new LinkedList<StateListener>();
-		m_commands = new HashMap<String, CommandExecutor>();
+		m_plugin = plugin;
+		m_chatListeners = new LinkedList<ChatListener>();
+		m_commands = new HashMap<String, Command>();
 		m_systemCallExecutor = new CommandSystemCalls();
 		m_socket = null;
 		m_reader = null;
@@ -95,71 +94,79 @@ public class ImplChatClient implements ChatClient {
 		m_doStop = false;
 	}
 	
-	private void notifyStateConnected()
+	private void notifyChatConnected()
 	{
-		for (StateListener listener : m_stateListeners)
+		for (ChatListener listener : m_chatListeners)
 		{
 			listener.onConnected(this);
 		}
 	}
 	
-	private void fireStateDisconnected()
+	private void notifyChatDisconnected()
 	{
-		for (StateListener listener : m_stateListeners)
+		for (ChatListener listener : m_chatListeners)
 		{
 			listener.onDisconnected(this);
 		}
 	}
 	
-	@Override
-	public void registerCommand(final String command, final CommandExecutor executor)
+	private void notifyChatMessage(final String username, final String message)
 	{
-		if (m_commands.containsKey(command))
+		for (ChatListener listener : m_chatListeners)
 		{
-			throw new IllegalArgumentException("Registered an already registered command \"" + command + "\".");
+			listener.onChat(this, username, message);
 		}
-		m_commands.put(command, executor);
-		Logger.info("(Twitch) Registered command \"" + command + "\".");
 	}
 	
 	@Override
-	public void unregisterCommand(final String command)
+	public void registerCommand(final String label, final String usage, final CommandExecutor executor)
 	{
-		if (!m_commands.containsKey(command))
+		if (m_commands.containsKey(label))
 		{
-			throw new IllegalArgumentException("Unregistered not-registered command \"" + command + "\".");
+			throw new IllegalArgumentException("Registered an already registered command \"" + label + "\".");
 		}
-		m_commands.remove(command);
-		Logger.info("(Twitch) Unregistered command \"" + command + "\".");
+		m_commands.put(label, new ImplCommand(label, usage, executor));
+		Logger.info("(Twitch) Registered command \"" + label + "\".");
 	}
 	
 	@Override
-	public void registerStateListener(final StateListener listener)
+	public void unregisterCommand(final String label)
 	{
-		if (m_stateListeners.contains(listener))
+		if (!m_commands.containsKey(label))
 		{
-			throw new IllegalArgumentException("Registered an already registered StateListener.");
+			throw new IllegalArgumentException("Unregistered not-registered command \"" + label + "\".");
 		}
-		m_stateListeners.add(listener);
-		Logger.info("(Twitch) Registered state listener.");
+		m_commands.remove(label);
+		Logger.info("(Twitch) Unregistered command \"" + label + "\".");
 	}
 	
 	@Override
-	public void unregisterStateListener(final StateListener listener)
+	public void registerChatListener(final ChatListener listener)
 	{
-		if (!m_stateListeners.contains(listener))
+		if (m_chatListeners.contains(listener))
 		{
-			throw new IllegalArgumentException("Unregistered a not-registered StateListener.");
+			throw new IllegalArgumentException("Registered an already registered ChatListener.");
 		}
-		m_stateListeners.remove(listener);
-		Logger.info("(Twitch) Unregistered state listener.");
+		m_chatListeners.add(listener);
+		Logger.info("(Twitch) Registered chat listener.");
 	}
 	
 	@Override
-	public void unregisterAllStateListeners()
+	public void unregisterChatListener(final ChatListener listener)
 	{
-		m_stateListeners.clear();
-		Logger.info("(Twitch) Cleared all state listeners.");
+		if (!m_chatListeners.contains(listener))
+		{
+			throw new IllegalArgumentException("Unregistered a not-registered ChatListener.");
+		}
+		m_chatListeners.remove(listener);
+		Logger.info("(Twitch) Unregistered chat listener.");
+	}
+	
+	@Override
+	public void unregisterAllChatListeners()
+	{
+		m_chatListeners.clear();
+		Logger.info("(Twitch) Cleared all chat listeners.");
 	}
 	
 	private void send(final String msg) throws IOException
@@ -171,6 +178,8 @@ public class ImplChatClient implements ChatClient {
 	public void sendMessage(final String msg) throws IOException
 	{
 		m_chatOut.write("PRIVMSG " + m_channel + " :" + msg + "\r\n");
+	
+		notifyChatMessage(m_username, msg);
 	}
 	
 	@Override
@@ -186,13 +195,13 @@ public class ImplChatClient implements ChatClient {
 		
 		m_commands.clear();
 		
-		registerCommand("stop", m_systemCallExecutor);
-		registerCommand("restart", m_systemCallExecutor);
+		registerCommand("stop", "!stop", m_systemCallExecutor);
+		registerCommand("restart", "!restart", m_systemCallExecutor);
 		
 		try
 		{
 			// call the load listener
-			m_chatListener.onLoad(this);
+			m_plugin.onLoad(this);
 		}
 		catch (Exception e) // catch exceptions here to not leave the loop
 		{
@@ -203,7 +212,8 @@ public class ImplChatClient implements ChatClient {
 		do
 		{
 			Logger.info("(Twitch) Connecting...");
-			
+
+			Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ChatClientShutdownHook()));
 			// open connection and I/O objects
 			m_socket = new Socket(SERVER, PORT);
 			m_reader = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
@@ -246,7 +256,7 @@ public class ImplChatClient implements ChatClient {
 				try
 				{
 					// call the start listener
-					m_chatListener.onStart(this);
+					m_plugin.onStart(this);
 				}
 				catch (Exception e) // catch exceptions here to not leave the loop
 				{
@@ -254,12 +264,13 @@ public class ImplChatClient implements ChatClient {
 					Logger.printStackTrace(e);
 				}
 	
-				notifyStateConnected();
+				notifyChatConnected();
 				
 				while (!m_doStop)
 				{
 					if (!m_reader.ready())
 					{
+						// we don't need it to run all the time
 						Thread.yield();
 						continue;
 					}
@@ -289,19 +300,19 @@ public class ImplChatClient implements ChatClient {
 							
 							if (message.charAt(0) == '!') // if it's a command
 							{
-								final String[] params = message.split("\\s+");
+								final String[] args = message.split("\\s+");
 								// strip the ! from the first argument
-								final String command = params[0].substring(1);
+								final String label = args[0].substring(1);
 								
-								Logger.info(String.format("(Twitch) Command from %s: %s", username, Arrays.toString(params)));
+								Logger.info(String.format("(Twitch) Command from %s: %s", username, Arrays.toString(args)));
 							
 								try
 								{
 									// call the command listener
-									final CommandExecutor executor = m_commands.get(command);
-									if (executor != null)
+									final Command command = m_commands.get(label);
+									if (command != null && !command.getExecutor().onCommand(this, username, command, label, args))
 									{
-										executor.onCommand(this, username, command, params);
+										sendMessage("Usage: " + command.getUsage());
 									}
 									else
 									{
@@ -320,13 +331,15 @@ public class ImplChatClient implements ChatClient {
 								try
 								{
 									// call the message listener
-									m_chatListener.onMessage(this, username, message);
+									m_plugin.onMessage(this, username, message);
 								}
 								catch (Exception e) // catch exceptions here to not leave the loop
 								{
 									Logger.error("(Twitch) Exception in listener onMessage:");
 									Logger.printStackTrace(e);
 								}
+
+								notifyChatMessage(username, message);
 							}
 						}
 						else if (line.startsWith("353", 16 + m_usernameLength)
@@ -347,7 +360,7 @@ public class ImplChatClient implements ChatClient {
 				try
 				{
 					// call the stop listener
-					m_chatListener.onStop(this);
+					m_plugin.onStop(this);
 				}
 				catch (Exception e) // catch exceptions here to not leave the method 
 				{
@@ -375,7 +388,7 @@ public class ImplChatClient implements ChatClient {
 			// call garbage collector for memory efficiency
 			System.gc();
 			
-			fireStateDisconnected();
+			notifyChatDisconnected();
 			
 		} while (m_doReconnect);
 		
@@ -388,18 +401,18 @@ public class ImplChatClient implements ChatClient {
 	public class CommandSystemCalls implements CommandExecutor {
 
 		@Override
-		public void onCommand(final ChatClient client, final String username, final String command, final String[] params) throws IOException
+		public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] params) throws IOException
 		{
 			// system calls (like in the Alicization arc SAO, lol)
 			if (username.equalsIgnoreCase(m_username))
 			{
-				if (command.equalsIgnoreCase("restart"))
+				if (label.equalsIgnoreCase("restart"))
 				{
 					Logger.info("(Twitch) Restart command issued.");
 					m_doReconnect = true;
 					m_doStop = true;
 				}
-				else if (command.equalsIgnoreCase("stop"))
+				else if (label.equalsIgnoreCase("stop"))
 				{
 					Logger.info("(Twitch) Stop command issued.");
 					m_doReconnect = false;
@@ -411,8 +424,8 @@ public class ImplChatClient implements ChatClient {
 				Logger.warning("Unauthorized command.");
 				sendMessage("Unauthorized command.");
 			}
+			return true;
 		}
-
 	}
 	
 	private class ChatClientShutdownHook implements Runnable {

@@ -2,6 +2,11 @@ package nuclearbot;
 
 import java.io.IOException;
 
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
+
 import nuclearbot.gui.ControlPanel;
 import nuclearbot.utils.Logger;
 
@@ -28,13 +33,31 @@ import nuclearbot.utils.Logger;
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public class Main {
+public class Main implements Runnable {
 	
 	public static void main(final String[] args) throws IOException
 	{
 		Logger.class.getName(); // run Logger class static init block
 		
-		new ControlPanel().open();
+		Logger.info("(GUI) Attempting to use BeautyEye look-and-feel...");
+		try
+		{
+			BeautyEyeLNFHelper.frameBorderStyle = BeautyEyeLNFHelper.FrameBorderStyle.generalNoTranslucencyShadow;
+			BeautyEyeLNFHelper.launchBeautyEyeLNF();
+			UIManager.put("RootPane.setupButtonVisible", Boolean.FALSE);
+		}
+		catch (Exception e)
+		{
+			Logger.warning("(GUI) Exception while setting look-and-feel, falling back to default:");
+			Logger.printStackTrace(e);
+		}
+		
+		SwingUtilities.invokeLater(new Main());
 	}
 	
+	@Override
+	public void run()
+	{
+		new ControlPanel().open();
+	}
 }

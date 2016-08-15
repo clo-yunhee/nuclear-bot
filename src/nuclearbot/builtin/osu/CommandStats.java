@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import nuclearbot.client.ChatClient;
+import nuclearbot.client.Command;
 import nuclearbot.plugin.CommandExecutor;
 
 /*
@@ -42,15 +43,15 @@ public class CommandStats implements CommandExecutor {
 	}
 	
 	@Override
-	public void onCommand(final ChatClient client, final String username, final String command, final String[] params) throws IOException
+	public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
 	{
-		if (params.length > 2)
+		if (args.length > 2)
 		{
-			client.sendMessage("Invalid usage of command: !stats [user]");
+			return false;
 		}
 		else
 		{
-			final DataUser user = m_osu.getUser(params.length == 2 ? params[1] : null);
+			final DataUser user = m_osu.getUser(args.length == 2 ? args[1] : null);
 			if (user == null)
 			{
 				client.sendMessage(UNKNOWN_USER);
@@ -59,6 +60,7 @@ public class CommandStats implements CommandExecutor {
 			{
 				client.sendMessage(String.format(Locale.US, STATS, user.getName(), user.getPP(), user.getRank(), user.getAccuracy()));
 			}
+			return true;
 		}
 	}
 
