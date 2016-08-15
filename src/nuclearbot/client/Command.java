@@ -27,10 +27,27 @@ import nuclearbot.plugin.CommandExecutor;
  */
 public interface Command {
 
+	/**
+	 * Returns the command's label.
+	 * This is the text following the exclamation mark.
+	 * For instance, if the command <code>!example</code>
+	 * is registered, it will return <code>"example"</code>.
+	 * @return the command label
+	 */
 	public String getLabel();
 	
+	/**
+	 * Returns the command's usage.
+	 * This is the text shown when the command fails.
+	 * The convention for arguments is &lt;required-argument&gt; [optional-argument].
+	 * @return the command label
+	 */
 	public String getUsage();
 	
+	/**
+	 * Returns the command's executor instance.
+	 * @return the command executor
+	 */
 	public CommandExecutor getExecutor();
 	
 }
