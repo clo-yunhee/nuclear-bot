@@ -23,7 +23,7 @@ package nuclearbot.client;
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public interface ChatListener {
+public interface ClientListener {
 	
 	/**
 	 * Listener for client connected.
@@ -46,6 +46,21 @@ public interface ChatListener {
 	 * @param username the sender's username
 	 * @param message the message
 	 */
-	public void onChat(ChatClient client, String username, String message);
+	public void onMessage(ChatClient client, String username, String message);
+	
+	/**
+	 * Listener for client command registration.
+	 * @param client the Twitch client
+	 * @param label the command label
+	 * @param command the command instance
+	 */
+	public void onCommandRegistered(ChatClient client, String label, Command command);
+
+	/**
+	 * Listener for client command un-registration.
+	 * @param client the Twitch client
+	 * @param label the command label
+	 */
+	public void onCommandUnregistered(ChatClient client, String label);
 	
 }

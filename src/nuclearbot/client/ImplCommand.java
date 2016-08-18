@@ -33,8 +33,8 @@ public class ImplCommand implements Command {
 	
 	public ImplCommand(final String label, final String usage, final CommandExecutor executor)
 	{
-		m_label = label.intern();
-		m_usage = usage.intern();
+		m_label = label;
+		m_usage = usage;
 		m_executor = executor;
 	}
 	

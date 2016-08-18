@@ -130,11 +130,9 @@ public class OsuPlugin implements Plugin {
 	@Override
 	public void onLoad(final ChatClient client) throws IOException
 	{
-		Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new OsuClientShutdownHook()));
-		// intern strings for memory efficiency
-		m_apiKey = Config.get("osu_api_key").intern();
-		m_ircKey = Config.get("osu_irc_key").intern();
-		m_username = Config.get("osu_user").intern();
+		m_apiKey = Config.get("osu_api_key");
+		m_ircKey = Config.get("osu_irc_key");
+		m_username = Config.get("osu_user");
 		m_socket = null;
 		m_reader = null;
 		m_chatOut = null;
@@ -152,6 +150,7 @@ public class OsuPlugin implements Plugin {
 		Logger.info("(osu!) Connecting...");
 		
 		// open connection and I/O objects
+		Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new OsuClientShutdownHook()));
 		m_socket = new Socket(SERVER, PORT);
 		m_reader = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
 		m_chatOut = new ImplChatOut(m_socket.getOutputStream(), "osu");
@@ -193,9 +192,6 @@ public class OsuPlugin implements Plugin {
 		m_socket = null;
 		m_reader = null;
 		m_chatOut = null;
-		
-		// call garbage collector for memory efficiency
-		System.gc();
 		
 		// we exited properly, unregister shutdown hook
 		Runtime.getRuntime().removeShutdownHook(m_shutdownHook);

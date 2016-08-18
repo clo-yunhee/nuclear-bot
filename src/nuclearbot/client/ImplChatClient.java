@@ -53,7 +53,7 @@ public class ImplChatClient implements ChatClient {
 	private final String m_authToken;
 	private final String m_channel;
 	private final Plugin m_plugin;
-	private final List<ChatListener> m_chatListeners;
+	private final List<ClientListener> m_clientListeners;
 	private final Map<String, Command> m_commands;
 	
 	private final CommandExecutor m_systemCallExecutor;
@@ -69,22 +69,21 @@ public class ImplChatClient implements ChatClient {
 	
 	/**
 	 * Instantiates a Twitch client with specified Twitch IRC account.
-	 * There can be only one listener during a client's lifetime.
-	 * Undefined behavior if the listener is forcefully changed using reflection.
+	 * There can be only one plugin during a client's lifetime.
+	 * Undefined behavior if the plugin is changed using reflection.
 	 * @param userName the Twitch username
 	 * @param authToken the Twitch oauth token
 	 * @param plugin the client listener
 	 */
 	public ImplChatClient(final String userName, final String authToken, final Plugin plugin)
 	{
-		// final and intern strings for memory efficiency
 		// user name and channel must be lower-case
-		m_username = userName.toLowerCase().intern();
+		m_username = userName.toLowerCase();
 		m_usernameLength = userName.length();
-		m_authToken = authToken.intern();
-		m_channel = ('#' + m_username).intern();
+		m_authToken = authToken;
+		m_channel = '#' + m_username;
 		m_plugin = plugin;
-		m_chatListeners = new LinkedList<ChatListener>();
+		m_clientListeners = new LinkedList<ClientListener>();
 		m_commands = new HashMap<String, Command>();
 		m_systemCallExecutor = new CommandSystemCalls();
 		m_socket = null;
@@ -94,28 +93,54 @@ public class ImplChatClient implements ChatClient {
 		m_doStop = false;
 	}
 	
-	private void notifyChatConnected()
+	/*- notifiers -*/
+	
+	private void notifyConnected()
 	{
-		for (ChatListener listener : m_chatListeners)
+		for (ClientListener listener : m_clientListeners)
 		{
 			listener.onConnected(this);
 		}
 	}
 	
-	private void notifyChatDisconnected()
+	private void notifyDisconnected()
 	{
-		for (ChatListener listener : m_chatListeners)
+		for (ClientListener listener : m_clientListeners)
 		{
 			listener.onDisconnected(this);
 		}
 	}
 	
-	private void notifyChatMessage(final String username, final String message)
+	private void notifyMessage(final String username, final String message)
 	{
-		for (ChatListener listener : m_chatListeners)
+		for (ClientListener listener : m_clientListeners)
 		{
-			listener.onChat(this, username, message);
+			listener.onMessage(this, username, message);
 		}
+	}
+	
+	private void notifyCommandRegistered(final String label, final Command command)
+	{
+		for (ClientListener listener : m_clientListeners)
+		{
+			listener.onCommandRegistered(this, label, command);
+		}
+	}
+	
+	private void notifyCommandUnregistered(final String label)
+	{
+		for (ClientListener listener : m_clientListeners)
+		{
+			listener.onCommandUnregistered(this, label);
+		}
+	}
+	
+	/*- registries -*/
+	
+	@Override
+	public Command getCommand(final String label)
+	{
+		return m_commands.get(label);
 	}
 	
 	@Override
@@ -125,8 +150,10 @@ public class ImplChatClient implements ChatClient {
 		{
 			throw new IllegalArgumentException("Registered an already registered command \"" + label + "\".");
 		}
-		m_commands.put(label, new ImplCommand(label, usage, executor));
+		final Command command = new ImplCommand(label, usage, executor);
+		m_commands.put(label.intern(), command);
 		Logger.info("(Twitch) Registered command \"" + label + "\".");
+		notifyCommandRegistered(label, command);
 	}
 	
 	@Override
@@ -138,35 +165,36 @@ public class ImplChatClient implements ChatClient {
 		}
 		m_commands.remove(label);
 		Logger.info("(Twitch) Unregistered command \"" + label + "\".");
+		notifyCommandUnregistered(label);
 	}
 	
 	@Override
-	public void registerChatListener(final ChatListener listener)
+	public void registerClientListener(final ClientListener listener)
 	{
-		if (m_chatListeners.contains(listener))
+		if (m_clientListeners.contains(listener))
 		{
-			throw new IllegalArgumentException("Registered an already registered ChatListener.");
+			throw new IllegalArgumentException("Registered an already registered ClientListener.");
 		}
-		m_chatListeners.add(listener);
-		Logger.info("(Twitch) Registered chat listener.");
+		m_clientListeners.add(listener);
+		Logger.info("(Twitch) Registered client listener.");
 	}
 	
 	@Override
-	public void unregisterChatListener(final ChatListener listener)
+	public void unregisterClientListener(final ClientListener listener)
 	{
-		if (!m_chatListeners.contains(listener))
+		if (!m_clientListeners.contains(listener))
 		{
-			throw new IllegalArgumentException("Unregistered a not-registered ChatListener.");
+			throw new IllegalArgumentException("Unregistered a not-registered ClientListener.");
 		}
-		m_chatListeners.remove(listener);
-		Logger.info("(Twitch) Unregistered chat listener.");
+		m_clientListeners.remove(listener);
+		Logger.info("(Twitch) Unregistered client listener.");
 	}
 	
 	@Override
-	public void unregisterAllChatListeners()
+	public void unregisterAllClientListeners()
 	{
-		m_chatListeners.clear();
-		Logger.info("(Twitch) Cleared all chat listeners.");
+		m_clientListeners.clear();
+		Logger.info("(Twitch) Cleared all client listeners.");
 	}
 	
 	private void send(final String msg) throws IOException
@@ -179,7 +207,7 @@ public class ImplChatClient implements ChatClient {
 	{
 		m_chatOut.write("PRIVMSG " + m_channel + " :" + msg + "\r\n");
 	
-		notifyChatMessage(m_username, msg);
+		notifyMessage(m_username, msg);
 	}
 	
 	@Override
@@ -264,7 +292,7 @@ public class ImplChatClient implements ChatClient {
 					Logger.printStackTrace(e);
 				}
 	
-				notifyChatConnected();
+				notifyConnected();
 				
 				while (!m_doStop)
 				{
@@ -339,7 +367,7 @@ public class ImplChatClient implements ChatClient {
 									Logger.printStackTrace(e);
 								}
 
-								notifyChatMessage(username, message);
+								notifyMessage(username, message);
 							}
 						}
 						else if (line.startsWith("353", 16 + m_usernameLength)
@@ -385,10 +413,7 @@ public class ImplChatClient implements ChatClient {
 			m_reader = null;
 			m_chatOut = null;
 			
-			// call garbage collector for memory efficiency
-			System.gc();
-			
-			notifyChatDisconnected();
+			notifyDisconnected();
 			
 		} while (m_doReconnect);
 		

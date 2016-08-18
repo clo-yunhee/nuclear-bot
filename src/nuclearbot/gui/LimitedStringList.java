@@ -32,10 +32,10 @@ public class LimitedStringList extends JList<String> {
 
 	private static final long serialVersionUID = 7161165350219517866L;
 
-	private final Model m_listModel;
+	private final LimitedStringList.Model m_listModel;
 	
 	/**
-	 * Constructs a LimitedList instance
+	 * Constructs a LimitedStringList instance
 	 * with a default capacity of 50 lines.
 	 */
 	public LimitedStringList()
@@ -44,14 +44,14 @@ public class LimitedStringList extends JList<String> {
 	}
 	
 	/**
-	 * Constructs a LimitedList instance
+	 * Constructs a LimitedStringList instance
 	 * with the specified capacity.
 	 * @param capacity the maximum number of lines to keep at once
 	 */
 	public LimitedStringList(final int capacity)
 	{
 		super();
-		m_listModel = new Model(capacity);
+		m_listModel = new LimitedStringList.Model(capacity);
 		setModel(m_listModel);
 	}
 	
@@ -69,7 +69,7 @@ public class LimitedStringList extends JList<String> {
 	}
 	
 	/**
-	 * The ListModel used by the LimitedJList class
+	 * The ListModel used by the LimitedStringList class
 	 */
 	public class Model extends AbstractListModel<String> {
 
@@ -79,7 +79,7 @@ public class LimitedStringList extends JList<String> {
 		private final int m_capacity;
 		
 		/**
-		 * Constructs a LimitedListModel instance
+		 * Constructs a LimitedStringList.Model instance
 		 * with specified element count.
 		 * @param capacity the highest number of elements this model can have
 		 */
