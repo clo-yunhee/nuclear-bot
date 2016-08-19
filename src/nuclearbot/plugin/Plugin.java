@@ -32,11 +32,11 @@ import nuclearbot.client.ChatClient;
  * You can also provide optional entries. As of August 19, 2016 there are
  * two optional entries supported:
  * <ul>
- * <li>name</li>
- * <li>version</li>
+ * <li>"name"</li>
+ * <li>"version"</li>
  * </ul><br>
  * The name is used instead of the class name in the GUI.<br>
- * The version field is not yet used by any thing.<br>
+ * The version is not yet used by any thing.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
