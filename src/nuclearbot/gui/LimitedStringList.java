@@ -61,7 +61,6 @@ public class LimitedStringList extends JList<String> {
 	 * is removed before adding the new element to the end
 	 * of the list. 
 	 * @param text the line to add to the list
-	 * @see nuclearbot.gui.LimitedListModel#add(String)
 	 */
 	public void add(final String text)
 	{

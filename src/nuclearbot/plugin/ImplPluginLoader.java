@@ -17,8 +17,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import nuclearbot.builtin.DummyPlugin;
-import nuclearbot.utils.Config;
-import nuclearbot.utils.Logger;
+import nuclearbot.util.Config;
+import nuclearbot.util.Logger;
 
 /*
  * Copyright (C) 2016 NuclearCoder

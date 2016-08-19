@@ -9,9 +9,9 @@ import nuclearbot.client.ChatClient;
 import nuclearbot.client.ChatOut;
 import nuclearbot.client.ImplChatOut;
 import nuclearbot.plugin.Plugin;
-import nuclearbot.utils.Config;
-import nuclearbot.utils.HTTP;
-import nuclearbot.utils.Logger;
+import nuclearbot.util.Config;
+import nuclearbot.util.HTTP;
+import nuclearbot.util.Logger;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -136,10 +136,10 @@ public class OsuPlugin implements Plugin {
 		m_socket = null;
 		m_reader = null;
 		m_chatOut = null;
-
-		client.registerCommand("np", "!np", new CommandNowPlaying());
-		client.registerCommand("req", "!req <url> [comment]", new CommandRequest(this));
-		client.registerCommand("stats", "!stats [user]", new CommandStats(this));
+		
+		client.registerCommand("np", "!np", new CommandNowPlaying()).setDescription("Displays the song playing in osu!. Only works when in game.");
+		client.registerCommand("req", "!req <url> [comments]", new CommandRequest(this)).setDescription("Requests a song to be played with optional comments.");
+		client.registerCommand("stats", "!stats [user]", new CommandStats(this)).setDescription("Displays info about an osu! player.");
 	}
 
 	@Override
@@ -168,9 +168,10 @@ public class OsuPlugin implements Plugin {
 				Logger.info("(osu!) Connected!");
 				break; // we're in
 			}
-			else if (line.startsWith("433"))
+			else if (line.startsWith("464", 12))
 			{
-				Logger.info("(osu!) Nickname is already in use.");
+				Logger.info("(osu!) Bad authentication token.");
+				m_chatOut.close();
 				return;
 			}
 		}

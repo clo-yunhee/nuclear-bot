@@ -1,6 +1,11 @@
-package nuclearbot.client;
+package nuclearbot.gui;
 
+import java.io.IOException;
+
+import nuclearbot.client.ChatClient;
+import nuclearbot.client.Command;
 import nuclearbot.plugin.CommandExecutor;
+import nuclearbot.util.ArgumentFormatter;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -20,56 +25,35 @@ import nuclearbot.plugin.CommandExecutor;
  */
 
 /**
- * Implementation of Command.<br>
+ * Command executor for user commands created with the GUI.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public class ImplCommand implements Command {
+public class UserCommand implements CommandExecutor {
+
+	private final ArgumentFormatter m_formatter;
 	
-	private final String m_label;
-	private final String m_usage;
-	private String m_description;
-	private final CommandExecutor m_executor;
-	
-	public ImplCommand(final String label, final String usage, final CommandExecutor executor)
+	/**
+	 * Constructs a text command executor with the given message format.
+	 * Every "$n" or "{$n}", where n is a natural integer.
+	 * @param format the format string
+	 */
+	public UserCommand(final String format)
 	{
-		m_label = label;
-		m_usage = usage;
-		m_description = "";
-		m_executor = executor;
+		m_formatter = new ArgumentFormatter(format);
 	}
 	
 	@Override
-	public String getLabel()
+	public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
 	{
-		return m_label;
-	}
-	
-	@Override
-	public String getUsage()
-	{
-		return m_usage;
-	}
-	
-	@Override
-	public String getDescription()
-	{
-		return m_description;
-	}
-	
-	@Override
-	public Command setDescription(final String description)
-	{
-		m_description = description != null ? description : "";
-		
-		return this;
-	}
-	
-	@Override
-	public CommandExecutor getExecutor()
-	{
-		return m_executor;
+		final String message = m_formatter.format(username, args);
+		if (message != null)
+		{
+			client.sendMessage(message);
+			return true;
+		}
+		return false;
 	}
 
 }

@@ -27,6 +27,7 @@ public interface ChatOut extends Runnable {
 
 	/**
 	 * Queues a message to be written.
+	 * @param str the message to add to queue
 	 * @throws IllegalStateException if the queue is full
 	 */
 	public void write(String str);

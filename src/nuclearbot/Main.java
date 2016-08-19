@@ -8,7 +8,7 @@ import javax.swing.UIManager;
 import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 
 import nuclearbot.gui.ControlPanel;
-import nuclearbot.utils.Logger;
+import nuclearbot.util.Logger;
 
 /*
  * Copyright (C) 2016 NuclearCoder

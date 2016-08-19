@@ -7,7 +7,7 @@ import java.io.OutputStreamWriter;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import nuclearbot.utils.Logger;
+import nuclearbot.util.Logger;
 
 /*
  * Copyright (C) 2016 NuclearCoder

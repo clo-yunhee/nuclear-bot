@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 import nuclearbot.client.ChatClient;
 import nuclearbot.client.Command;
 import nuclearbot.plugin.CommandExecutor;
-import nuclearbot.utils.Logger;
-import nuclearbot.utils.OSUtils;
+import nuclearbot.util.Logger;
+import nuclearbot.util.OSUtils;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -36,10 +36,9 @@ import nuclearbot.utils.OSUtils;
 public class CommandNowPlaying implements CommandExecutor {
 
 	private static final String UNKNOWN_OS = "Couldn't determine the operating system.";
-	
-	private static final String NOT_RUNNING = "osu! isn't running.";
-	private static final String NOTHING = "No song is playing right now.";
-	private static final String ERROR = "An error occurred while fetching osu! window title.";
+	private static final String NOT_RUNNING = "osu! is not running.";
+	private static final String NOTHING = "There is no song playing right now.";
+	private static final String ERROR = "An error occurred while fetching the song name.";
 	private static final String NOW_PLAYING = "Now playing \"%s\".";
 	
 	private String parseTitle(final String windowTitle)
@@ -57,45 +56,45 @@ public class CommandNowPlaying implements CommandExecutor {
 
 	private String getLinuxCurrentSong()
 	{
-		String windowTitle = null;
+		String osuWindowTitle = null;
 		try // first, list osu! windows
 		{
-			final Process processWin = Runtime.getRuntime().exec("xdotool search --classname osu");
-			final BufferedReader inWin = new BufferedReader(new InputStreamReader(processWin.getInputStream()));
+			final Process windowProcess = Runtime.getRuntime().exec("xdotool search --classname osu");
+			final BufferedReader windowReader = new BufferedReader(new InputStreamReader(windowProcess.getInputStream()));
 			boolean foundOsuWindow = false;
-			String lineWin = null;
+			String line = null;
 			
-			int window;
-			Process processTitle;
-			BufferedReader inTitle;
-			String name;
-			while (!foundOsuWindow && (lineWin = inWin.readLine()) != null)
+			int windowId;
+			Process titleProcess;
+			BufferedReader titleReader;
+			String windowTitle;
+			while (!foundOsuWindow && (line = windowReader.readLine()) != null)
 			{
-				window = Integer.parseInt(lineWin.trim()); // for each window, check the title
-				processTitle = Runtime.getRuntime().exec("xdotool getwindowname " + window);
-				inTitle = new BufferedReader(new InputStreamReader(processTitle.getInputStream()));
+				windowId = Integer.parseInt(line.trim()); // for each window, check the title
+				titleProcess = Runtime.getRuntime().exec("xdotool getwindowname " + windowId);
+				titleReader = new BufferedReader(new InputStreamReader(titleProcess.getInputStream()));
+				windowTitle = titleReader.readLine().trim();
 				
-				name = inTitle.readLine().trim();
-				
-				inTitle.close();
+				titleReader.close();
 				// only one should have "osu!" in it (windows should be: X container, .NET container, actual osu! game)
-				if (name.contains("osu!"))
+				if (windowTitle.contains("osu!"))
 				{
-					windowTitle = name;
+					osuWindowTitle = windowTitle;
 					foundOsuWindow = true;
 				}
 			}
-			inWin.close();
+			windowReader.close();
 			
-			if (windowTitle == null)
+			if (osuWindowTitle == null)
 			{
-				Logger.error("(osu!) None of the windows were titled osu.");
+				Logger.info("(osu!) None of the windows were titled osu.");
 				return NOT_RUNNING;
 			}
 		}
 		catch (NumberFormatException e)
 		{
 			Logger.error(NOT_RUNNING);
+			Logger.printStackTrace(e);
 			return NOT_RUNNING;
 		}
 		catch (IOException | IllegalStateException e)
@@ -105,7 +104,7 @@ public class CommandNowPlaying implements CommandExecutor {
 			return ERROR;
 		}
 		
-		return parseTitle(windowTitle);
+		return parseTitle(osuWindowTitle);
 	}
 	
 	private String getWindowsCurrentSong()
@@ -114,13 +113,13 @@ public class CommandNowPlaying implements CommandExecutor {
 		try
 		{
 			final Process process = Runtime.getRuntime().exec("tasklist /fo csv /nh /fi \"imagename eq osu!.exe\" /v");
-			final BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = null;
-			while ((line = in.readLine()) != null)
+			while ((line = reader.readLine()) != null)
 			{
 				output += line + '\n';
 			}
-			in.close();
+			reader.close();
 		}
 		catch (IOException e)
 		{

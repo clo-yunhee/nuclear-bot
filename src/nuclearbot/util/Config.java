@@ -1,4 +1,4 @@
-package nuclearbot.utils;
+package nuclearbot.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,7 +34,6 @@ import java.util.Properties;
 public class Config {
 
 	private static final Properties prop;
-	
 	private static final File configFile;
 	
 	static
@@ -150,13 +149,21 @@ public class Config {
 	/**
 	 * Returns the property with the specified key in this 
 	 * configuration. If the key is not found in the list, 
- 	 * the method returns null.
+ 	 * the method returns an empty string and the property is set.
 	 * @param key the property key
 	 * @return the value in this property list with the specified key
 	 */
 	public static String get(final String key)
 	{
-		return prop.getProperty(key);
+		if (prop.containsKey(key))
+		{
+			return prop.getProperty(key);
+		}
+		else
+		{
+			prop.setProperty(key, "");
+			return "";
+		}
 	}
 	
 	/**

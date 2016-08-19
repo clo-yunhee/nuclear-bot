@@ -112,7 +112,7 @@ public class CommandRequest implements CommandExecutor {
 			}
 			if (args.length > 2)
 			{
-				final StringBuffer sb = new StringBuffer();
+				final StringBuilder sb = new StringBuilder();
 				for (int i = 2; i < args.length; i++)
 				{
 					sb.append(args[i]);

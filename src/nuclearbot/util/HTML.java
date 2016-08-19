@@ -1,4 +1,4 @@
-package nuclearbot.utils;
+package nuclearbot.util;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -35,29 +35,30 @@ public class HTML {
 	public static String escapeText(final String s)
 	{
 		final int length = s.length();
-		final StringBuilder out = new StringBuilder(Math.max(16, length));
-		char c;
+		final char[] chars = s.toCharArray();
+		final StringBuilder sb = new StringBuilder(Math.max(16, length));
+		char ch;
 		for (int i = 0; i < length; i++)
 		{
-			c = s.charAt(i);
-			if (c == '&')
+			ch = chars[i];
+			if (ch == '&')
 			{
-				out.append("&amp;");
+				sb.append("&amp;");
 			}
-			else if (c == '<')
+			else if (ch == '<')
 			{
-				out.append("&lt;");
+				sb.append("&lt;");
 			}
-			else if (c == '>')
+			else if (ch == '>')
 			{
-				out.append("&gt;");
+				sb.append("&gt;");
 			}
 			else
 			{
-				out.append(c);
+				sb.append(ch);
 			}
 		}
-		return out.toString();
+		return sb.toString();
 	}
 	
 }

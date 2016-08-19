@@ -1,4 +1,6 @@
 /bin/
+/MANIFEST.MF
+/compile.sh
 
 /config.properties
 /nuclearbot.log

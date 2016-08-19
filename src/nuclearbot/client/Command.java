@@ -31,7 +31,7 @@ public interface Command {
 	 * Returns the command's label.
 	 * This is the text following the exclamation mark.
 	 * For instance, if the command <code>!example</code>
-	 * is registered, it will return <code>"example"</code>.
+	 * is registered, this method will return <code>"example"</code>.
 	 * @return the command label
 	 */
 	public String getLabel();
@@ -40,9 +40,26 @@ public interface Command {
 	 * Returns the command's usage.
 	 * This is the text shown when the command fails.
 	 * The convention for arguments is &lt;required-argument&gt; [optional-argument].
-	 * @return the command label
+	 * @return the command usage
 	 */
 	public String getUsage();
+	
+	/**
+	 * Returns a description of the command.
+	 * This is the text used in the help command.
+	 * If there is no description it will return a string equal to "".
+	 * @return the command description
+	 */
+	public String getDescription();
+	
+	/**
+	 * Changes the description to the given string.
+	 * Sets it to "" if the argument is null or an empty string.
+	 * @param description the new description
+	 * @return this object
+	 * @throws IllegalStateException if the implementation does not support changing the description
+	 */
+	public Command setDescription(String description);
 	
 	/**
 	 * Returns the command's executor instance.

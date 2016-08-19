@@ -1,4 +1,4 @@
-package nuclearbot.utils;
+package nuclearbot.util;
 
 import java.io.FileWriter;
 import java.io.IOException;

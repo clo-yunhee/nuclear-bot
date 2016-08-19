@@ -1,4 +1,4 @@
-package nuclearbot.utils;
+package nuclearbot.util;
 
 import java.nio.file.Paths;
 
@@ -71,6 +71,7 @@ public class OSUtils {
 	/**
 	 * Returns a statically defined absolute path string of the working directory.
 	 * More specifically, of the working directory <em>when the OSUtils class was initialized</em>.
+	 * @return the working directory path
 	 */
 	public static String workingDir()
 	{

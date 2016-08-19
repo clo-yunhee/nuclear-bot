@@ -79,22 +79,22 @@ public class VerticalLayout implements LayoutManager {
 	
 	/**
 	 * Constructs an instance of VerticalLayout with a vertical gap of 5px,
-	 * horizontal centering and anchored to the top of the display area.
+	 * horizontal stretching and anchored to the top of the display area.
 	 */
 	public VerticalLayout()
 	{
-		this(5, CENTER, TOP);
+		this(5, BOTH, TOP);
 	}
 
 	/**
-	 * Constructs a VerticalLayout instance with horizontal centering,
+	 * Constructs a VerticalLayout instance with horizontal stretching,
 	 * anchored to the top with the specified vertical gap.
 	 *
 	 * @param vgap the vertical gap between components
 	 */
 	public VerticalLayout(final int vgap)
 	{
-		this(vgap, CENTER, TOP);
+		this(vgap, BOTH, TOP);
 	}
 
 	/**

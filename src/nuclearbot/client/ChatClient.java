@@ -42,9 +42,10 @@ public interface ChatClient {
 	 * @param label the command name
 	 * @param usage the command usage
 	 * @param executor the command executor
+	 * @return the newly-created command
 	 * @throws IllegalArgumentException if the command was already registered
 	 */
-	public void registerCommand(String label, String usage, CommandExecutor executor);
+	public Command registerCommand(String label, String usage, CommandExecutor executor);
 	
 	/**
 	 * Unregisters a command.
@@ -75,9 +76,8 @@ public interface ChatClient {
 	/**
 	 * Sends a chat message to the Twitch channel.
 	 * @param message the message to send
-	 * @throws IOException if the writer throws an IOException
 	 */
-	public void sendMessage(String msg) throws IOException;
+	public void sendMessage(String message);
 	
 	/**
 	 * Initiates the connection with the Twitch chat.

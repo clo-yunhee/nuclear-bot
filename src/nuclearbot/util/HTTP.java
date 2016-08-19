@@ -1,4 +1,4 @@
-package nuclearbot.utils;
+package nuclearbot.util;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -37,13 +37,14 @@ public class HTTP {
 	/**
 	 * Fetches data from the specified URL with given parameters.
 	 * The output is treated as JSON, parsed as the given class.
-	 * The parameters must be in a URL format. (a=x&b=y...)
+	 * The parameters must be in a URL format. (a=x&amp;b=y...)
 	 * @param targetUrl the URL target
 	 * @param urlParameters the request parameters
-	 * @param class the class of the returned object
+	 * @param classOfT the class of the returned object
+	 * @param <T> the type of the returned object
 	 * @return the parsed output
 	 */
-	public static <T> T fetchData(final String targetUrl, final String urlParameters, final Class<T> clazz)
+	public static <T> T fetchData(final String targetUrl, final String urlParameters, final Class<T> classOfT)
 	{
 		HttpURLConnection connection = null;
 		try
@@ -67,7 +68,7 @@ public class HTTP {
 			// now the response
 			final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
-			return new Gson().fromJson(reader, clazz);
+			return new Gson().fromJson(reader, classOfT);
 		}
 		catch (Exception e)
 		{
