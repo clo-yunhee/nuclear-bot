@@ -23,6 +23,20 @@ import nuclearbot.client.ChatClient;
 
 /**
  * Public API interface for a plugin.<br>
+ * To write an external plugin, you must implement this interface
+ * and include it in a JAR file.<br>
+ * For the plugin loader to actually recognize the file as a plugin,
+ * you need to create a "plugin.properties" at the root of the archive.<br>
+ * The only required key is 'main', whose value must be the qualified name
+ * of the class that implements the Plugin interface.<br>
+ * You can also provide optional entries. As of August 19, 2016 there are
+ * two optional entries supported:
+ * <ul>
+ * <li>name</li>
+ * <li>version</li>
+ * </ul><br>
+ * The name is used instead of the class name in the GUI.<br>
+ * The version field is not yet used by any thing.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)

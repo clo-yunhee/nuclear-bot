@@ -42,7 +42,7 @@ public class ClasspathPlugin extends ImplJavaPlugin {
 	@Override
 	public String getVersion()
 	{
-		return null;
+		return "builtin";
 	}
 
 }

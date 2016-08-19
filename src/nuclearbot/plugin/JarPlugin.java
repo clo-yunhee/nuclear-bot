@@ -33,8 +33,8 @@ public class JarPlugin extends ImplJavaPlugin {
 	public JarPlugin(final Plugin plugin, final Properties properties)
 	{
 		super(plugin, false);
-		m_name = properties.getProperty("name");
-		m_version = properties.getProperty("version");
+		m_name = properties.getProperty("name", getClassName());
+		m_version = properties.getProperty("version", "external");
 	}
 
 	@Override
