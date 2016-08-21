@@ -117,7 +117,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	private final JFrame m_container;
 	private final JTabbedPane m_body;
 	
-	private final JLabel m_statusRunningLabel;
+	private final JLabel m_runningStatusLabel;
 	private final JButton m_startButton;
 	private final JButton m_stopButton;
 	private final JButton m_restartButton;
@@ -126,9 +126,9 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	private final JLabel m_loadedPluginLabel;
 	private final JTextField m_externalPluginPathField;
 	private final JButton m_externalPluginBrowseButton;
-	private final JButton m_externalPluginLoadButton;
+	private final JButton m_loadExternalPluginButton;
 	private final JComboBox<String> m_builtinPluginsCombo;
-	private final JButton m_builtinPluginLoadButton;
+	private final JButton m_loadBuiltinPluginButton;
 	
 	private final JComboBox<String> m_commandsRegisteredCombo;
 	private final JLabel m_commandUsageLabel;
@@ -236,12 +236,12 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			
 			final JPanel controlButtonsPanel = new JPanel();
 			{
-				m_statusRunningLabel = new JLabel("Not running");
+				m_runningStatusLabel = new JLabel("Not running");
 				m_startButton = new JButton("Start");
 				m_stopButton = new JButton("Stop");
 				m_restartButton = new JButton("Restart");
 				
-				m_statusRunningLabel.setFont(m_statusRunningLabel.getFont().deriveFont(Font.ITALIC));
+				m_runningStatusLabel.setFont(m_runningStatusLabel.getFont().deriveFont(Font.ITALIC));
 				m_startButton.addActionListener(this);
 				m_stopButton.addActionListener(this);
 				m_stopButton.setEnabled(false);
@@ -249,7 +249,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				m_restartButton.setEnabled(false);
 				
 				controlButtonsPanel.setLayout(new FlowLayout());
-				controlButtonsPanel.add(m_statusRunningLabel);
+				controlButtonsPanel.add(m_runningStatusLabel);
 				controlButtonsPanel.add(m_startButton);
 				controlButtonsPanel.add(m_stopButton);
 				controlButtonsPanel.add(m_restartButton);
@@ -281,41 +281,41 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				{
 					m_externalPluginPathField = new JTextField(16);
 					m_externalPluginBrowseButton = new JButton("Browse...");
-					m_externalPluginLoadButton = new JButton("Load");
+					m_loadExternalPluginButton = new JButton("Load");
 					
 					m_externalPluginPathField.setComponentPopupMenu(m_textComponentPopupMenu);
 					m_externalPluginPathField.addActionListener(this);
 					m_externalPluginBrowseButton.addActionListener(this);
-					m_externalPluginLoadButton.addActionListener(this);
+					m_loadExternalPluginButton.addActionListener(this);
 					
 					loadExternalPluginPanel.setBorder(BorderFactory.createTitledBorder("Load an external plugin"));
 					loadExternalPluginPanel.setLayout(new FlowLayout());
 					loadExternalPluginPanel.add(m_externalPluginPathField);
 					loadExternalPluginPanel.add(m_externalPluginBrowseButton);
-					loadExternalPluginPanel.add(m_externalPluginLoadButton);
+					loadExternalPluginPanel.add(m_loadExternalPluginButton);
 				} // loadExternalPluginPanel
 				
 				final JPanel loadBuiltinPluginPanel = new JPanel();
 				{
 					m_builtinPluginsCombo = new JComboBox<String>(m_pluginLoader.getBuiltinPlugins());
-					m_builtinPluginLoadButton = new JButton("Load");
+					m_loadBuiltinPluginButton = new JButton("Load");
 					
 					m_builtinPluginsCombo.setEditable(false);
 					m_builtinPluginsCombo.setSelectedItem(DummyPlugin.class.getName());
 					m_builtinPluginsCombo.setFont(m_builtinPluginsCombo.getFont().deriveFont(Font.PLAIN));
-					m_builtinPluginLoadButton.addActionListener(this);
+					m_loadBuiltinPluginButton.addActionListener(this);
 					
 					loadBuiltinPluginPanel.setBorder(BorderFactory.createTitledBorder("Load a built-in plugin"));
 					loadBuiltinPluginPanel.setLayout(new FlowLayout());
 					loadBuiltinPluginPanel.add(m_builtinPluginsCombo);
-					loadBuiltinPluginPanel.add(m_builtinPluginLoadButton);
+					loadBuiltinPluginPanel.add(m_loadBuiltinPluginButton);
 				} // loadBuiltinPluginPanel
 				
 				pluginPanel.setLayout(new VerticalLayout());
 				pluginPanel.add(loadedPluginPanel);
 				pluginPanel.add(loadExternalPluginPanel);
 				pluginPanel.add(loadBuiltinPluginPanel);
-			} // pluginsPanel
+			} // pluginPanel
 			
 			tabPlugins.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			tabPlugins.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -501,7 +501,6 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				} // configButtonsPanel
 				
 				configPanel.setLayout(new VerticalLayout());
-				configPanel.add((Component) null);
 				configPanel.add(configListPanel);
 				configPanel.add(configButtonsPanel);
 			} // configPanel
@@ -693,11 +692,11 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		{
 			choosePluginFile();
 		}
-		else if (source == m_externalPluginLoadButton)
+		else if (source == m_loadExternalPluginButton)
 		{
 			loadPluginExternal();
 		}
-		else if (source == m_builtinPluginLoadButton)
+		else if (source == m_loadBuiltinPluginButton)
 		{
 			loadPluginBuiltin();
 		}
@@ -904,7 +903,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	{
 		m_isClientRunning = true;
 		
-		m_statusRunningLabel.setText("Running");
+		m_runningStatusLabel.setText("Running");
 		m_startButton.setEnabled(false);
 		m_stopButton.setEnabled(true);
 		m_restartButton.setEnabled(true);
@@ -949,7 +948,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	
 	private void clientStopped()
 	{
-		m_statusRunningLabel.setText("Not running");
+		m_runningStatusLabel.setText("Not running");
 		m_startButton.setEnabled(true);
 		m_stopButton.setEnabled(false);
 		m_restartButton.setEnabled(false);
