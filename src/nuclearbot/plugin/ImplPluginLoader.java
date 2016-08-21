@@ -133,7 +133,7 @@ public class ImplPluginLoader implements PluginLoader {
 		}
 		catch (IOException e)
 		{
-			Logger.error("(ploader) Error while searching for built-in plugins:");
+			Logger.error("(ploader) Exception while searching for built-in plugins:");
 			Logger.printStackTrace(e);
 		}
 		
@@ -259,7 +259,7 @@ public class ImplPluginLoader implements PluginLoader {
 		}
 		catch (ClassNotFoundException e)
 		{
-			Logger.error("(ploader) Class " + className + " is not loaded.");
+			Logger.error("(ploader) Class " + className + " was not found:");
 			Logger.printStackTrace(e);
 		}
 		return plugin;
@@ -324,19 +324,19 @@ public class ImplPluginLoader implements PluginLoader {
 				}
 				else
 				{
-					Logger.error("(ploader) There is no \"main\" property in the plugin.properties file.");
+					Logger.error("(ploader) There is no \"main\" entry in the plugin.properties file.");
 					success = false;
 				}
 			}
 			else
 			{
-				Logger.error("(ploader) Jar file \"" + file.getAbsolutePath() + "\" didn't contain a plugininfo file.");
+				Logger.error("(ploader) Jar file \"" + file.getAbsolutePath() + "\" didn't contain a plugin.properties file.");
 				success = false;
 			}
 		}
 		catch (IOException e)
 		{
-			Logger.error("(ploader) I/O exception while reading plugininfo file in jar file \"" + file.getAbsolutePath() + "\":");
+			Logger.error("(ploader) I/O exception while reading plugin.properties in jar file \"" + file.getAbsolutePath() + "\":");
 			Logger.printStackTrace(e);
 			success = false;
 		}

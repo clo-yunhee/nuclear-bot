@@ -150,7 +150,7 @@ public class OsuPlugin implements Plugin {
 		Logger.info("(osu!) Connecting...");
 		
 		// open connection and I/O objects
-		Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new OsuClientShutdownHook()));
+		Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ShutdownHookRunnable()));
 		m_socket = new Socket(SERVER, PORT);
 		m_reader = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
 		m_chatOut = new ImplChatOut(m_socket.getOutputStream(), "osu");
@@ -256,7 +256,7 @@ public class OsuPlugin implements Plugin {
 		
 	}
 	
-	private class OsuClientShutdownHook implements Runnable {
+	private class ShutdownHookRunnable implements Runnable {
 		
 		@Override
 		public void run()

@@ -4,9 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -82,7 +82,8 @@ public class ImplChatClient implements ChatClient {
 		m_usernameLength = m_username.length();
 		m_channel = '#' + m_username;
 		m_plugin = plugin;
-		m_clientListeners = new LinkedList<ClientListener>();
+		m_clientListeners = new ArrayList<ClientListener>();
+		// arraylist instead of linkedlist, takes less memory
 		m_commands = new HashMap<String, Command>();
 		m_systemCallExecutor = new CommandSystemCalls();
 		m_socket = null;
@@ -241,7 +242,7 @@ public class ImplChatClient implements ChatClient {
 		{
 			Logger.info("(Twitch) Connecting...");
 
-			Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ChatClientShutdownHook()));
+			Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ShutdownHookRunnable()));
 			// open connection and I/O objects
 			m_socket = new Socket(SERVER, PORT);
 			m_reader = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
@@ -456,7 +457,7 @@ public class ImplChatClient implements ChatClient {
 		
 	}
 	
-	private class ChatClientShutdownHook implements Runnable {
+	private class ShutdownHookRunnable implements Runnable {
 		
 		@Override
 		public void run()

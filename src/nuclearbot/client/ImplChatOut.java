@@ -39,6 +39,8 @@ public class ImplChatOut implements ChatOut {
 	private final BufferedWriter m_out;
 	private final BlockingQueue<String> m_queue;
 
+	private final String m_name;
+	
 	private Thread m_thread;
 	
 	private volatile boolean m_running;
@@ -47,6 +49,7 @@ public class ImplChatOut implements ChatOut {
 	{
 		m_out = new BufferedWriter(new OutputStreamWriter(stream));
 		m_queue = new ArrayBlockingQueue<String>(QUEUE_SIZE, true);
+		m_name = name;
 		m_thread = null;
 		m_running = false;
 		start(name);
@@ -61,7 +64,7 @@ public class ImplChatOut implements ChatOut {
 		}
 		catch (IllegalStateException e)
 		{
-			Logger.error("Output queue is full:");
+			Logger.error("Output queue for " + m_name + " is full:");
 			Logger.printStackTrace(e);
 		}
 	}

@@ -1,6 +1,7 @@
 package nuclearbot.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.FileDialog;
@@ -9,6 +10,8 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -18,14 +21,15 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -33,7 +37,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -45,16 +48,13 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.sun.glass.events.KeyEvent;
+import com.google.gson.reflect.TypeToken;
 
 import nuclearbot.builtin.DummyPlugin;
 import nuclearbot.client.ChatClient;
@@ -93,13 +93,23 @@ import nuclearbot.util.OSUtils;
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public class ControlPanel extends JPanel implements ActionListener, ItemListener, ClientListener {
+@SuppressWarnings("unused")
+public class ControlPanel extends JPanel implements ActionListener, ItemListener, FocusListener, ClientListener {
 	
 	private static final long serialVersionUID = 606418561134403181L;
 
 	private static final String GITHUB_URL = "https://github.com/NuclearCoder/nuclear-bot/";
 	
+	private static final int TAB_STATUS = 0;
+	private static final int TAB_PLUGIN = 1;
+	private static final int TAB_COMMANDS = 2;
+	private static final int TAB_CHAT = 3;
+	private static final int TAB_CONFIG = 4;
+	private static final int TAB_CONSOLE = 5;
+	
 	// GUI components
+	
+	private final DialogUtil m_dialogs;
 	
 	private final JPopupMenu m_textComponentPopupMenu;
 	private final FileDialog m_pluginFileDialog;
@@ -121,15 +131,15 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	private final JButton m_builtinPluginLoadButton;
 	
 	private final JComboBox<String> m_commandsRegisteredCombo;
-	private final JLabel m_commandNameLabel;
 	private final JLabel m_commandUsageLabel;
 	private final JLabel m_commandDescriptionLabel;
-	private final JTextField m_commandNameField;
+	private final JComboBox<String> m_userCommandsCombo;
 	private final JTextField m_commandUsageField;
 	private final JTextField m_commandDescriptionField;
 	private final JTextField m_commandResponseField;
 	private final JCheckBox m_commandPersistentCheck;
 	private final JButton m_commandCreateButton;
+	private final JButton m_commandRemoveButton;
 	private final JButton m_commandCreationHelpButton;
 	
 	private final LimitedStringList m_chatHistoryList;
@@ -149,16 +159,18 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	private ClientThread m_clientThread;
 	private ChatClient m_client;
 	
-	private final Set<List<String>> m_userCommands;
+	private final Map<String, List<String>> m_userCommands;
 
 	// constructor
 	public ControlPanel()
 	{
 		final Document consoleDocument = new PlainDocument();
-		{
+		{ // do that first in order to log the most we can
 			Logger.info("(GUI) Linking GUI console to system console...");
 			DocumentOutputStream.redirectSystemOut(consoleDocument);
 		}
+		
+		// client variables init
 		
 		m_pluginLoader = new ImplPluginLoader();
 		
@@ -168,29 +180,40 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		m_clientThread = null;
 		m_client = null;
 		
-		m_userCommands = new HashSet<List<String>>();
+		m_userCommands = new HashMap<String, List<String>>();
 		
-		Logger.info("(GUI) Constructing window...");		
+		// gui variables init
+		
+		Logger.info("(GUI) Constructing window...");
 
 		m_container = new JFrame("NuclearBot - Control Panel");
 		m_container.setLocationByPlatform(true);
 		m_container.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		m_container.addWindowListener(new NotifiedClosingListener());
+		m_container.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(final WindowEvent event)
+			{
+				frameClosing();
+			}
+		});
+
+		m_dialogs = new DialogUtil(m_container);
 
 		m_pluginFileDialog = new FileDialog(m_container, "Choose a file", FileDialog.LOAD);
 		m_pluginFileDialog.setLocationRelativeTo(m_container);
 		m_pluginFileDialog.setDirectory(OSUtils.workingDir());
 		m_pluginFileDialog.setFile("*.jar");
-		m_pluginFileDialog.setFilenameFilter(new PluginFilenameFilter());
+		m_pluginFileDialog.setFilenameFilter(new FilenameFilter() {
+			@Override
+			public boolean accept(final File dir, final String name)
+			{
+				return name.endsWith(".jar");
+			}
+		});
 		
 		m_textComponentPopupMenu = new JPopupMenu();
 		{
-			final JMenuItem copyMenuItem = new JMenuItem("Copy");
-			
-			copyMenuItem.setAction(TransferHandler.getCopyAction());
-			copyMenuItem.setMnemonic(KeyEvent.VK_C);
-			
-			m_textComponentPopupMenu.add(copyMenuItem);
+			m_textComponentPopupMenu.add(TransferHandler.getCopyAction());
 		}
 		
 		m_body = new JTabbedPane();
@@ -239,7 +262,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		
 		final JScrollPane tabPlugins = new JScrollPane();
 		{
-			final JPanel pluginsPanel = new JPanel();
+			final JPanel pluginPanel = new JPanel();
 			{
 				final JPanel loadedPluginPanel = new JPanel();
 				{
@@ -288,79 +311,62 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 					loadBuiltinPluginPanel.add(m_builtinPluginLoadButton);
 				} // loadBuiltinPluginPanel
 				
-				pluginsPanel.setLayout(new VerticalLayout());
-				pluginsPanel.add(loadedPluginPanel);
-				pluginsPanel.add(loadExternalPluginPanel);
-				pluginsPanel.add(loadBuiltinPluginPanel);
+				pluginPanel.setLayout(new VerticalLayout());
+				pluginPanel.add(loadedPluginPanel);
+				pluginPanel.add(loadExternalPluginPanel);
+				pluginPanel.add(loadBuiltinPluginPanel);
 			} // pluginsPanel
 			
 			tabPlugins.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			tabPlugins.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			tabPlugins.setViewportView(pluginsPanel);
+			tabPlugins.setViewportView(pluginPanel);
 		} // tabPlugins
 		
 		final JPanel tabCommands = new JPanel();
 		{
 			final JPanel commandOverviewPanel = new JPanel();
 			{
-				final JPanel commandsListPanel = new JPanel();
+				final JPanel commandNamePanel = new JPanel();
 				{
-					final JLabel commandsListPrefixLabel = new JLabel("Overview: "); 
+					final JLabel commandNamePrefixLabel = new JLabel("<html><u>Name:</u></html>");
 					m_commandsRegisteredCombo = new JComboBox<String>();
 					
-					((JLabel) m_commandsRegisteredCombo.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
 					m_commandsRegisteredCombo.setEditable(false);
 					m_commandsRegisteredCombo.addItemListener(this);
 					
-					commandsListPanel.setLayout(new FlowLayout());
-					commandsListPanel.add(commandsListPrefixLabel);
-					commandsListPanel.add(m_commandsRegisteredCombo);
-				} // commandsListPanel
+					commandNamePanel.setLayout(new FlowLayout());
+					commandNamePanel.add(commandNamePrefixLabel);
+					commandNamePanel.add(m_commandsRegisteredCombo);
+				} // commandNamePanel
 				
-				final JPanel commandInfoPanel = new JPanel();
+				final JPanel commandUsagePanel = new JPanel();
 				{
-					final JPanel commandNamePanel = new JPanel();
-					{
-						final JLabel commandNamePrefixLabel = new JLabel("<html><u>Name:</u></html>");
-						m_commandNameLabel = new JLabel("(no such command)");
-						
-						commandNamePanel.setLayout(new FlowLayout());
-						commandNamePanel.add(commandNamePrefixLabel);
-						commandNamePanel.add(m_commandNameLabel);
-					} // commandNamePanel
+					final JLabel commandUsagePrefixLabel = new JLabel("<html><u>Usage:</u></html>");
+					m_commandUsageLabel = new JLabel("(no such command)");
 					
-					final JPanel commandUsagePanel = new JPanel();
-					{
-						final JLabel commandUsagePrefixLabel = new JLabel("<html><u>Usage:</u></html>");
-						m_commandUsageLabel = new JLabel("(no such command)");
-						
-						commandUsagePrefixLabel.setToolTipText("Angle brackets for required arguments\nSquare brackets for optional arguments");
-						
-						commandUsagePanel.setLayout(new FlowLayout());
-						commandUsagePanel.add(commandUsagePrefixLabel);
-						commandUsagePanel.add(m_commandUsageLabel);
-					} // commandUsagePanel
+					commandUsagePrefixLabel.setToolTipText("Angle brackets for required arguments\nSquare brackets for optional arguments");
+					m_commandUsageLabel.setToolTipText("Angle brackets for required arguments\nSquare brackets for optional arguments");
 					
-					final JPanel commandDescriptionPanel = new JPanel();
-					{
-						final JLabel commandDescriptionPrefixLabel = new JLabel("<html><u>Description:</u></html>");
-						m_commandDescriptionLabel = new JLabel("(no such command)");
-						
-						commandDescriptionPanel.setLayout(new FlowLayout());
-						commandDescriptionPanel.add(commandDescriptionPrefixLabel);
-						commandDescriptionPanel.add(m_commandDescriptionLabel);
-					} // commandDescriptionPanel
-					
-					commandInfoPanel.setLayout(new VerticalLayout());
-					commandInfoPanel.add(commandNamePanel);
-					commandInfoPanel.add(commandUsagePanel);
-					commandInfoPanel.add(commandDescriptionPanel);
-				} // commandInfoPanel
+					commandUsagePanel.setLayout(new FlowLayout());
+					commandUsagePanel.add(commandUsagePrefixLabel);
+					commandUsagePanel.add(m_commandUsageLabel);
+				} // commandUsagePanel
 				
-				commandOverviewPanel.setBorder(BorderFactory.createTitledBorder("Command overview"));
-				commandOverviewPanel.setLayout(new BorderLayout());
-				commandOverviewPanel.add(commandsListPanel, BorderLayout.NORTH);
-				commandOverviewPanel.add(commandInfoPanel, BorderLayout.CENTER);
+				final JPanel commandDescriptionPanel = new JPanel();
+				{
+					final JLabel commandDescriptionPrefixLabel = new JLabel("<html><u>Description:</u></html>");
+					m_commandDescriptionLabel = new JLabel("(no such command)");
+					
+					commandDescriptionPanel.setLayout(new FlowLayout());
+					commandDescriptionPanel.add(commandDescriptionPrefixLabel);
+					commandDescriptionPanel.add(m_commandDescriptionLabel);
+				} // commandDescriptionPanel
+				
+				commandOverviewPanel.setBorder(BorderFactory.createTitledBorder("Overview"));
+				commandOverviewPanel.setLayout(new VerticalLayout());
+				commandOverviewPanel.add(commandNamePanel);
+				commandOverviewPanel.add(commandUsagePanel);
+				commandOverviewPanel.add(commandDescriptionPanel);
 			}
 			
 			final JPanel commandCreationPanel = new JPanel();
@@ -368,21 +374,21 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				final JPanel commandNamePanel = new JPanel();
 				{
 					final JLabel commandNamePrefixLabel = new JLabel("<html><u>Name:</u></html>");
-					m_commandNameField = new JTextField(8);
-					
-					((PlainDocument) m_commandNameField.getDocument()).setDocumentFilter(new AlnumDocumentFilter());
+					m_userCommandsCombo = new JComboBox<String>();
+
+					m_userCommandsCombo.setEditable(true);
+					m_userCommandsCombo.addFocusListener(this);
+					m_userCommandsCombo.addActionListener(this);
 					
 					commandNamePanel.setLayout(new FlowLayout());
 					commandNamePanel.add(commandNamePrefixLabel);
-					commandNamePanel.add(m_commandNameField);
+					commandNamePanel.add(m_userCommandsCombo);
 				} // commandNamePanel
 				
 				final JPanel commandUsagePanel = new JPanel();
 				{
 					final JLabel commandUsagePrefixLabel = new JLabel("<html><u>Usage:</u></html>");
-					m_commandUsageField = new JTextField(16);
-					
-					commandUsagePrefixLabel.setToolTipText("Angle brackets for required arguments");
+					m_commandUsageField = new JTextField(12);
 					
 					commandUsagePanel.setLayout(new FlowLayout());
 					commandUsagePanel.add(commandUsagePrefixLabel);
@@ -412,20 +418,24 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				final JPanel commandSubmitPanel = new JPanel();
 				{
 					m_commandPersistentCheck = new JCheckBox("Persistent?", true);
-					m_commandCreateButton = new JButton("Create");
+					m_commandCreateButton = new JButton("Create/Update");
+					m_commandRemoveButton = new JButton("Remove");
 					m_commandCreationHelpButton = new JButton("Help...");
 					
 					m_commandCreateButton.setEnabled(false);
 					m_commandCreateButton.addActionListener(this);
+					m_commandRemoveButton.setEnabled(false);
+					m_commandRemoveButton.addActionListener(this);
 					m_commandCreationHelpButton.addActionListener(this);
 					
 					commandSubmitPanel.setLayout(new FlowLayout());
 					commandSubmitPanel.add(m_commandPersistentCheck);
 					commandSubmitPanel.add(m_commandCreateButton);
+					commandSubmitPanel.add(m_commandRemoveButton);
 					commandSubmitPanel.add(m_commandCreationHelpButton);
 				} // commandSubmitPanel
 
-				commandCreationPanel.setBorder(BorderFactory.createTitledBorder("Command creation"));
+				commandCreationPanel.setBorder(BorderFactory.createTitledBorder("Create/Update"));
 				commandCreationPanel.setLayout(new VerticalLayout());
 				commandCreationPanel.add(commandNamePanel);
 				commandCreationPanel.add(commandUsagePanel);
@@ -446,7 +456,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			final JPanel sendMessagePanel = new JPanel();
 			{
 				m_chatMessageField = new JTextField();
-				m_sendMessageButton = new JButton("Say");
+				m_sendMessageButton = new JButton("Send");
 				
 				m_chatMessageField.setFont(m_chatMessageField.getFont().deriveFont(Font.PLAIN));
 				m_chatMessageField.addActionListener(this);
@@ -476,6 +486,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			{
 				final JPanel configListPanel = new JPanel();
 				{
+					// TODO: config here
 					
 				} // configListPanel
 				
@@ -490,6 +501,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				} // configButtonsPanel
 				
 				configPanel.setLayout(new VerticalLayout());
+				configPanel.add((Component) null);
 				configPanel.add(configListPanel);
 				configPanel.add(configButtonsPanel);
 			} // configPanel
@@ -550,27 +562,111 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		m_container.pack();
 		
 		pluginChanged(m_pluginLoader.getPlugin());
-		loadUserCommands();
+		reloadUserCommands(true);
 	}
 	
 	public void open()
 	{
 		m_container.setVisible(true);
+		m_dialogs.setQueueDialogs(false);
 	}
 	
-	private void showInfoDialog(final String message, final String title)
+	private void createUserCommand(final String name, final String usage, final String description, final String response, final boolean persistent, final boolean silent)
 	{
-		JOptionPane.showMessageDialog(m_container, message, title, JOptionPane.INFORMATION_MESSAGE);
+		if (m_userCommands.containsKey(name))
+		{
+			Logger.info("(GUI) Updating command \"" + name + "\"...");
+			if (m_isClientRunning)
+			{
+				m_client.unregisterCommand(name);
+			}
+			m_userCommands.remove(name);
+			m_userCommandsCombo.removeItem(name);
+		}
+		else
+		{
+			Logger.info("(GUI) Creating command \"" + name + "\"...");
+		}
+		if (m_isClientRunning)
+		{
+			if (m_client.getCommand(name) != null)
+			{
+				final String realUsage = '!' + name + ' ' + usage;
+				final UserCommand executor = new UserCommand(response);
+				m_client.registerCommand(name, realUsage, executor).setDescription(description);
+			}
+			else
+			{
+				Logger.warning("(GUI) Command \"" + name + "\" already exists.");
+				if (!silent)
+				{
+					m_dialogs.warning("Command \"" + name + "\" already exists.", "Command already registered");
+				}
+			}
+		}
+		
+		m_userCommandsCombo.addItem(name);
+		
+		Logger.info("(GUI) Command \"" + name + "\" successfully created.");
+		if (!silent)
+		{
+			m_dialogs.info("Command \"" + name + "\" succesfully created.", "Command created");
+		}
+		
+		if (persistent)
+		{
+			final List<String> commandData = new ArrayList<String>(3);
+			commandData.add(usage);
+			commandData.add(description);
+			commandData.add(response);
+			m_userCommands.put(name, commandData);
+			
+			Config.set("user_commands", new Gson().toJson(m_userCommands, Map.class));
+			
+			try
+			{
+				Config.saveConfig();
+			}
+			catch (IOException e)
+			{
+				Logger.error("(GUI) Couldn't save persistent user command:");
+				Logger.printStackTrace(e);
+				if (!silent)
+				{
+					m_dialogs.error("Couldn't save persistent user command. Check console for details.", "Couldn't save config");
+				}
+			}
+		}
 	}
-	
-	private void showWarningDialog(final String message, final String title)
+
+	private void reloadUserCommands(final boolean silent)
 	{
-		JOptionPane.showMessageDialog(m_container, message, title, JOptionPane.WARNING_MESSAGE);
-	}
-	
-	private void showErrorDialog(final String message, final String title)
-	{
-		JOptionPane.showMessageDialog(m_container, message, title, JOptionPane.ERROR_MESSAGE);
+		m_userCommands.clear();
+		try
+		{
+			final Type type = new TypeToken<Map<String, List<String>>>() {}.getType();
+			final Map<String, List<String>> map = new Gson().fromJson(Config.get("user_commands"), type);
+			for (final Map.Entry<String, List<String>> entry : map.entrySet())
+			{
+				final String name = entry.getKey();
+				final List<String> commandData = entry.getValue();
+				final String usage = commandData.get(0).trim();
+				final String description = commandData.get(1).trim();
+				final String response = commandData.get(2).trim();
+				
+				createUserCommand(name, usage, description, response, false, silent);
+			}
+			if (!silent)
+			{
+				m_dialogs.info("User commands successfully reloaded!", "User commands reloaded");
+			}
+		}
+		catch (JsonSyntaxException e)
+		{
+			Logger.error("(GUI) JSON syntax error while loading user commands:");
+			Logger.printStackTrace(e);
+			m_dialogs.error("JSON syntax error in the user commands configuration. Check console for details.", "JSON syntax error");
+		}
 	}
 	
 	/* **** awt/swing listener methods **** */
@@ -605,9 +701,17 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		{
 			loadPluginBuiltin();
 		}
+		else if (source == m_userCommandsCombo)
+		{
+			updateUserCommandInfo();
+		}
 		else if (source == m_commandCreateButton)
 		{
-			createTextCommand();
+			createUserCommand();
+		}
+		else if (source == m_commandRemoveButton)
+		{
+			removeUserCommand();
 		}
 		else if (source == m_commandCreationHelpButton)
 		{
@@ -633,23 +737,22 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		}
 	}
 	
-	/* **** events **** */
-	
-	@SuppressWarnings("unchecked")
-	private void loadUserCommands()
+	@Override
+	public void focusGained(FocusEvent event)
 	{
-		m_userCommands.clear();
-		try
+	}
+
+	@Override
+	public void focusLost(FocusEvent event)
+	{
+		Object source = event.getSource();
+		if (source == m_userCommandsCombo)
 		{
-			m_userCommands.addAll(new Gson().fromJson(Config.get("user_commands"), Set.class));
-		}
-		catch (JsonSyntaxException e)
-		{
-			Logger.error("(GUI) JSON syntax error while loading user commands:");
-			Logger.printStackTrace(e);
-			showErrorDialog("JSON syntax error in the user commands configuration. Check console for details.", "User commands JSON syntax error");
+			updateUserCommandInfo();
 		}
 	}
+	
+	/* **** events **** */
 	
 	private void startClient()
 	{
@@ -697,7 +800,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		else
 		{
 			Logger.error("(GUI) Provided path \"" + file.getAbsolutePath() + "\" that wasn't a file.");
-			showErrorDialog("This is not a file!", "Not a file");
+			m_dialogs.error("This is not a file!", "Not a file");
 		}
 	}
 	
@@ -711,63 +814,48 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	{
 		final String label = (String) m_commandsRegisteredCombo.getSelectedItem();
 		final Command command = m_client.getCommand(label);
-		m_commandNameLabel.setText(command != null ? label : "(no such command)");
 		m_commandUsageLabel.setText(command != null ? command.getUsage() : "(no such command)");
 		m_commandDescriptionLabel.setText(command != null ? command.getDescription() : "(no such command)");
 	}
 	
-	private void createTextCommand()
+	private void updateUserCommandInfo()
 	{
-		final String name = m_commandNameField.getText();
-		if (m_client.getCommand(name) == null)
+		final String label = (String) m_userCommandsCombo.getSelectedItem();
+		final List<String> commandData = m_userCommands.get(label);
+		m_commandUsageField.setText(commandData != null ? commandData.get(0) : "");
+		m_commandDescriptionField.setText(commandData != null ? commandData.get(1) : "");
+		m_commandResponseField.setText(commandData != null ? commandData.get(2) : "");
+	}
+	
+	private void removeUserCommand()
+	{
+		final String name = ((String) m_userCommandsCombo.getSelectedItem()).trim().toLowerCase();
+		if (m_userCommands.containsKey(name))
 		{
-			final String usage = '!' + name + ' ' + m_commandUsageField.getText().trim();
-			final String description = m_commandDescriptionField.getText().trim();
-			final String response = m_commandResponseField.getText();
-			final UserCommand executor = new UserCommand(response);
-			
-			m_client.registerCommand(name, usage, executor).setDescription(description);
-			
-			showInfoDialog("Command \"" + name + "\" succesfully created.", "Command created");
-			
-			if (m_commandPersistentCheck.isSelected())
-			{
-				final List<String> commandData = new ArrayList<String>(4);
-				commandData.add(name);
-				commandData.add(usage);
-				commandData.add(description);
-				commandData.add(response);
-				m_userCommands.add(commandData);
-				
-				Config.set("user_commands", new Gson().toJson(m_userCommands, Set.class));
-				
-				try
-				{
-					Config.saveConfig();
-				}
-				catch (IOException e)
-				{
-					Logger.error("(GUI) Couldn't save persistent user command:");
-					Logger.printStackTrace(e);
-					showErrorDialog("Couldn't save persistent user command.", "Couldn't save config");
-				}
-			}
-			
-			m_commandNameField.setText("");
-			m_commandUsageField.setText("");
-			m_commandDescriptionField.setText("");
-			m_commandResponseField.setText("");
-			m_commandPersistentCheck.setSelected(true);
+			m_client.unregisterCommand(name);
+			m_userCommands.remove(name);
+			m_userCommandsCombo.removeItem(name);
 		}
 		else
 		{
-			showErrorDialog("The command \"" + name + "\" already exists.", "Command already registered");
+			m_dialogs.warning("Command \"" + name + "\" is not an user command.", "Not an user command");
 		}
+	}
+	
+	private void createUserCommand()
+	{
+		final String name = ((String) m_userCommandsCombo.getSelectedItem()).trim().toLowerCase();
+		final String usage = m_commandUsageField.getText().trim();
+		final String description = m_commandDescriptionField.getText().trim();
+		final String response = m_commandResponseField.getText().trim();
+		final boolean persistent = m_commandPersistentCheck.isSelected();
+		
+		createUserCommand(name, usage, description, response, persistent, false);
 	}
 	
 	private void openCommandCreationHelp()
 	{
-		showInfoDialog("The convention for usage format is the following:\n"
+		m_dialogs.info("The convention for usage format is the following:\n"
 				+ "- angle brackets for required arguments;\n"
 				+ "- square brackets for optional arguments;\n"
 				+ "but the GUI creator doesn't support optional arguments yet.\n"
@@ -776,7 +864,8 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				+ "The zero-th argument is the sender's username.\n"
 				+ "For instance, to create a hug command, put \"<target>\" in usage and \"$0 hugs $1.\" in response.\n\n"
 				+ "By default the commands are created persistent, which means they will be created again on start.\n"
-				+ "Non-persistent commands are lost once the bot stops or restarts.", "Command creation help");
+				+ "Non-persistent commands are lost once the bot stops or restarts.\n"
+				+ "The GUI will however remember non-persistent commands' data until it is closed.", "Command creation help");
 	}
 	
 	private void sendChatMessage()
@@ -797,14 +886,16 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		try
 		{
 			Config.reloadConfig();
+			reloadUserCommands(false);
+			m_dialogs.info("Config was reloaded successfully.", "Config reloaded");
 		}
 		catch (IOException e)
 		{
-			Logger.error("(GUI) Error while reloading config:");
+			Logger.error("(GUI) Exception while reloading config:");
 			Logger.printStackTrace(e);
-			showErrorDialog("Error while reloading config. Check console for details.", "Couldn't reload config");
+			m_body.setSelectedIndex(TAB_CONSOLE);
+			m_dialogs.error("Exception while reloading config. Check console for details.", "Couldn't reload config");
 		}
-		loadUserCommands();
 	}
 	
 	/* **** notifies **** */
@@ -818,6 +909,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		m_stopButton.setEnabled(true);
 		m_restartButton.setEnabled(true);
 		m_commandCreateButton.setEnabled(true);
+		m_commandRemoveButton.setEnabled(true);
 		m_sendMessageButton.setEnabled(true);
 		
 		m_doRestartClient = false;
@@ -826,19 +918,20 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		{
 			stopClient();
 		}
-		else // if we are not closing, we can try to register user commands
+		else 
 		{
-			String name;
+			// if we are not closing, we can try to register user commands
+			List<String> commandData;
 			String usage;
 			String description;
 			String response;
 			UserCommand executor;
-			for (final List<String> command : m_userCommands)
+			for (final String name : m_userCommands.keySet())
 			{
-				name = command.get(0);
-				usage = command.get(1);
-				description = command.get(2);
-				response = command.get(3);
+				commandData = m_userCommands.get(name);
+				usage = '!' + name + ' ' + commandData.get(0);
+				description = commandData.get(1);
+				response = commandData.get(2);
 				executor = new UserCommand(response);
 				
 				try
@@ -848,7 +941,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				catch (IllegalArgumentException e)
 				{
 					Logger.warning("(GUI) User command \"" + name + "\" was already registered by something else.");
-					showErrorDialog("User command \"" + name + "\" was already registered by something else.", "Command already registered");
+					m_dialogs.warning("User command \"" + name + "\" was already registered by something else.", "Command already registered");
 				}
 			}
 		}
@@ -861,6 +954,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		m_stopButton.setEnabled(false);
 		m_restartButton.setEnabled(false);
 		m_commandCreateButton.setEnabled(false);
+		m_commandRemoveButton.setEnabled(false);
 		m_sendMessageButton.setEnabled(false);
 		m_commandsRegisteredCombo.removeAllItems();
 		
@@ -912,10 +1006,9 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			
 			if (m_isClientRunning)
 			{ // ask to restart if the client is already running
-				final int restart = JOptionPane.showConfirmDialog(m_container, "The changes will be not effective until a restart.\nRestart now?", "Restart?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				final int restart = JOptionPane.showConfirmDialog(m_container, "The changes will be effective after a restart.\nRestart now?", "Restart?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 				if (restart == JOptionPane.YES_OPTION)
 				{
-//					m_body.setSelectedIndex(0); // switch back to the Status tab
 					m_doRestartClient = true;
 					stopClient();
 				}
@@ -923,7 +1016,8 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		}
 		else
 		{
-			showErrorDialog("Couldn't load the plugin. See console for details.", "Error while loading plugin");
+			m_body.setSelectedIndex(TAB_CONSOLE);
+			m_dialogs.error("Couldn't load the plugin. Check console for details.", "Error while loading plugin");
 		}
 	}
 	
@@ -932,31 +1026,61 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	@Override
 	public void onConnected(final ChatClient client)
 	{
-		SwingUtilities.invokeLater(new NotifiedStartedRunnable());
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run()
+			{
+				clientStarted();
+			}
+		});
 	}
 
 	@Override
 	public void onDisconnected(final ChatClient client)
 	{
-		SwingUtilities.invokeLater(new NotifiedStoppedRunnable());
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run()
+			{
+				clientStopped();
+			}
+		});
 	}
 	
 	@Override
 	public void onMessage(final ChatClient client, final String username, final String message)
 	{
-		SwingUtilities.invokeLater(new NotifiedMessageRunnable(username, message));
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run()
+			{
+				clientMessage(username, message);
+			}
+		});
 	}
 	
 	@Override
 	public void onCommandRegistered(final ChatClient client, final String label, final Command command)
 	{
-		SwingUtilities.invokeLater(new NotifiedCommandRegisteredRunnable(label, command));
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run()
+			{
+				commandRegistered(label, command);
+			}
+		});
 	}
 	
 	@Override
 	public void onCommandUnregistered(final ChatClient client, final String label)
 	{
-		SwingUtilities.invokeLater(new NotifiedCommandUnregisteredRunnable(label));
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run()
+			{
+				commandUnregistered(label);
+			}
+		});
 	}
 	
 	/* **** client thread class **** */
@@ -970,6 +1094,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		public ClientThread(final ChatClient client)
 		{
 			m_client = client;
+			m_thread = null;
 		}
 		
 		public void start()
@@ -989,95 +1114,10 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			{
 				Logger.error("(GUI) Exception caught in client thread:");
 				Logger.printStackTrace(e);
-				showErrorDialog("Error in client thread. See console for details.", "Client error");
+				onDisconnected(m_client);
+				m_body.setSelectedIndex(TAB_CONSOLE);
+				m_dialogs.error("Exception in client thread. Check console for details.", "Client error");
 			}
-		}
-		
-	}
-	
-	/* **** notifies classes **** */
-
-	private class NotifiedStartedRunnable implements Runnable {
-	
-		@Override
-		public void run()
-		{
-			clientStarted();
-		}
-		
-	};
-	
-	private class NotifiedStoppedRunnable implements Runnable {
-		
-		@Override
-		public void run()
-		{
-			clientStopped();
-		}
-		
-	};
-	
-	private class NotifiedMessageRunnable implements Runnable {
-		
-		private final String m_username;
-		private final String m_message;
-		
-		public NotifiedMessageRunnable(final String username, final String message)
-		{
-			m_username = username;
-			m_message = message;
-		}
-		
-		@Override
-		public void run()
-		{
-			clientMessage(m_username, m_message);
-		}
-		
-	};
-	
-	private class NotifiedCommandRegisteredRunnable implements Runnable {
-		
-		private final String m_label;
-		private final Command m_command;
-		
-		public NotifiedCommandRegisteredRunnable(final String label, final Command command)
-		{
-			m_label = label;
-			m_command = command;
-		}
-		
-		@Override
-		public void run()
-		{
-			commandRegistered(m_label, m_command);
-		}
-		
-	}
-	
-	private class NotifiedCommandUnregisteredRunnable implements Runnable {
-		
-		private final String m_label;
-		
-		public NotifiedCommandUnregisteredRunnable(final String label)
-		{
-			m_label = label;
-		}
-		
-		@Override
-		public void run()
-		{
-			commandUnregistered(m_label);
-		}
-		
-	}
-	
-	private class NotifiedClosingListener extends WindowAdapter {
-		
-		@Override
-		public void windowClosing(final WindowEvent event)
-		{
-			frameClosing();
 		}
 		
 	}
@@ -1120,54 +1160,6 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			{
 				Logger.error("(GUI) Desktop not supported.");
 			}
-		}
-		
-	}
-
-	private class AlnumDocumentFilter extends DocumentFilter {
-
-		private boolean isValid(final String string)
-		{
-			final char[] chars = string.toCharArray();
-			final int stringLength = chars.length;
-			char ch;
-			for (int i = 0; i < stringLength; i++)
-			{
-				ch = chars[i];
-				if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z') && (ch < '0' || ch > '9') && ch != '_')
-				{
-					return false;
-				}
-			}
-			return true;
-		}
-		
-		@Override
-		public void insertString(final FilterBypass fb, final int offset, final String string, final AttributeSet attr) throws BadLocationException
-		{
-			if (isValid(string))
-			{
-				super.insertString(fb, offset, string, attr);
-			}
-		}
-
-		@Override
-		public void replace(final FilterBypass fb, final int offset, final int length, final String text, final AttributeSet attrs) throws BadLocationException
-		{
-			if (isValid(text))
-			{
-				super.replace(fb, offset, length, text, attrs);
-			}
-		}
-		
-	}
-	
-	private class PluginFilenameFilter implements FilenameFilter {
-	
-		@Override
-		public boolean accept(File dir, String name)
-		{
-			return name.endsWith(".jar");
 		}
 		
 	}
