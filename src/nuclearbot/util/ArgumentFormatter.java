@@ -50,7 +50,7 @@ public class ArgumentFormatter {
 
 	private FormatString[] parse(final String format)
 	{
-		final List<FormatString> list = new ArrayList<FormatString>();
+		final List<FormatString> list = new ArrayList<>();
 		final Matcher matcher = PATTERN_ARG.matcher(format);
 		final int length = format.length();
 		for (int i = 0; i < length;)

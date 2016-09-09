@@ -48,7 +48,7 @@ public class ImplChatOut implements ChatOut {
 	public ImplChatOut(final OutputStream stream, final String name)
 	{
 		m_out = new BufferedWriter(new OutputStreamWriter(stream));
-		m_queue = new ArrayBlockingQueue<String>(QUEUE_SIZE, true);
+		m_queue = new ArrayBlockingQueue<>(QUEUE_SIZE, true);
 		m_name = name;
 		m_thread = null;
 		m_running = false;

@@ -1,5 +1,7 @@
 package nuclearbot.plugin;
 
+import java.lang.reflect.Field;
+
 /*
  * Copyright (C) 2016 NuclearCoder
  * 
@@ -25,24 +27,48 @@ package nuclearbot.plugin;
  */
 public class ClasspathPlugin extends ImplJavaPlugin {
 	
-	private final String m_className;
+	private final String m_name;
+	private final String m_version;
 	
-	public ClasspathPlugin(final Plugin plugin, final String className)
+	public ClasspathPlugin(final Plugin plugin)
 	{
 		super(plugin, true);
-		m_className = className;
+		
+		String name;
+		try
+		{
+			final Field field = plugin.getClass().getField("PLUGIN_NAME");
+			name = (String) field.get(plugin);
+		}
+		catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e)
+		{
+			name = plugin.getClass().getName();
+		}
+		m_name = name;
+		
+		String version;
+		try
+		{
+			final Field field = plugin.getClass().getField("PLUGIN_VERSION");
+			version = (String) field.get(plugin);
+		}
+		catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e)
+		{
+			version = "";
+		}
+		m_version = version;
 	}
 	
 	@Override
 	public String getName()
 	{
-		return m_className;
+		return m_name;
 	}
 
 	@Override
 	public String getVersion()
 	{
-		return "builtin";
+		return m_version;
 	}
 
 }

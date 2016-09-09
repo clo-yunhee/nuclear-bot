@@ -25,10 +25,12 @@ import nuclearbot.client.ChatClient;
  * Public API interface for a plugin.<br>
  * To write an external plugin, you must implement this interface
  * and include it in a JAR file.<br>
+ * The class that implements <code>Plugin</code> must have no constructor.
+ * Do your initialization in the <code>onLoad</code> method.<br>
  * For the plugin loader to actually recognize the file as a plugin,
  * you need to create a "plugin.properties" at the root of the archive.<br>
- * The only required key is 'main', whose value must be the qualified name
- * of the class that implements the Plugin interface.<br>
+ * The only required key is "main", whose value must be the qualified name
+ * of the class that implements the <code>Plugin</code> interface.<br>
  * You can also provide optional entries. As of August 19, 2016 there are
  * two optional entries supported:
  * <ul>
@@ -62,7 +64,8 @@ public interface Plugin {
 	
 	/**
 	 * Listener for client start.
-	 * This method is called before entering the client loop, after joining the channel.
+	 * This method is called before entering the client loop, if the connection was successful.
+	 * It is called again in case of soft-restart.
 	 * @param client the Twitch client
 	 * @throws IOException delegate exception handling to the client 
 	 */
@@ -70,8 +73,8 @@ public interface Plugin {
 	
 	/**
 	 * Listener for client stop.
-	 * This method is called before the Twitch chat connection is closed,
-	 * the client is not listening anymore at this point.
+	 * This method is called before the connection is closed.
+	 * It is also called before soft-restarts.
 	 * @param client the Twitch client
 	 * @throws IOException delegate exception handling to the client 
 	 */

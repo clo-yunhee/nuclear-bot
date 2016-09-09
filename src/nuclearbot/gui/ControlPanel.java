@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -146,6 +147,11 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	private final JTextField m_chatMessageField;
 	private final JButton m_sendMessageButton;
 	
+	private final JPanel m_configPanelsPanel;
+	private ConfigPanel m_pluginConfigPanel;
+	private final JButton m_resetConfigButton;
+	private final JButton m_setConfigButton;
+	private final JButton m_saveConfigButton;
 	private final JButton m_reloadConfigButton;
 	
 	// client stuff
@@ -180,7 +186,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		m_clientThread = null;
 		m_client = null;
 		
-		m_userCommands = new HashMap<String, List<String>>();
+		m_userCommands = new HashMap<>();
 		
 		// gui variables init
 		
@@ -262,7 +268,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		
 		final JScrollPane tabPlugins = new JScrollPane();
 		{
-			final JPanel pluginPanel = new JPanel();
+			final JPanel pluginsPanel = new JPanel();
 			{
 				final JPanel loadedPluginPanel = new JPanel();
 				{
@@ -297,7 +303,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				
 				final JPanel loadBuiltinPluginPanel = new JPanel();
 				{
-					m_builtinPluginsCombo = new JComboBox<String>(m_pluginLoader.getBuiltinPlugins());
+					m_builtinPluginsCombo = new JComboBox<>(m_pluginLoader.getBuiltinPlugins());
 					m_loadBuiltinPluginButton = new JButton("Load");
 					
 					m_builtinPluginsCombo.setEditable(false);
@@ -311,15 +317,15 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 					loadBuiltinPluginPanel.add(m_loadBuiltinPluginButton);
 				} // loadBuiltinPluginPanel
 				
-				pluginPanel.setLayout(new VerticalLayout());
-				pluginPanel.add(loadedPluginPanel);
-				pluginPanel.add(loadExternalPluginPanel);
-				pluginPanel.add(loadBuiltinPluginPanel);
-			} // pluginPanel
+				pluginsPanel.setLayout(new VerticalLayout());
+				pluginsPanel.add(loadedPluginPanel);
+				pluginsPanel.add(loadExternalPluginPanel);
+				pluginsPanel.add(loadBuiltinPluginPanel);
+			} // pluginsPanel
 			
 			tabPlugins.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			tabPlugins.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			tabPlugins.setViewportView(pluginPanel);
+			tabPlugins.setViewportView(pluginsPanel);
 		} // tabPlugins
 		
 		final JPanel tabCommands = new JPanel();
@@ -329,7 +335,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				final JPanel commandNamePanel = new JPanel();
 				{
 					final JLabel commandNamePrefixLabel = new JLabel("<html><u>Name:</u></html>");
-					m_commandsRegisteredCombo = new JComboBox<String>();
+					m_commandsRegisteredCombo = new JComboBox<>();
 					
 					m_commandsRegisteredCombo.setEditable(false);
 					m_commandsRegisteredCombo.addItemListener(this);
@@ -374,9 +380,10 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				final JPanel commandNamePanel = new JPanel();
 				{
 					final JLabel commandNamePrefixLabel = new JLabel("<html><u>Name:</u></html>");
-					m_userCommandsCombo = new JComboBox<String>();
+					m_userCommandsCombo = new JComboBox<>();
 
 					m_userCommandsCombo.setEditable(true);
+					m_userCommandsCombo.addItemListener(this);
 					m_userCommandsCombo.addFocusListener(this);
 					m_userCommandsCombo.addActionListener(this);
 					
@@ -484,25 +491,49 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		{
 			final JPanel configPanel = new JPanel();
 			{
-				final JPanel configListPanel = new JPanel();
+				m_configPanelsPanel = new JPanel();
 				{
-					// TODO: config here
+					final ConfigPanel systemConfigPanel = new ConfigPanel("twitch");
 					
-				} // configListPanel
+					systemConfigPanel.addTextField("Twitch user name", "user", "");
+					systemConfigPanel.addPasswordField("Twitch OAuth token", "oauth_key", "");
+					
+					m_pluginConfigPanel = null;
+					
+					final JPanel configFieldsButtonsPanel = new JPanel();
+					{
+						m_setConfigButton = new JButton("Save fields");
+						m_resetConfigButton = new JButton("Reset fields");
+						
+						m_setConfigButton.addActionListener(this);
+						m_resetConfigButton.addActionListener(this);
+						
+						configFieldsButtonsPanel.setLayout(new FlowLayout());
+						configFieldsButtonsPanel.add(m_setConfigButton);
+						configFieldsButtonsPanel.add(m_resetConfigButton);
+					}
+					
+					m_configPanelsPanel.setLayout(new VerticalLayout());
+					m_configPanelsPanel.add(configFieldsButtonsPanel);
+					m_configPanelsPanel.add(systemConfigPanel);
+				} // m_configPanels
 				
-				final JPanel configButtonsPanel = new JPanel();
+				final JPanel configSaveButtonsPanel = new JPanel();
 				{
+					m_saveConfigButton = new JButton("Save config");
 					m_reloadConfigButton = new JButton("Reload config");
-					
+
+					m_saveConfigButton.addActionListener(this);
 					m_reloadConfigButton.addActionListener(this);
 					
-					configButtonsPanel.setLayout(new FlowLayout());
-					configButtonsPanel.add(m_reloadConfigButton);
+					configSaveButtonsPanel.setLayout(new FlowLayout());
+					configSaveButtonsPanel.add(m_saveConfigButton);
+					configSaveButtonsPanel.add(m_reloadConfigButton);
 				} // configButtonsPanel
 				
 				configPanel.setLayout(new VerticalLayout());
-				configPanel.add(configListPanel);
-				configPanel.add(configButtonsPanel);
+				configPanel.add(m_configPanelsPanel);
+				configPanel.add(configSaveButtonsPanel);
 			} // configPanel
 			
 			tabConfig.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -530,7 +561,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		} // tabConsole
 		
 		m_body.addTab("Status", tabStatus);
-		m_body.addTab("Plugin", tabPlugins);
+		m_body.addTab("Plugins", tabPlugins);
 		m_body.addTab("Commands", tabCommands);
 		m_body.addTab("Chat", tabChat);
 		m_body.addTab("Config", tabConfig);
@@ -561,7 +592,9 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		m_container.pack();
 		
 		pluginChanged(m_pluginLoader.getPlugin());
-		reloadUserCommands(true);
+		reloadUserCommands();
+		updateUserCommandInfo();
+		resetConfigFields();
 	}
 	
 	public void open()
@@ -579,8 +612,11 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			{
 				m_client.unregisterCommand(name);
 			}
-			m_userCommands.remove(name);
-			m_userCommandsCombo.removeItem(name);
+			if (persistent)
+			{
+				m_userCommands.remove(name);
+				m_userCommandsCombo.removeItem(name);
+			}
 		}
 		else
 		{
@@ -604,8 +640,6 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			}
 		}
 		
-		m_userCommandsCombo.addItem(name);
-		
 		Logger.info("(GUI) Command \"" + name + "\" successfully created.");
 		if (!silent)
 		{
@@ -614,7 +648,9 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		
 		if (persistent)
 		{
-			final List<String> commandData = new ArrayList<String>(3);
+			m_userCommandsCombo.addItem(name);
+		
+			final List<String> commandData = new ArrayList<>(3);
 			commandData.add(usage);
 			commandData.add(description);
 			commandData.add(response);
@@ -638,13 +674,13 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		}
 	}
 
-	private void reloadUserCommands(final boolean silent)
+	private void reloadUserCommands()
 	{
 		m_userCommands.clear();
 		try
 		{
 			final Type type = new TypeToken<Map<String, List<String>>>() {}.getType();
-			final Map<String, List<String>> map = new Gson().fromJson(Config.get("user_commands"), type);
+			final Map<String, List<String>> map = new Gson().fromJson(Config.get("user_commands", "{}"), type);
 			for (final Map.Entry<String, List<String>> entry : map.entrySet())
 			{
 				final String name = entry.getKey();
@@ -653,11 +689,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				final String description = commandData.get(1).trim();
 				final String response = commandData.get(2).trim();
 				
-				createUserCommand(name, usage, description, response, false, silent);
-			}
-			if (!silent)
-			{
-				m_dialogs.info("User commands successfully reloaded!", "User commands reloaded");
+				createUserCommand(name, usage, description, response, m_userCommands.containsKey(name), true);
 			}
 		}
 		catch (JsonSyntaxException e)
@@ -720,6 +752,18 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		{
 			sendChatMessage();
 		}
+		else if (source == m_setConfigButton)
+		{
+			setConfigFields();
+		}
+		else if (source == m_resetConfigButton)
+		{
+			resetConfigFields();
+		}
+		else if (source == m_saveConfigButton)
+		{
+			saveConfig();
+		}
 		else if (source == m_reloadConfigButton)
 		{
 			reloadConfig();
@@ -733,6 +777,10 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		if (source == m_commandsRegisteredCombo)
 		{
 			updateCommandInfo();
+		}
+		else if (source == m_userCommandsCombo)
+		{
+			updateUserCommandInfo();
 		}
 	}
 	
@@ -759,7 +807,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		
 		Logger.info("(GUI) Starting client...");
 		
-		final Plugin plugin = m_pluginLoader.getPlugin();
+		final JavaPlugin plugin = m_pluginLoader.getPlugin();
 		
 		m_client = new ImplChatClient(plugin);
 		m_client.registerClientListener(this);
@@ -819,7 +867,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	
 	private void updateUserCommandInfo()
 	{
-		final String label = (String) m_userCommandsCombo.getSelectedItem();
+		final String label = String.valueOf(m_userCommandsCombo.getSelectedItem()).trim().toLowerCase();
 		final List<String> commandData = m_userCommands.get(label);
 		m_commandUsageField.setText(commandData != null ? commandData.get(0) : "");
 		m_commandDescriptionField.setText(commandData != null ? commandData.get(1) : "");
@@ -863,8 +911,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 				+ "The zero-th argument is the sender's username.\n"
 				+ "For instance, to create a hug command, put \"<target>\" in usage and \"$0 hugs $1.\" in response.\n\n"
 				+ "By default the commands are created persistent, which means they will be created again on start.\n"
-				+ "Non-persistent commands are lost once the bot stops or restarts.\n"
-				+ "The GUI will however remember non-persistent commands' data until it is closed.", "Command creation help");
+				+ "Non-persistent commands are lost once the bot stops or restarts, and the GUI will only keep track of persistent commands.", "Command creation help");
 	}
 	
 	private void sendChatMessage()
@@ -880,13 +927,59 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 		}
 	}
 	
+	private void setConfigFields()
+	{
+		synchronized (m_configPanelsPanel.getTreeLock())
+		{
+			final Component[] components = m_configPanelsPanel.getComponents();
+			for (final Component component : components)
+			{
+				if (component instanceof ConfigPanel)
+				{
+					((ConfigPanel) component).saveFields();
+				}
+			}
+		}
+	}
+	
+	private void resetConfigFields()
+	{
+		synchronized (m_configPanelsPanel.getTreeLock())
+		{
+			final Component[] components = m_configPanelsPanel.getComponents();
+			for (final Component component : components)
+			{
+				if (component instanceof ConfigPanel)
+				{
+					((ConfigPanel) component).resetFields();
+				}
+			}
+		}
+	}
+	
+	private void saveConfig()
+	{
+		try
+		{
+			Config.saveConfig();
+			m_dialogs.info("Config saved successfully.", "Config saved");
+		}
+		catch (IOException e)
+		{
+			Logger.error("(GUI) Exception while saving config:");
+			Logger.printStackTrace(e);
+			m_body.setSelectedIndex(TAB_CONSOLE);
+			m_dialogs.error("Exception while saving config. Check console for details.", "Couldn't save config");
+		}
+	}
+	
 	private void reloadConfig()
 	{
 		try
 		{
 			Config.reloadConfig();
-			reloadUserCommands(false);
-			m_dialogs.info("Config was reloaded successfully.", "Config reloaded");
+			reloadUserCommands();
+			m_dialogs.info("Config reloaded successfully.", "Config reloaded");
 		}
 		catch (IOException e)
 		{
@@ -971,11 +1064,13 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 	private void commandRegistered(final String label, final Command command)
 	{
 		m_commandsRegisteredCombo.addItem(label);
+		updateCommandInfo();
 	}
 	
 	private void commandUnregistered(final String label)
 	{
 		m_commandsRegisteredCombo.removeItem(label);
+		updateCommandInfo();
 	}
 	
 	private void frameClosing()
@@ -1002,6 +1097,32 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			m_loadedPluginLabel.setToolTipText(pluginClassName);
 			m_currentPluginLabel.setText(pluginLabelText);
 			m_currentPluginLabel.setToolTipText(pluginClassName);
+			
+			final Plugin handle = plugin.getHandle(); //grab that handle
+			
+			if (m_pluginConfigPanel != null) 
+			{
+				m_configPanelsPanel.remove(m_pluginConfigPanel);
+			}
+			if (handle instanceof HasConfigPanel)
+			{
+				try
+				{
+					m_pluginConfigPanel = ((HasConfigPanel) handle).getConfigPanel();
+					m_pluginConfigPanel.resetFields();
+					m_configPanelsPanel.add(m_pluginConfigPanel);
+				}
+				catch (Exception e)
+				{
+					Logger.error("(GUI) Exception caught while changing plugin configuration panel:");
+					Logger.printStackTrace(e);
+					m_dialogs.error("Exception caught while changing plugin configuration panel. Check console for details.", "Exception while updating config panel");
+				}
+			}
+			else
+			{
+				m_pluginConfigPanel = null;
+			}
 			
 			if (m_isClientRunning)
 			{ // ask to restart if the client is already running
@@ -1113,6 +1234,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			{
 				Logger.error("(GUI) Exception caught in client thread:");
 				Logger.printStackTrace(e);
+				m_doRestartClient = false;
 				onDisconnected(m_client);
 				m_body.setSelectedIndex(TAB_CONSOLE);
 				m_dialogs.error("Exception in client thread. Check console for details.", "Client error");

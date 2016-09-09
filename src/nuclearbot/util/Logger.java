@@ -138,6 +138,7 @@ public class Logger {
 		{
 			Logger.error("Uncaught exception in thread \"" + thread.getName() + "\":");
 			Logger.printStackTrace(throwable);
+			System.exit(1);
 		}
 		
 	}

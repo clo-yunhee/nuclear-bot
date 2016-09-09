@@ -1,4 +1,6 @@
-package nuclearbot.plugin;
+package nuclearbot.gui;
+
+import javax.swing.JPanel;
 
 /*
  * Copyright (C) 2016 NuclearCoder
@@ -18,41 +20,13 @@ package nuclearbot.plugin;
  */
 
 /**
- * Public API interface for a plugin wrapper with name, version, and built-in flag.<br>
+ * Public API to mark a plugin with a status panel.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public interface JavaPlugin extends Plugin {
+public interface HasStatusPanel {
 
-	/**
-	 * Returns the plugin name.
-	 * @return the plugin name
-	 */
-	public String getName();
+	//public JPanel getStatusPanel();
 	
-	/**
-	 * Returns the plugin version.
-	 * @return the plugin version
-	 */
-	public String getVersion();
-	
-	/**
-	 * Returns the plugin main class name.
-	 * @return the plugin main class name
-	 */
-	public String getClassName();
-	
-	/**
-	 * Returns true if the plugin was loaded like a built-in plugin.
-	 * @return the plugin built-in status
-	 */
-	public boolean isBuiltin();
-
-	/**
-	 * Returns the underlying Plugin instance wrapped by this object.
-	 * @return the unwrapped plugin instance
-	 */
-	public Plugin getHandle();
-
 }

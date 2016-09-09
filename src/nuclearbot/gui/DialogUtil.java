@@ -46,7 +46,7 @@ public class DialogUtil {
 	public DialogUtil(final JFrame container)
 	{
 		m_container = container;
-		m_queue = new ArrayDeque<DialogCall>();
+		m_queue = new ArrayDeque<>();
 		m_doQueue = true;
 	}
 	
@@ -58,7 +58,11 @@ public class DialogUtil {
 	public void setQueueDialogs(final boolean doQueue)
 	{
 		m_doQueue = doQueue;
-		if (!doQueue)
+		if (doQueue)
+		{
+			m_queue = new ArrayDeque<>();
+		}
+		else
 		{
 			synchronized (m_queue) // if we're not queueing anymore, process all previously queued dialogs
 			{
@@ -67,6 +71,7 @@ public class DialogUtil {
 					m_queue.poll().process();
 				}
 			}
+			m_queue = null; // then release the object until we queue again
 		}
 	}
 	

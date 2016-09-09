@@ -149,11 +149,12 @@ public class Config {
 	/**
 	 * Returns the property with the specified key in this 
 	 * configuration. If the key is not found in the list, 
- 	 * the method returns an empty string and the property is set.
+ 	 * the method returns the default value and the property is set.
 	 * @param key the property key
+	 * @param defaultValue the default value
 	 * @return the value in this property list with the specified key
 	 */
-	public static String get(final String key)
+	public static String get(final String key, final String defaultValue)
 	{
 		if (prop.containsKey(key))
 		{
@@ -161,9 +162,22 @@ public class Config {
 		}
 		else
 		{
-			prop.setProperty(key, "");
-			return "";
+			prop.setProperty(key, defaultValue);
+			return defaultValue;
 		}
+	}
+
+	/**
+	 * Returns the property with the specified key in this 
+	 * configuration. If the key is not found in the list, 
+ 	 * the method returns an empty string and the property is set.
+	 * @param key the property key
+	 * @param defaultValue the default value
+	 * @return the value in this property list with the specified key
+	 */
+	public static String get(final String key)
+	{
+		return get(key, "");
 	}
 	
 	/**
@@ -174,9 +188,9 @@ public class Config {
 	 * @param value the new value
 	 * @return the previous value, or null
 	 */
-	public static String set(final String key, final Object value)
+	public static String set(final String key, final String value)
 	{
-		return (String) prop.setProperty(key, String.valueOf(value));
+		return (String) prop.setProperty(key, value);
 	}
 	
 	private static class ConfigShutdownHook implements Runnable {

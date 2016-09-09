@@ -59,10 +59,9 @@ public class ImplPluginLoader implements PluginLoader {
 	public ImplPluginLoader()
 	{
 		m_defaultClassLoader = ImplPluginLoader.class.getClassLoader();
-		m_plugin = new ClasspathPlugin(new DummyPlugin(), DummyPlugin.class.getName());
-
+		
 		// look for built-in plugins in the 'builtin' package
-		final List<String> classes = new ArrayList<String>(5);
+		final List<String> classes = new ArrayList<>(5);
 		try
 		{
 			final URL resource = m_defaultClassLoader.getResource(BUILTIN_PACKAGE_PATH);
@@ -79,10 +78,10 @@ public class ImplPluginLoader implements PluginLoader {
 		{
 			Logger.printStackTrace(e);
 		}
-		m_builtinPlugins = classes.toArray(new String[0]);
+		m_builtinPlugins = classes.toArray(new String[classes.size()]);
 		
 		// load the last loaded plugin
-		final String lastLoadedPlugin = Config.get("last_plugin");
+		final String lastLoadedPlugin = Config.get("last_plugin", DummyPlugin.class.getName());
 		if (lastLoadedPlugin == null || lastLoadedPlugin.isEmpty())
 		{
 			loadPlugin(DummyPlugin.class.getName());
@@ -99,7 +98,7 @@ public class ImplPluginLoader implements PluginLoader {
 	
 	private List<String> findPluginsJar(final URL resource, String packageName)
 	{
-		final List<String> classes = new ArrayList<String>();
+		final List<String> classes = new ArrayList<>();
 		final String packagePath = packageName.replace('.', '/');
 		try
 		{
@@ -142,7 +141,7 @@ public class ImplPluginLoader implements PluginLoader {
 	
 	private List<String> findPluginsDir(final File directory, final String packageName)
 	{
-		final List<String> classes = new ArrayList<String>();
+		final List<String> classes = new ArrayList<>();
 		final File[] files = directory.listFiles();
 		for (final File file : files)
 		{
@@ -289,7 +288,7 @@ public class ImplPluginLoader implements PluginLoader {
 		final boolean success = (plugin != null);
 		if (success)
 		{
-			m_plugin = new ClasspathPlugin(plugin, className);
+			m_plugin = new ClasspathPlugin(plugin);
 			writeConfig(CONFIG_DELIMITER + className);
 		}
 		return success;

@@ -84,7 +84,7 @@ public class LimitedStringList extends JList<String> {
 		 */
 		public Model(final int capacity)
 		{
-			m_arrayList = new ArrayList<String>(capacity);
+			m_arrayList = new ArrayList<>(capacity);
 			m_capacity = capacity;
 		}
 		

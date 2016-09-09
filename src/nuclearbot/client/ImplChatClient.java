@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nuclearbot.plugin.CommandExecutor;
+import nuclearbot.plugin.JavaPlugin;
 import nuclearbot.plugin.Plugin;
 import nuclearbot.util.Config;
 import nuclearbot.util.Logger;
@@ -69,22 +70,23 @@ public class ImplChatClient implements ChatClient {
 	private volatile boolean m_doStop; // if true, the client will exit at next loop.
 	
 	/**
-	 * Instantiates a Twitch client with specified Twitch IRC account.
+	 * Constructs a Twitch client with specified Twitch IRC account.
 	 * There can be only one plugin during a client's lifetime.
 	 * Undefined behavior if the plugin is changed using reflection.
 	 * @param plugin the plugin to use for this lifetime
 	 */
-	public ImplChatClient(final Plugin plugin)
+	public ImplChatClient(final JavaPlugin plugin)
 	{
 		// user name and channel must be lower-case
 		m_username = Config.get("twitch_user").toLowerCase();
 		m_authToken = Config.get("twitch_oauth_key");
 		m_usernameLength = m_username.length();
 		m_channel = '#' + m_username;
-		m_plugin = plugin;
-		m_clientListeners = new ArrayList<ClientListener>();
+		// by using handle, we reduce the amount of calls
+		m_plugin = plugin.getHandle();
+		m_clientListeners = new ArrayList<>();
 		// arraylist instead of linkedlist, takes less memory
-		m_commands = new HashMap<String, Command>();
+		m_commands = new HashMap<>();
 		m_systemCallExecutor = new CommandSystemCalls();
 		m_socket = null;
 		m_reader = null;
@@ -264,10 +266,9 @@ public class ImplChatClient implements ChatClient {
 					m_doStop = false;
 					break; // we're in
 				}
-				else if (line.startsWith("NOTICE *", 15))
+				else if (line.startsWith("NOTICE * :", 15))
 				{
-					Logger.info("(Twitch) Couldn't connect:");
-					Logger.info(line);
+					Logger.info("(Twitch) Couldn't connect: " + line.substring(25));
 					break;
 				}
 			}
@@ -385,20 +386,20 @@ public class ImplChatClient implements ChatClient {
 						}
 					}
 				}
+				
+				try
+				{
+					// call the stop listener
+					m_plugin.onStop(this);
+				}
+				catch (Exception e) // catch exceptions here to not leave the method 
+				{
+					Logger.error("(Twith) Exception in listener onStop:");
+					Logger.printStackTrace(e);
+				}
 			}
 			
 			sendMessage(m_doReconnect ? "Restarting bot..." : "Stopping bot...");
-			
-			try
-			{
-				// call the stop listener
-				m_plugin.onStop(this);
-			}
-			catch (Exception e) // catch exceptions here to not leave the method 
-			{
-				Logger.error("(Twith) Exception in listener onStop:");
-				Logger.printStackTrace(e);
-			}
 			
 			try
 			{

@@ -8,6 +8,8 @@ import java.net.Socket;
 import nuclearbot.client.ChatClient;
 import nuclearbot.client.ChatOut;
 import nuclearbot.client.ImplChatOut;
+import nuclearbot.gui.ConfigPanel;
+import nuclearbot.gui.HasConfigPanel;
 import nuclearbot.plugin.Plugin;
 import nuclearbot.util.Config;
 import nuclearbot.util.HTTP;
@@ -36,7 +38,10 @@ import nuclearbot.util.Logger;
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public class OsuPlugin implements Plugin {
+public class OsuPlugin implements Plugin, HasConfigPanel {
+	
+	public static final String PLUGIN_NAME = "osu!";
+	public static final String PLUGIN_VERSION = "1.0";
 	
 	private static final String SERVER = "cho.ppy.sh";
 	private static final int PORT = 6667;
@@ -128,6 +133,16 @@ public class OsuPlugin implements Plugin {
 	}
 	
 	@Override
+	public ConfigPanel getConfigPanel()
+	{
+		final ConfigPanel configPanel = new ConfigPanel("osu");
+		configPanel.addTextField("osu! user name", "user", "");
+		configPanel.addPasswordField("osu! API key", "api_key", "");
+		configPanel.addPasswordField("osu! IRC key", "irc_key", "");
+		return configPanel;
+	}
+	
+	@Override
 	public void onLoad(final ChatClient client) throws IOException
 	{
 		m_apiKey = Config.get("osu_api_key");
@@ -190,9 +205,9 @@ public class OsuPlugin implements Plugin {
 		m_chatOut.close();
 		m_reader.close();
 		m_socket.close();
-		m_socket = null;
 		m_reader = null;
 		m_chatOut = null;
+		m_socket = null;
 		
 		// we exited properly, unregister shutdown hook
 		Runtime.getRuntime().removeShutdownHook(m_shutdownHook);

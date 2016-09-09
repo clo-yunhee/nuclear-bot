@@ -30,6 +30,9 @@ import nuclearbot.plugin.Plugin;
  */
 public class DummyPlugin implements Plugin {
 	
+	public static final String PLUGIN_NAME = "Dummy";
+	public static final String PLUGIN_VERSION = "FG204";
+	
 	public void onMessage(final ChatClient client, final String username, final String message) throws IOException {}
 	public void onLoad(final ChatClient client) throws IOException {}
 	public void onStart(final ChatClient client) throws IOException {}

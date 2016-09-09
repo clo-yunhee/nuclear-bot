@@ -77,5 +77,11 @@ public abstract class ImplJavaPlugin implements JavaPlugin {
 	{
 		return m_builtin;
 	}
-
+	
+	@Override
+	public Plugin getHandle()
+	{
+		return m_plugin;
+	}
+	
 }
