@@ -3,7 +3,7 @@ package nuclearbot.plugin;
 import java.util.Properties;
 
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,30 +23,31 @@ import java.util.Properties;
  * Plugin wrapper for a Plugin loaded from a JAR file.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public class JarPlugin extends ImplJavaPlugin {
-	
-	private final String m_name;
-	private final String m_version;
-	
-	public JarPlugin(final Plugin plugin, final Properties properties)
-	{
-		super(plugin, false);
-		m_name = properties.getProperty("name", getClassName());
-		m_version = properties.getProperty("version", "external");
-	}
 
-	@Override
-	public String getName()
-	{
-		return m_name;
-	}
+    private final String m_name;
+    private final String m_version;
 
-	@Override
-	public String getVersion()
-	{
-		return m_version;
-	}
-	
+    public JarPlugin(final Plugin plugin, final Properties properties)
+    {
+        super(plugin, false);
+        m_name = properties.getProperty("name", getClassName());
+        m_version = properties.getProperty("version", "external");
+    }
+
+    @Override
+    public String getName()
+    {
+        return m_name;
+    }
+
+    @Override
+    public String getVersion()
+    {
+        return m_version;
+    }
+
 }

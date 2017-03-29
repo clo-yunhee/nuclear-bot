@@ -1,4 +1,4 @@
-package nuclearbot.client;
+package nuclearbot.gui.plugin;
 
 /*
  * Copyright (C) 2017 NuclearCoder
@@ -18,33 +18,14 @@ package nuclearbot.client;
  */
 
 /**
- * Public API interface for a chat output thread.<br>
+ * Public API to mark a plugin with a status panel.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
  *
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public interface ChatOut extends Runnable {
+public interface HasStatusPanel {
 
-    /**
-     * Queues a message to be written.
-     *
-     * @param str the message to add to queue
-     * @throws IllegalStateException if the queue is full
-     */
-    void write(String str);
-
-    /**
-     * Starts the output thread.
-     * The thread name will be (name + " out")
-     *
-     * @param name thread name prefix
-     */
-    void start(String name);
-
-    /**
-     * Stops the output thread.
-     */
-    void close();
+    //public JPanel getStatusPanel();
 
 }

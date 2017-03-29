@@ -1,16 +1,15 @@
 package nuclearbot.util;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
-
-import com.google.gson.Gson;
 
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -30,59 +29,56 @@ import com.google.gson.Gson;
  * Static class for HTTP POST requests.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public class HTTP {
 
-	/**
-	 * Fetches data from the specified URL with given parameters.
-	 * The output is treated as JSON, parsed as the given class.
-	 * The parameters must be in a URL format. (a=x&amp;b=y...)
-	 * @param targetUrl the URL target
-	 * @param urlParameters the request parameters
-	 * @param classOfT the class of the returned object
-	 * @param <T> the type of the returned object
-	 * @return the parsed output
-	 */
-	public static <T> T fetchData(final String targetUrl, final String urlParameters, final Class<T> classOfT)
-	{
-		HttpURLConnection connection = null;
-		try
-		{
-			final String paramData = URLEncoder.encode(urlParameters, "UTF-8");
-			final int paramLength = paramData.getBytes().length;
-			
-			final URL url = new URL(targetUrl);
-			connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("POST"); // for higher param length limit
-			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-			connection.setRequestProperty("Content-Length", String.valueOf(paramLength));
-			connection.setUseCaches(false);
-			connection.setDoOutput(true);
-			
-			// send post data
-			final DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-			out.writeBytes(paramData);
-			out.close();
-			
-			// now the response
-			final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+    /**
+     * Fetches data from the specified URL with given parameters.
+     * The output is treated as JSON, parsed as the given class.
+     * The parameters must be in a URL format. (a=x&amp;b=y...)
+     *
+     * @param targetUrl the URL target
+     * @param paramData the request parameters
+     * @param classOfT  the class of the returned object
+     * @param <T>       the type of the returned object
+     * @return the parsed output
+     */
+    public static <T> T fetchData(final String targetUrl, final String paramData, final Class<T> classOfT)
+    {
+        HttpURLConnection connection = null;
+        try
+        {
+            final URL url = new URL(targetUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST"); // for higher param length limit
+            connection.setUseCaches(false);
+            connection.setDoOutput(true);
 
-			return new Gson().fromJson(reader, classOfT);
-		}
-		catch (Exception e)
-		{
-			Logger.error("An error occurred while sending an HTTP request.");
-			Logger.printStackTrace(e);
-			return null;
-		}
-		finally
-		{
-			if (connection != null)
-			{
-				connection.disconnect();
-			}
-		}
-	}
+            // send post data
+            final DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+            out.writeBytes(paramData);
+            out.close();
+
+            // now the response
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+            return new Gson().fromJson(reader, classOfT);
+        }
+        catch (Exception e)
+        {
+            Logger.error("An error occurred while sending an HTTP request.");
+            Logger.printStackTrace(e);
+            return null;
+        }
+        finally
+        {
+            if (connection != null)
+            {
+                connection.disconnect();
+            }
+        }
+    }
 
 }

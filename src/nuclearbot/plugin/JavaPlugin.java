@@ -1,7 +1,7 @@
 package nuclearbot.plugin;
 
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,38 +21,44 @@ package nuclearbot.plugin;
  * Public API interface for a plugin wrapper with name, version, and built-in flag.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface JavaPlugin extends Plugin {
 
-	/**
-	 * Returns the plugin name.
-	 * @return the plugin name
-	 */
-	public String getName();
-	
-	/**
-	 * Returns the plugin version.
-	 * @return the plugin version
-	 */
-	public String getVersion();
-	
-	/**
-	 * Returns the plugin main class name.
-	 * @return the plugin main class name
-	 */
-	public String getClassName();
-	
-	/**
-	 * Returns true if the plugin was loaded like a built-in plugin.
-	 * @return the plugin built-in status
-	 */
-	public boolean isBuiltin();
+    /**
+     * Returns the plugin name.
+     *
+     * @return the plugin name
+     */
+    String getName();
 
-	/**
-	 * Returns the underlying Plugin instance wrapped by this object.
-	 * @return the unwrapped plugin instance
-	 */
-	public Plugin getHandle();
+    /**
+     * Returns the plugin version.
+     *
+     * @return the plugin version
+     */
+    String getVersion();
+
+    /**
+     * Returns the plugin main class name.
+     *
+     * @return the plugin main class name
+     */
+    String getClassName();
+
+    /**
+     * Returns true if the plugin was loaded like a built-in plugin.
+     *
+     * @return the plugin built-in status
+     */
+    boolean isBuiltin();
+
+    /**
+     * Returns the underlying Plugin instance wrapped by this object.
+     *
+     * @return the unwrapped plugin instance
+     */
+    Plugin getHandle();
 
 }

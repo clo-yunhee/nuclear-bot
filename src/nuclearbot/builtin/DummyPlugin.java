@@ -1,12 +1,12 @@
 package nuclearbot.builtin;
 
-import java.io.IOException;
-
 import nuclearbot.client.ChatClient;
 import nuclearbot.plugin.Plugin;
 
+import java.io.IOException;
+
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -26,16 +26,28 @@ import nuclearbot.plugin.Plugin;
  * A dummy client plugin that doesn't do anything.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public class DummyPlugin implements Plugin {
-	
-	public static final String PLUGIN_NAME = "Dummy";
-	public static final String PLUGIN_VERSION = "FG204";
-	
-	public void onMessage(final ChatClient client, final String username, final String message) throws IOException {}
-	public void onLoad(final ChatClient client) throws IOException {}
-	public void onStart(final ChatClient client) throws IOException {}
-	public void onStop(final ChatClient client) throws IOException {}
+
+    public static final String PLUGIN_NAME = "Dummy";
+    public static final String PLUGIN_VERSION = "FG204";
+
+    public void onMessage(final ChatClient client, final String username, final String message) throws IOException
+    {
+    }
+
+    public void onLoad(final ChatClient client) throws IOException
+    {
+    }
+
+    public void onStart(final ChatClient client) throws IOException
+    {
+    }
+
+    public void onStop(final ChatClient client) throws IOException
+    {
+    }
 
 }

@@ -1,9 +1,7 @@
-package nuclearbot.gui;
-
-import javax.swing.JPanel;
+package nuclearbot.gui.plugin;
 
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,13 +18,20 @@ import javax.swing.JPanel;
  */
 
 /**
- * Public API to mark a plugin with a status panel.<br>
+ * Public API to mark a plugin with a config panel.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public interface HasStatusPanel {
+public interface HasConfigPanel {
 
-	//public JPanel getStatusPanel();
-	
+    /**
+     * Returns a new config panel.
+     * This method is called from the Event Dispatch Thread after the plugin is loaded.
+     *
+     * @return the plugin's config panel
+     */
+    ConfigPanel getConfigPanel();
+
 }

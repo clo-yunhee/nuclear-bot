@@ -1,7 +1,7 @@
 package nuclearbot.client;
 
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,46 +21,52 @@ package nuclearbot.client;
  * Public API interface for a chat listener.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface ClientListener {
-	
-	/**
-	 * Listener for client connected.
-	 * This method is called after the plugin's onStart method, before entering the client loop.
-	 * @param client the Twitch client
-	 */
-	public void onConnected(ChatClient client);
-	
-	/**
-	 * Listener for client disconnected.
-	 * This method is called after the plugin's onStop method, and after resources are released.
-	 * @param client the Twitch client
-	 */
-	public void onDisconnected(ChatClient client);
-	
-	/**
-	 * Listener for client chat message.
-	 * This method is called after the plugin's onMessage method.
-	 * @param client the Twitch client
-	 * @param username the sender's username
-	 * @param message the message
-	 */
-	public void onMessage(ChatClient client, String username, String message);
-	
-	/**
-	 * Listener for client command registration.
-	 * @param client the Twitch client
-	 * @param label the command label
-	 * @param command the command instance
-	 */
-	public void onCommandRegistered(ChatClient client, String label, Command command);
 
-	/**
-	 * Listener for client command un-registration.
-	 * @param client the Twitch client
-	 * @param label the command label
-	 */
-	public void onCommandUnregistered(ChatClient client, String label);
-	
+    /**
+     * Listener for client connected.
+     * This method is called after the plugin's onStart method, before entering the client loop.
+     *
+     * @param client the Twitch client
+     */
+    void onConnected(ChatClient client);
+
+    /**
+     * Listener for client disconnected.
+     * This method is called after the plugin's onStop method, and after resources are released.
+     *
+     * @param client the Twitch client
+     */
+    void onDisconnected(ChatClient client);
+
+    /**
+     * Listener for client chat message.
+     * This method is called after the plugin's onMessage method.
+     *
+     * @param client   the Twitch client
+     * @param username the sender's username
+     * @param message  the message
+     */
+    void onMessage(ChatClient client, String username, String message);
+
+    /**
+     * Listener for client command registration.
+     *
+     * @param client  the Twitch client
+     * @param label   the command label
+     * @param command the command instance
+     */
+    void onCommandRegistered(ChatClient client, String label, Command command);
+
+    /**
+     * Listener for client command un-registration.
+     *
+     * @param client the Twitch client
+     * @param label  the command label
+     */
+    void onCommandUnregistered(ChatClient client, String label);
+
 }

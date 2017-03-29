@@ -1,11 +1,11 @@
 package nuclearbot.plugin;
 
-import java.io.IOException;
-
 import nuclearbot.client.ChatClient;
 
+import java.io.IOException;
+
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -41,43 +41,48 @@ import nuclearbot.client.ChatClient;
  * The version is not yet used by any thing.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface Plugin {
-	
-	/**
-	 * Listener for a chat message.
-	 * @param client the Twitch client
-	 * @param username the sender's username
-	 * @param message the message
-	 * @throws IOException delegate exception handling to the client 
-	 */
-	public void onMessage(ChatClient client, String username, String message) throws IOException;
 
-	/**
-	 * Listener for client load.
-	 * Please avoid using the constructor, as it may cause problems with not-built-in plugins.
-	 * @param client the Twitch client
-	 * @throws IOException delegate exception handling to the client
-	 */
-	public void onLoad(ChatClient client) throws IOException;
-	
-	/**
-	 * Listener for client start.
-	 * This method is called before entering the client loop, if the connection was successful.
-	 * It is called again in case of soft-restart.
-	 * @param client the Twitch client
-	 * @throws IOException delegate exception handling to the client 
-	 */
-	public void onStart(ChatClient client) throws IOException;
-	
-	/**
-	 * Listener for client stop.
-	 * This method is called before the connection is closed.
-	 * It is also called before soft-restarts.
-	 * @param client the Twitch client
-	 * @throws IOException delegate exception handling to the client 
-	 */
-	public void onStop(ChatClient client) throws IOException;
-	
+    /**
+     * Listener for a chat message.
+     *
+     * @param client   the Twitch client
+     * @param username the sender's username
+     * @param message  the message
+     * @throws IOException delegate exception handling to the client
+     */
+    void onMessage(ChatClient client, String username, String message) throws IOException;
+
+    /**
+     * Listener for client load.
+     * Please avoid using the constructor, as it may cause problems with not-built-in plugins.
+     *
+     * @param client the Twitch client
+     * @throws IOException delegate exception handling to the client
+     */
+    void onLoad(ChatClient client) throws IOException;
+
+    /**
+     * Listener for client start.
+     * This method is called before entering the client loop, if the connection was successful.
+     * It is called again in case of soft-restart.
+     *
+     * @param client the Twitch client
+     * @throws IOException delegate exception handling to the client
+     */
+    void onStart(ChatClient client) throws IOException;
+
+    /**
+     * Listener for client stop.
+     * This method is called before the connection is closed.
+     * It is also called before soft-restarts.
+     *
+     * @param client the Twitch client
+     * @throws IOException delegate exception handling to the client
+     */
+    void onStop(ChatClient client) throws IOException;
+
 }
