@@ -1,11 +1,11 @@
 package nuclearbot.plugin;
 
-import java.io.IOException;
-
 import nuclearbot.client.ChatClient;
 
+import java.io.IOException;
+
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -25,57 +25,64 @@ import nuclearbot.client.ChatClient;
  * Implementation for JavaPlugin.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public abstract class ImplJavaPlugin implements JavaPlugin {
 
-	private final Plugin m_plugin;
-	private final boolean m_builtin;
-	
-	private final String m_className;
-	
-	public ImplJavaPlugin(final Plugin plugin, final boolean builtin)
-	{
-		m_plugin = plugin;
-		m_builtin = builtin;
-		
-		m_className = plugin.getClass().getName();
-	}
-	
-	@Override
-	public void onLoad(final ChatClient client) throws IOException
-	{
-		m_plugin.onLoad(client);
-	}
+    private final Plugin m_plugin;
+    private final boolean m_builtin;
 
-	@Override
-	public void onStart(final ChatClient client) throws IOException
-	{
-		m_plugin.onStart(client);
-	}
+    private final String m_className;
 
-	@Override
-	public void onStop(final ChatClient client) throws IOException
-	{
-		m_plugin.onStop(client);
-	}
-	
-	@Override
-	public void onMessage(final ChatClient client, final String username, final String message) throws IOException
-	{
-		m_plugin.onMessage(client, username, message);
-	}
-	
-	@Override
-	public String getClassName()
-	{
-		return m_className;
-	}
-	
-	@Override
-	public boolean isBuiltin()
-	{
-		return m_builtin;
-	}
+    public ImplJavaPlugin(final Plugin plugin, final boolean builtin)
+    {
+        m_plugin = plugin;
+        m_builtin = builtin;
+
+        m_className = plugin.getClass().getName();
+    }
+
+    @Override
+    public void onLoad(final ChatClient client) throws IOException
+    {
+        m_plugin.onLoad(client);
+    }
+
+    @Override
+    public void onStart(final ChatClient client) throws IOException
+    {
+        m_plugin.onStart(client);
+    }
+
+    @Override
+    public void onStop(final ChatClient client) throws IOException
+    {
+        m_plugin.onStop(client);
+    }
+
+    @Override
+    public void onMessage(final ChatClient client, final String username, final String message) throws IOException
+    {
+        m_plugin.onMessage(client, username, message);
+    }
+
+    @Override
+    public String getClassName()
+    {
+        return m_className;
+    }
+
+    @Override
+    public boolean isBuiltin()
+    {
+        return m_builtin;
+    }
+
+    @Override
+    public Plugin getHandle()
+    {
+        return m_plugin;
+    }
 
 }

@@ -3,7 +3,7 @@ package nuclearbot.client;
 import nuclearbot.plugin.CommandExecutor;
 
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,53 +23,54 @@ import nuclearbot.plugin.CommandExecutor;
  * Implementation of Command.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public class ImplCommand implements Command {
-	
-	private final String m_label;
-	private final String m_usage;
-	private String m_description;
-	private final CommandExecutor m_executor;
-	
-	public ImplCommand(final String label, final String usage, final CommandExecutor executor)
-	{
-		m_label = label;
-		m_usage = usage;
-		m_description = "";
-		m_executor = executor;
-	}
-	
-	@Override
-	public String getLabel()
-	{
-		return m_label;
-	}
-	
-	@Override
-	public String getUsage()
-	{
-		return m_usage;
-	}
-	
-	@Override
-	public String getDescription()
-	{
-		return m_description;
-	}
-	
-	@Override
-	public Command setDescription(final String description)
-	{
-		m_description = description != null ? description : "";
-		
-		return this;
-	}
-	
-	@Override
-	public CommandExecutor getExecutor()
-	{
-		return m_executor;
-	}
+
+    private final String m_label;
+    private final String m_usage;
+    private final CommandExecutor m_executor;
+    private String m_description;
+
+    public ImplCommand(final String label, final String usage, final CommandExecutor executor)
+    {
+        m_label = label;
+        m_usage = usage;
+        m_description = "";
+        m_executor = executor;
+    }
+
+    @Override
+    public String getLabel()
+    {
+        return m_label;
+    }
+
+    @Override
+    public String getUsage()
+    {
+        return m_usage;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return m_description;
+    }
+
+    @Override
+    public Command setDescription(final String description)
+    {
+        m_description = description != null ? description : "";
+
+        return this;
+    }
+
+    @Override
+    public CommandExecutor getExecutor()
+    {
+        return m_executor;
+    }
 
 }

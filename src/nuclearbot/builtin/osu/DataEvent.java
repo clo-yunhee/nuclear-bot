@@ -1,7 +1,7 @@
 package nuclearbot.builtin.osu;
 
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,44 +21,45 @@ package nuclearbot.builtin.osu;
  * Data container for an osu! user event.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public class DataEvent {
-	
-	private String display_html;
-	
-	private int beatmap_id;
-	
-	private int beatmapset_id;
-	
-	private String date;
-	
-	// How "epic" this event is (between 1 and 32)
-	private int epicfactor;
 
-	public String getDisplayHTML()
-	{
-		return display_html;
-	}
+    private String display_html;
 
-	public int getBeatmapId()
-	{
-		return beatmap_id;
-	}
+    private int beatmap_id;
 
-	public int getBeatmapsetId()
-	{
-		return beatmapset_id;
-	}
+    private int beatmapset_id;
 
-	public String getDate()
-	{
-		return date;
-	}
+    private String date;
 
-	public int getEpicFactor()
-	{
-		return epicfactor;
-	}
-	
+    // How "epic" this event is (between 1 and 32)
+    private int epicfactor;
+
+    public String getDisplayHTML()
+    {
+        return display_html;
+    }
+
+    public int getBeatmapId()
+    {
+        return beatmap_id;
+    }
+
+    public int getBeatmapsetId()
+    {
+        return beatmapset_id;
+    }
+
+    public String getDate()
+    {
+        return date;
+    }
+
+    public int getEpicFactor()
+    {
+        return epicfactor;
+    }
+
 }

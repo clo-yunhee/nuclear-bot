@@ -1,7 +1,7 @@
 package nuclearbot.client;
 
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,27 +21,30 @@ package nuclearbot.client;
  * Public API interface for a chat output thread.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public interface ChatOut extends Runnable {
 
-	/**
-	 * Queues a message to be written.
-	 * @param str the message to add to queue
-	 * @throws IllegalStateException if the queue is full
-	 */
-	public void write(String str);
-	
-	/**
-	 * Starts the output thread.
-	 * The thread name will be (name + " out")
-	 * @param name thread name prefix
-	 */
-	public void start(String name);
-	
-	/**
-	 * Stops the output thread.
-	 */
-	public void close();
-	
+    /**
+     * Queues a message to be written.
+     *
+     * @param str the message to add to queue
+     * @throws IllegalStateException if the queue is full
+     */
+    void write(String str);
+
+    /**
+     * Starts the output thread.
+     * The thread name will be (name + " out")
+     *
+     * @param name thread name prefix
+     */
+    void start(String name);
+
+    /**
+     * Stops the output thread.
+     */
+    void close();
+
 }

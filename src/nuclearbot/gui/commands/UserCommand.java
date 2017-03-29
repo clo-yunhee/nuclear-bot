@@ -1,14 +1,14 @@
-package nuclearbot.gui;
-
-import java.io.IOException;
+package nuclearbot.gui.commands;
 
 import nuclearbot.client.ChatClient;
 import nuclearbot.client.Command;
 import nuclearbot.plugin.CommandExecutor;
 import nuclearbot.util.ArgumentFormatter;
 
+import java.io.IOException;
+
 /*
- * Copyright (C) 2016 NuclearCoder
+ * Copyright (C) 2017 NuclearCoder
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -28,32 +28,34 @@ import nuclearbot.util.ArgumentFormatter;
  * Command executor for user commands created with the GUI.<br>
  * <br>
  * NuclearBot (https://github.com/NuclearCoder/nuclear-bot/)<br>
+ *
  * @author NuclearCoder (contact on the GitHub repo)
  */
 public class UserCommand implements CommandExecutor {
 
-	private final ArgumentFormatter m_formatter;
-	
-	/**
-	 * Constructs a text command executor with the given message format.
-	 * Every "$n" or "{$n}", where n is a natural integer.
-	 * @param format the format string
-	 */
-	public UserCommand(final String format)
-	{
-		m_formatter = new ArgumentFormatter(format);
-	}
-	
-	@Override
-	public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
-	{
-		final String message = m_formatter.format(username, args);
-		if (message != null)
-		{
-			client.sendMessage(message);
-			return true;
-		}
-		return false;
-	}
+    private final ArgumentFormatter m_formatter;
+
+    /**
+     * Constructs a text command executor with the given message format.
+     * Every "$n" or "{$n}", where n is a natural integer.
+     *
+     * @param format the format string
+     */
+    public UserCommand(final String format)
+    {
+        m_formatter = new ArgumentFormatter(format);
+    }
+
+    @Override
+    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
+    {
+        final String message = m_formatter.format(username, args);
+        if (message != null)
+        {
+            client.sendMessage(message);
+            return true;
+        }
+        return false;
+    }
 
 }
