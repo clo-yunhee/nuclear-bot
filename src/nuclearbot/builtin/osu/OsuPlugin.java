@@ -8,10 +8,9 @@ import nuclearbot.gui.plugin.HasConfigPanel;
 import nuclearbot.plugin.Plugin;
 import nuclearbot.util.Config;
 import nuclearbot.util.Logger;
+import nuclearbot.util.Watcher;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 
 /*
@@ -51,6 +50,9 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
     private String m_apiKey;
     private String m_ircKey;
     private String m_username;
+
+    private boolean m_doWatchSong;
+    private File m_watcherFile;
 
     private OsuFetcher m_fetcher;
 
@@ -102,22 +104,22 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
         return m_fetcher;
     }
 
-    @Override
-    public ConfigPanel getConfigPanel()
+    @Override public ConfigPanel getConfigPanel()
     {
         final ConfigPanel configPanel = new ConfigPanel("osu");
         configPanel.addTextField("osu! user name", "user", "");
         configPanel.addPasswordField("osu! API key", "api_key", "");
         configPanel.addPasswordField("osu! IRC key", "irc_key", "");
+        configPanel.addTextField("Song watcher path", "np_path", "");
         return configPanel;
     }
 
-    @Override
-    public void onLoad(final ChatClient client) throws IOException
+    @Override public void onLoad(final ChatClient client) throws IOException
     {
         m_apiKey = Config.get("osu_api_key");
         m_ircKey = Config.get("osu_irc_key");
         m_username = Config.get("osu_user");
+
         m_fetcher = new OsuFetcher(m_apiKey);
         m_socket = null;
         m_reader = null;
@@ -131,17 +133,26 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
 
         client.registerCommand("stats", "!stats [user]", new CommandStats(this))
                 .setDescription("Displays info about an osu! player.");
+
+        // check if we can watch and write to the path
+        final String watcherPath = Config.get("osu_np_path");
+        m_watcherFile = new File(watcherPath);
+
+        m_doWatchSong =
+                (m_watcherFile.exists() || (!m_watcherFile.exists() && m_watcherFile.mkdirs()
+                        && m_watcherFile.delete() && m_watcherFile.createNewFile()))
+                        && m_watcherFile.canWrite();
     }
 
-    @Override
-    public void onStart(final ChatClient client) throws IOException
+    @Override public void onStart(final ChatClient client) throws IOException
     {
         String line;
 
         Logger.info("(osu!) Connecting...");
 
         // open connection and I/O objects
-        Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ShutdownHookRunnable()));
+        Runtime.getRuntime()
+                .addShutdownHook(m_shutdownHook = new Thread(new ShutdownHookRunnable()));
         m_socket = new Socket(SERVER, PORT);
         m_reader = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
         m_chatOut = new ImplChatOut(m_socket.getOutputStream(), "osu");
@@ -169,12 +180,41 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
 
         m_pingThread = new PingRunnable();
         m_pingThread.start();
+
+        // watch the playing song
+        if (m_doWatchSong)
+        {
+            Logger.info("(osu!) Watching the now playing song and writing to \"" + m_watcherFile
+                    .getAbsolutePath() + "\"");
+
+            Watcher.schedule("np-watcher", () -> m_doWatchSong, () ->
+            {
+                try
+                {
+                    final OsuNowPlaying.Response song = OsuNowPlaying.getSong();
+                    final String text = song.rawTitle != null ? song.rawTitle : "Not playing";
+                    try (final FileWriter writer = new FileWriter(m_watcherFile, false))
+                    {
+                        writer.write(text);
+                    }
+                }
+                catch (IOException e)
+                {
+                    Logger.warning("(osu!) Could not write the now playing song to the file:");
+                    Logger.printStackTrace(e);
+                }
+            });
+        }
     }
 
-    @Override
-    public void onStop(final ChatClient client) throws IOException
+    @Override public void onStop(final ChatClient client) throws IOException
     {
         Logger.info("(osu!) Releasing resources...");
+
+        if (m_doWatchSong)
+        {
+            Watcher.cancel("np-watcher");
+        }
 
         // close resources and socket
         m_pingThread.stop();
@@ -189,8 +229,8 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
         Runtime.getRuntime().removeShutdownHook(m_shutdownHook);
     }
 
-    @Override
-    public void onMessage(final ChatClient client, final String username, final String message) throws IOException
+    @Override public void onMessage(final ChatClient client, final String username,
+            final String message) throws IOException
     {
     }
 
@@ -212,8 +252,7 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
             m_running = false;
         }
 
-        @Override
-        public void run()
+        @Override public void run()
         {
             try
             {
@@ -251,8 +290,7 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
 
     private class ShutdownHookRunnable implements Runnable {
 
-        @Override
-        public void run()
+        @Override public void run()
         {
             Logger.info("(Exit) (osu!) Closing resources...");
             if (m_chatOut != null)

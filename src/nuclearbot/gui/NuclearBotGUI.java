@@ -313,13 +313,13 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
     @Override
     public void onConnected(final ChatClient client)
     {
-        SwingUtilities.invokeLater(() -> clientStarted());
+        SwingUtilities.invokeLater(this::clientStarted);
     }
 
     @Override
     public void onDisconnected(final ChatClient client)
     {
-        SwingUtilities.invokeLater(() -> clientStopped());
+        SwingUtilities.invokeLater(this::clientStopped);
     }
 
     @Override

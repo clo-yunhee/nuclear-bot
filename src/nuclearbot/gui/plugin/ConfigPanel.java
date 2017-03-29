@@ -1,5 +1,9 @@
 package nuclearbot.gui.plugin;
 
+import nuclearbot.gui.plugin.components.ConfigEntry;
+import nuclearbot.gui.plugin.components.EntryCheckBox;
+import nuclearbot.gui.plugin.components.EntryPasswordField;
+import nuclearbot.gui.plugin.components.EntryTextField;
 import nuclearbot.gui.utils.VerticalLayout;
 import nuclearbot.util.Config;
 
@@ -38,7 +42,7 @@ public final class ConfigPanel extends JPanel {
     private static final long serialVersionUID = 7023349359010074929L;
 
     private final String m_prefix;
-    private final Set<JComponent> m_fields;
+    private final Set<ConfigEntry> m_entries;
 
     /**
      * Constructs a configuration panel with
@@ -49,53 +53,20 @@ public final class ConfigPanel extends JPanel {
     public ConfigPanel(final String prefix)
     {
         m_prefix = prefix;
-        m_fields = new HashSet<>();
+        m_entries = new HashSet<>();
 
         setLayout(new VerticalLayout());
     }
 
-    private Object getValueFor(final JComponent component)
-    {
-        if (component instanceof JTextField)
-        {
-            return ((JTextField) component).getText();
-        }
-        else if (component instanceof JCheckBox)
-        {
-            return ((JCheckBox) component).isSelected();
-        }
-        else
-        {
-            throw new IllegalArgumentException("Unsupported config field type " + component.getClass().getName());
-        }
-    }
-
-    private void setValueFor(final JComponent component, final String value)
-    {
-        if (component instanceof JTextField)
-        {
-            ((JTextField) component).setText(value);
-        }
-        else if (component instanceof JCheckBox)
-        {
-            ((JCheckBox) component).setSelected(Boolean.valueOf(value));
-        }
-        else
-        {
-            throw new IllegalArgumentException("Unsupported config field type " + component.getClass().getName());
-        }
-    }
-
-    private void addComponent(final JComponent component, final String label, final String key, final String defaultValue)
+    private void addComponent(final String label, final ConfigEntry entry)
     {
         final JPanel rowPanel = new JPanel();
         {
-            component.putClientProperty("config_key", key);
             rowPanel.add(new JLabel(label + ':'));
-            rowPanel.add(component);
+            rowPanel.add(entry.getComponent());
         }
         super.addImpl(rowPanel, null, -1);
-        m_fields.add(component);
+        m_entries.add(entry);
     }
 
     @Override
@@ -109,11 +80,11 @@ public final class ConfigPanel extends JPanel {
      */
     public void resetFields()
     {
-        for (final JComponent component : m_fields)
+        for (final ConfigEntry entry : m_entries)
         {
-            final String key = m_prefix + '_' + component.getClientProperty("config_key");
-            final String defaultValue = (String) component.getClientProperty("config_defaultValue");
-            setValueFor(component, Config.get(key, defaultValue));
+            final String key = m_prefix + '_' + entry.getKey();
+            final String defaultValue = entry.getDefaultValue();
+            entry.setValue(Config.get(key, defaultValue));
         }
     }
 
@@ -122,10 +93,10 @@ public final class ConfigPanel extends JPanel {
      */
     public void saveFields()
     {
-        for (final JComponent component : m_fields)
+        for (final ConfigEntry entry : m_entries)
         {
-            final String key = m_prefix + '_' + component.getClientProperty("config_key");
-            Config.set(key, String.valueOf(getValueFor(component)));
+            final String key = m_prefix + '_' + entry.getKey();
+            Config.set(key, entry.getValue());
         }
     }
 
@@ -139,7 +110,7 @@ public final class ConfigPanel extends JPanel {
      */
     public void addTextField(final String label, final String key, final String defaultValue)
     {
-        addComponent(new JTextField(12), label, key, defaultValue);
+        addComponent(label, new EntryTextField(key, defaultValue));
     }
 
     /**
@@ -152,7 +123,7 @@ public final class ConfigPanel extends JPanel {
      */
     public void addPasswordField(final String label, final String key, final String defaultValue)
     {
-        addComponent(new JPasswordField(12), label, key, defaultValue);
+        addComponent(label, new EntryPasswordField(key, defaultValue));
     }
 
     /**
@@ -163,9 +134,9 @@ public final class ConfigPanel extends JPanel {
      * @param key          the configuration key associated to this field
      * @param defaultValue the default value if the entry does not exist
      */
-    public void addCheckBox(final String label, final String key, final String defaultValue)
+    public void addCheckBox(final String label, final String key, final boolean defaultValue)
     {
-        addComponent(new JCheckBox(), label, key, defaultValue);
+        addComponent(label, new EntryCheckBox(key, Boolean.toString(defaultValue)));
     }
 
 }

@@ -31,8 +31,8 @@ import java.awt.*;
  */
 public class CommandPanel extends JPanel {
 
-    private CommandOverviewPanel m_overviewPanel;
-    private CommandEditPanel m_editPanel;
+    private final CommandOverviewPanel m_overviewPanel;
+    private final CommandEditPanel m_editPanel;
 
     public CommandPanel(final NuclearBotGUI gui)
     {

@@ -32,8 +32,8 @@ import java.awt.*;
  */
 public class ChatPanel extends JPanel {
 
-    private LimitedStringList m_chatHistory;
-    private ChatSendPanel m_sendPanel;
+    private final LimitedStringList m_chatHistory;
+    private final ChatSendPanel m_sendPanel;
 
     public ChatPanel(final NuclearBotGUI gui)
     {

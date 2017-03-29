@@ -227,7 +227,10 @@ public class UserCommandManager {
 
     public static class CommandInfo {
 
-        public String name, usage, description, response;
+        public final String name;
+        public final String usage;
+        public final String description;
+        public final String response;
 
         private CommandInfo(String name, String usage, String description, String response)
         {
