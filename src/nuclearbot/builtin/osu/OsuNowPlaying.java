@@ -33,11 +33,11 @@ import java.io.InputStreamReader;
  */
 public class OsuNowPlaying {
 
-    public static final String UNKNOWN_OS = "Couldn't determine the operating system.";
-    public static final String NOT_RUNNING = "osu! is not running.";
-    public static final String NOTHING = "There is no song playing right now.";
-    public static final String ERROR = "An error occurred while fetching the song name.";
-    public static final String NOW_PLAYING = "Now playing \"%s\".";
+    private static final String UNKNOWN_OS = "Couldn't determine the operating system.";
+    private static final String NOT_RUNNING = "osu! is not running.";
+    private static final String NOTHING = "There is no song playing right now.";
+    private static final String ERROR = "An error occurred while fetching the song name.";
+    private static final String NOW_PLAYING = "Now playing \"%s\".";
 
     private static final Response parseTitle(final String windowTitle)
     {
@@ -55,39 +55,37 @@ public class OsuNowPlaying {
 
     private static final Response getLinux()
     {
-        String osuWindowTitle = null;
+        String windowTitle = null;
         try // first, list osu! windows
         {
             final Process windowProcess = Runtime.getRuntime()
                     .exec("xdotool search --classname osu");
-            final BufferedReader windowReader = new BufferedReader(
-                    new InputStreamReader(windowProcess.getInputStream()));
-            boolean foundOsuWindow = false;
-            String line;
-
-            int windowId;
-            Process titleProcess;
-            BufferedReader titleReader;
-            String windowTitle;
-            while (!foundOsuWindow && (line = windowReader.readLine()) != null)
+            try (final BufferedReader windowReader = new BufferedReader(
+                    new InputStreamReader(windowProcess.getInputStream())))
             {
-                windowId = Integer.parseInt(line.trim()); // for each window, check the title
-                titleProcess = Runtime.getRuntime().exec("xdotool getwindowname " + windowId);
-                titleReader = new BufferedReader(
-                        new InputStreamReader(titleProcess.getInputStream()));
-                windowTitle = titleReader.readLine().trim();
-
-                titleReader.close();
-                // only one should have "osu!" in it (windows should be: X container, .NET container, actual osu! game)
-                if (windowTitle.contains("osu!"))
+                String line;
+                while ((line = windowReader.readLine()) != null)
                 {
-                    osuWindowTitle = windowTitle;
-                    foundOsuWindow = true;
+                    final int wId = Integer.parseInt(line.trim()); // for each window, check the title
+                    final Process pTitle = Runtime.getRuntime().exec("xdotool getwindowname " + wId);
+                    final String title;
+
+                    try (final BufferedReader rTitle = new BufferedReader(
+                            new InputStreamReader(pTitle.getInputStream())))
+                    {
+                        title = rTitle.readLine().trim();
+                    }
+
+                    // only one should have "osu!" in it (windows should be: X container, .NET container, actual osu! game)
+                    if (title.contains("osu!"))
+                    {
+                        windowTitle = title;
+                        break;
+                    }
                 }
             }
-            windowReader.close();
 
-            if (osuWindowTitle == null)
+            if (windowTitle == null)
             {
                 return new Response(NOT_RUNNING, null);
             }
@@ -103,7 +101,7 @@ public class OsuNowPlaying {
             return new Response(ERROR, null);
         }
 
-        return parseTitle(osuWindowTitle);
+        return parseTitle(windowTitle);
     }
 
     private static final Response getWindows()
@@ -114,15 +112,16 @@ public class OsuNowPlaying {
         {
             final Process process = Runtime.getRuntime()
                     .exec("tasklist /fo csv /nh /fi \"imagename eq osu!.exe\" /v");
-            final BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null)
+            try (final BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream())))
             {
-                builder.append(line);
-                builder.append('\n');
+                String line;
+                while ((line = reader.readLine()) != null)
+                {
+                    builder.append(line);
+                    builder.append('\n');
+                }
             }
-            reader.close();
         }
         catch (IOException e)
         {

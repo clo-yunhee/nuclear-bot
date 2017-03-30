@@ -1,6 +1,9 @@
 package nuclearbot.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Properties;
 
 /*
@@ -43,54 +46,24 @@ public class Config {
             Logger.error("Couldn't write to config.properties in the program's directory.");
             System.exit(1);
         }
-        if (!configFile.exists()) // copy the default file if it doesn't exist
-        {
-            FileOutputStream out = null;
-            InputStream in = null;
+        if (!configFile.exists() && configFile.mkdirs() && configFile.delete())
+        { // create an empty config file if it doesn't exist
             try
             {
-                in = Config.class.getResourceAsStream("/config.properties");
-                out = new FileOutputStream(configFile);
-
-                byte[] buf = new byte[128];
-                while (in.read(buf) != -1)
-                {
-                    out.write(buf);
-                }
-
-                out.close();
-                in.close();
+                configFile.createNewFile();
             }
             catch (IOException e)
             {
-                Logger.error("An error occurred while writing default config.");
+                Logger.error("An error occurred while creating config file.");
                 Logger.printStackTrace(e);
-                try
-                {
-                    if (out != null)
-                        out.close();
-                }
-                catch (IOException ignored)
-                {
-                }
-                try
-                {
-                    if (in != null)
-                        in.close();
-                }
-                catch (IOException ignored)
-                {
-                }
                 System.exit(1);
             }
         }
 
         prop = new Properties();
 
-        FileReader in = null;
-        try
+        try (final FileReader in = new FileReader(configFile))
         {
-            in = new FileReader(configFile);
             prop.load(in);
         }
         catch (IOException e)
@@ -98,20 +71,6 @@ public class Config {
             Logger.error("An error occurred while loading config.");
             Logger.printStackTrace(e);
         }
-        finally
-        {
-            if (in != null)
-            {
-                try
-                {
-                    in.close();
-                }
-                catch (IOException ignored)
-                {
-                }
-            }
-        }
-
     }
 
     /**

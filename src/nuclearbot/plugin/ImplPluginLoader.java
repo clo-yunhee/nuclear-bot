@@ -105,10 +105,10 @@ public class ImplPluginLoader implements PluginLoader {
     {
         final List<String> classes = new ArrayList<>();
         final String packagePath = packageName.replace('.', '/');
-        try
+        final String filename = resource.getPath().replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
+
+        try (final JarFile jarFile = new JarFile(filename))
         {
-            final String filename = resource.getPath().replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
-            final JarFile jarFile = new JarFile(filename);
             final Enumeration<JarEntry> entries = jarFile.entries();
             while (entries.hasMoreElements())
             {
@@ -133,7 +133,6 @@ public class ImplPluginLoader implements PluginLoader {
                     }
                 }
             }
-            jarFile.close();
         }
         catch (IOException e)
         {
@@ -227,12 +226,11 @@ public class ImplPluginLoader implements PluginLoader {
             }
         }
     }
-
     private ClassLoader getJarLoader(final File file)
     {
         try
         {
-            return new URLClassLoader(new URL[]{file.toURI().toURL()});
+            return new URLClassLoader(new URL[]{file.toURI().toURL()}); // FIXME: potential leak
         }
         catch (MalformedURLException e)
         {
@@ -310,10 +308,8 @@ public class ImplPluginLoader implements PluginLoader {
     {
         boolean success;
         final Plugin plugin;
-        JarFile jar = null;
-        try
+        try (final JarFile jar = new JarFile(file))
         {
-            jar = new JarFile(file);
             final JarEntry entry = jar.getJarEntry("plugin.properties");
             if (entry != null)
             {
@@ -349,19 +345,6 @@ public class ImplPluginLoader implements PluginLoader {
             Logger.error("(ploader) I/O exception while reading plugin.properties in jar file \"" + file.getAbsolutePath() + "\":");
             Logger.printStackTrace(e);
             success = false;
-        }
-        finally
-        {
-            if (jar != null)
-            {
-                try
-                {
-                    jar.close();
-                }
-                catch (IOException ignored)
-                {
-                }
-            }
         }
         return success;
     }

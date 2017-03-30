@@ -57,14 +57,16 @@ public class HTTP {
             connection.setDoOutput(true);
 
             // send post data
-            final DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-            out.writeBytes(paramData);
-            out.close();
+            try (final DataOutputStream out = new DataOutputStream(connection.getOutputStream()))
+            {
+                out.writeBytes(paramData);
+            }
 
             // now the response
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-            return new Gson().fromJson(reader, classOfT);
+            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream())))
+            {
+                return new Gson().fromJson(reader, classOfT);
+            }
         }
         catch (Exception e)
         {
