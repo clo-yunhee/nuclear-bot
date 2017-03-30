@@ -1,4 +1,4 @@
-package nuclearbot.gui.plugin.components;
+package nuclearbot.gui.plugin.configuration.components;
 
 /*
  * Copyright (C) 2017 NuclearCoder

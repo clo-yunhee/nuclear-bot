@@ -42,7 +42,7 @@ public class StatusPanel extends JPanel {
     {
         super(new VerticalLayout());
 
-        final JPanel controls = new JPanel();
+        final JPanel controls = new JPanel(new FlowLayout());
         {
             m_statusLabel = new JLabel("Not running");
             m_startButton = new JButton("Start");
@@ -68,14 +68,13 @@ public class StatusPanel extends JPanel {
                 gui.stopClient();
             });
 
-            controls.setLayout(new FlowLayout());
             controls.add(m_statusLabel);
             controls.add(m_startButton);
             controls.add(m_stopButton);
             controls.add(m_restartButton);
         }
 
-        final JPanel currentPlugin = new JPanel();
+        final JPanel currentPlugin = new JPanel(new FlowLayout());
         {
             final JLabel pluginPrefixLabel = new JLabel("<html><u>Current plugin:</u></html>");
             m_pluginLabel = new JLabel();
@@ -84,7 +83,6 @@ public class StatusPanel extends JPanel {
             m_pluginLabel.setHorizontalAlignment(SwingConstants.CENTER);
             m_pluginLabel.setComponentPopupMenu(gui.getTextPopupMenu());
 
-            currentPlugin.setLayout(new FlowLayout());
             currentPlugin.add(pluginPrefixLabel);
             currentPlugin.add(m_pluginLabel);
         }

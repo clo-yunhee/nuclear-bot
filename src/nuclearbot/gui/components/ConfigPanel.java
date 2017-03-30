@@ -1,7 +1,8 @@
 package nuclearbot.gui.components;
 
 import nuclearbot.gui.NuclearBotGUI;
-import nuclearbot.gui.plugin.HasConfigPanel;
+import nuclearbot.gui.plugin.configuration.HasConfigPanel;
+import nuclearbot.gui.plugin.configuration.PluginConfigPanel;
 import nuclearbot.gui.utils.VerticalLayout;
 import nuclearbot.plugin.Plugin;
 import nuclearbot.util.Config;
@@ -41,7 +42,7 @@ public class ConfigPanel extends JScrollPane {
 
     private final JPanel m_configPanel;
 
-    private nuclearbot.gui.plugin.ConfigPanel m_pluginPanel;
+    private PluginConfigPanel m_pluginPanel;
 
     public ConfigPanel(final NuclearBotGUI gui)
     {
@@ -49,7 +50,7 @@ public class ConfigPanel extends JScrollPane {
 
         m_configPanel = new JPanel(new VerticalLayout());
         {
-            final nuclearbot.gui.plugin.ConfigPanel clientPanel = new nuclearbot.gui.plugin.ConfigPanel("twitch");
+            final PluginConfigPanel clientPanel = new PluginConfigPanel("twitch");
 
             clientPanel.addTextField("Twitch user name", "user", "");
             clientPanel.addPasswordField("Twitch OAuth token", "oauth_key", "");
@@ -120,9 +121,9 @@ public class ConfigPanel extends JScrollPane {
 
         for (final Component component : components)
         {
-            if (component instanceof nuclearbot.gui.plugin.ConfigPanel)
+            if (component instanceof PluginConfigPanel)
             {
-                ((nuclearbot.gui.plugin.ConfigPanel) component).saveFields();
+                ((PluginConfigPanel) component).saveFields();
             }
         }
     }
@@ -137,9 +138,9 @@ public class ConfigPanel extends JScrollPane {
 
         for (final Component component : components)
         {
-            if (component instanceof nuclearbot.gui.plugin.ConfigPanel)
+            if (component instanceof PluginConfigPanel)
             {
-                ((nuclearbot.gui.plugin.ConfigPanel) component).resetFields();
+                ((PluginConfigPanel) component).resetFields();
             }
         }
     }

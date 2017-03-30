@@ -1,8 +1,8 @@
 package nuclearbot.builtin.osu;
 
 import nuclearbot.client.ChatClient;
-import nuclearbot.gui.plugin.ConfigPanel;
-import nuclearbot.gui.plugin.HasConfigPanel;
+import nuclearbot.gui.plugin.configuration.HasConfigPanel;
+import nuclearbot.gui.plugin.configuration.PluginConfigPanel;
 import nuclearbot.plugin.Plugin;
 import nuclearbot.util.Config;
 import nuclearbot.util.Logger;
@@ -82,9 +82,10 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
         return m_fetcher;
     }
 
-    @Override public ConfigPanel getConfigPanel()
+    @Override
+    public PluginConfigPanel getConfigPanel()
     {
-        final ConfigPanel configPanel = new ConfigPanel("osu");
+        final PluginConfigPanel configPanel = new PluginConfigPanel("osu");
         configPanel.addTextField("osu! user name", "user", "");
         configPanel.addPasswordField("osu! API key", "api_key", "");
         configPanel.addPasswordField("osu! IRC key", "irc_key", "");

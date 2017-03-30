@@ -1,4 +1,4 @@
-package nuclearbot.gui.plugin;
+package nuclearbot.gui.plugin.configuration;
 
 /*
  * Copyright (C) 2017 NuclearCoder
@@ -32,6 +32,6 @@ public interface HasConfigPanel {
      *
      * @return the plugin's config panel
      */
-    ConfigPanel getConfigPanel();
+    PluginConfigPanel getConfigPanel();
 
 }

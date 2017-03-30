@@ -1,9 +1,9 @@
-package nuclearbot.gui.plugin;
+package nuclearbot.gui.plugin.configuration;
 
-import nuclearbot.gui.plugin.components.ConfigEntry;
-import nuclearbot.gui.plugin.components.EntryCheckBox;
-import nuclearbot.gui.plugin.components.EntryPasswordField;
-import nuclearbot.gui.plugin.components.EntryTextField;
+import nuclearbot.gui.plugin.configuration.components.ConfigEntry;
+import nuclearbot.gui.plugin.configuration.components.EntryCheckBox;
+import nuclearbot.gui.plugin.configuration.components.EntryPasswordField;
+import nuclearbot.gui.plugin.configuration.components.EntryTextField;
 import nuclearbot.gui.utils.VerticalLayout;
 import nuclearbot.util.Config;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  *
  * @author NuclearCoder (contact on the GitHub repo)
  */
-public final class ConfigPanel extends JPanel {
+public final class PluginConfigPanel extends JPanel {
 
     private static final long serialVersionUID = 7023349359010074929L;
 
@@ -50,7 +50,7 @@ public final class ConfigPanel extends JPanel {
      *
      * @param prefix the key prefix
      */
-    public ConfigPanel(final String prefix)
+    public PluginConfigPanel(final String prefix)
     {
         m_prefix = prefix;
         m_entries = new HashSet<>();

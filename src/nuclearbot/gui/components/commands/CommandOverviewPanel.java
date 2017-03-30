@@ -47,7 +47,7 @@ public class CommandOverviewPanel extends JPanel {
 
         m_gui = gui;
 
-        final JPanel namePanel = new JPanel();
+        final JPanel namePanel = new JPanel(new FlowLayout());
         {
             final JLabel namePrefixLabel = new JLabel("<html><u>Name:</u></html>");
             m_commandList = new JComboBox<>();
@@ -59,12 +59,11 @@ public class CommandOverviewPanel extends JPanel {
                     updateCommandInfo();
             });
 
-            namePanel.setLayout(new FlowLayout());
             namePanel.add(namePrefixLabel);
             namePanel.add(m_commandList);
         }
 
-        final JPanel usagePanel = new JPanel();
+        final JPanel usagePanel = new JPanel(new FlowLayout());
         {
             final JLabel usagePrefixLabel = new JLabel("<html><u>Usage:</u></html>");
             m_usageLabel = new JLabel("(no such command)");
@@ -72,17 +71,15 @@ public class CommandOverviewPanel extends JPanel {
             usagePrefixLabel.setToolTipText("Angle brackets for required arguments\nSquare brackets for optional arguments");
             m_usageLabel.setToolTipText("Angle brackets for required arguments\nSquare brackets for optional arguments");
 
-            usagePanel.setLayout(new FlowLayout());
             usagePanel.add(usagePrefixLabel);
             usagePanel.add(m_usageLabel);
         }
 
-        final JPanel descriptionPanel = new JPanel();
+        final JPanel descriptionPanel = new JPanel(new FlowLayout());
         {
             final JLabel descriptionPrefixLabel = new JLabel("<html><u>Description:</u></html>");
             m_descriptionLabel = new JLabel("(no such command)");
 
-            descriptionPanel.setLayout(new FlowLayout());
             descriptionPanel.add(descriptionPrefixLabel);
             descriptionPanel.add(m_descriptionLabel);
         }

@@ -1,4 +1,4 @@
-package nuclearbot.gui.plugin.components;
+package nuclearbot.gui.plugin.configuration.components;
 
 import javax.swing.*;
 

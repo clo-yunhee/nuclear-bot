@@ -63,7 +63,7 @@ public class CommandEditPanel extends JPanel {
 
         m_gui = gui;
 
-        final JPanel namePanel = new JPanel();
+        final JPanel namePanel = new JPanel(new FlowLayout());
         {
             final JLabel namePrefixLabel = new JLabel("<html><u>Name:</u></html>");
             m_commandCombo = new JComboBox<>();
@@ -84,42 +84,38 @@ public class CommandEditPanel extends JPanel {
                 }
             });
 
-            namePanel.setLayout(new FlowLayout());
             namePanel.add(namePrefixLabel);
             namePanel.add(m_commandCombo);
         }
 
-        final JPanel usagePanel = new JPanel();
+        final JPanel usagePanel = new JPanel(new FlowLayout());
         {
             final JLabel usagePrefixLabel = new JLabel("<html><u>Usage:</u></html>");
             m_usageField = new JTextField(12);
 
-            usagePanel.setLayout(new FlowLayout());
             usagePanel.add(usagePrefixLabel);
             usagePanel.add(m_usageField);
         }
 
-        final JPanel descriptionPanel = new JPanel();
+        final JPanel descriptionPanel = new JPanel(new FlowLayout());
         {
             final JLabel descriptionPrefixLabel = new JLabel("<html><u>Description:</u></html>");
             m_descriptionField = new JTextField(16);
 
-            descriptionPanel.setLayout(new FlowLayout());
             descriptionPanel.add(descriptionPrefixLabel);
             descriptionPanel.add(m_descriptionField);
         }
 
-        final JPanel responsePanel = new JPanel();
+        final JPanel responsePanel = new JPanel(new FlowLayout());
         {
             final JLabel responsePrefixLabel = new JLabel("<html><u>Response:</u></html>");
             m_responseField = new JTextField(16);
 
-            responsePanel.setLayout(new FlowLayout());
             responsePanel.add(responsePrefixLabel);
             responsePanel.add(m_responseField);
         }
 
-        final JPanel submitPanel = new JPanel();
+        final JPanel submitPanel = new JPanel(new FlowLayout());
         {
             final JButton createButton = new JButton("Create/Update");
             final JButton removeButton = new JButton("Remove");
@@ -132,7 +128,6 @@ public class CommandEditPanel extends JPanel {
             helpButton.addActionListener(e ->
                     m_gui.getDialogs().info(HELP_TEXT, "Command creation help"));
 
-            submitPanel.setLayout(new FlowLayout());
             submitPanel.add(createButton);
             submitPanel.add(removeButton);
             submitPanel.add(helpButton);
