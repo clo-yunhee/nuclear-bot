@@ -1,5 +1,7 @@
 package nuclearbot.builtin.osu;
 
+import nuclearbot.builtin.osu.data.DataBeatmap;
+import nuclearbot.builtin.osu.data.DataUser;
 import nuclearbot.util.HTTP;
 import nuclearbot.util.Logger;
 

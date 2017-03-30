@@ -1,5 +1,8 @@
 package nuclearbot.builtin.osu;
 
+import nuclearbot.builtin.osu.commands.CommandNowPlaying;
+import nuclearbot.builtin.osu.commands.CommandRequest;
+import nuclearbot.builtin.osu.commands.CommandStats;
 import nuclearbot.client.ChatClient;
 import nuclearbot.gui.plugin.configuration.HasConfigPanel;
 import nuclearbot.gui.plugin.configuration.PluginConfigPanel;
