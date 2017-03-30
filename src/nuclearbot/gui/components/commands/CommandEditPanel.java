@@ -1,8 +1,11 @@
 package nuclearbot.gui.components.commands;
 
+import nuclearbot.client.ChatClient;
 import nuclearbot.gui.NuclearBotGUI;
 import nuclearbot.gui.commands.UserCommandManager;
+import nuclearbot.gui.commands.UserCommandModeration;
 import nuclearbot.gui.utils.VerticalLayout;
+import nuclearbot.plugin.CommandExecutor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -55,6 +58,8 @@ public class CommandEditPanel extends JPanel {
     private final JTextField m_responseField;
 
     private final UserCommandManager m_commands;
+
+    private final CommandExecutor m_modCommands;
 
     public CommandEditPanel(final NuclearBotGUI gui)
     {
@@ -134,6 +139,7 @@ public class CommandEditPanel extends JPanel {
         }
 
         m_commands = new UserCommandManager(gui, m_commandCombo);
+        m_modCommands = new UserCommandModeration(m_commands);
 
         add(namePanel);
         add(usagePanel);
@@ -146,6 +152,20 @@ public class CommandEditPanel extends JPanel {
 
     public void registerCommands()
     {
+        final ChatClient client = m_gui.getClient();
+
+        client.registerCommand("cmdadd", "!cmdadd <name> <response>", m_modCommands)
+                .setDescription("Adds a command with the given name and response.");
+
+        client.registerCommand("cmdrem", "!cmdrem <name>", m_modCommands)
+                .setDescription("Removes a command with the given name.");
+
+        client.registerCommand("cmdusage", "!cmdusage <name> <usage>", m_modCommands)
+                .setDescription("Sets the command usage.");
+
+        client.registerCommand("cmddesc", "!cmddesc <name> <usage>", m_modCommands)
+                .setDescription("Sets the command description.");
+
         m_commands.registerCommands();
     }
 
@@ -170,7 +190,7 @@ public class CommandEditPanel extends JPanel {
 
     private void removeCommand()
     {
-        m_commands.removeCommand(((String) m_commandCombo.getSelectedItem()).trim().toLowerCase());
+        m_commands.removeCommand(((String) m_commandCombo.getSelectedItem()).trim().toLowerCase(), false);
     }
 
 }

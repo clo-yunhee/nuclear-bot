@@ -64,7 +64,7 @@ public interface Command {
      * @return this object
      * @throws IllegalStateException if the implementation does not support changing the description
      */
-    Command setDescription(String description);
+    void setDescription(String description);
 
     /**
      * Returns the command's executor instance.

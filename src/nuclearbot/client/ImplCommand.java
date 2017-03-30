@@ -60,11 +60,9 @@ public class ImplCommand implements Command {
     }
 
     @Override
-    public Command setDescription(final String description)
+    public void setDescription(final String description)
     {
         m_description = description != null ? description : "";
-
-        return this;
     }
 
     @Override

@@ -3,6 +3,7 @@ package nuclearbot.client;
 import nuclearbot.plugin.CommandExecutor;
 
 import java.io.IOException;
+import java.util.Collection;
 
 /*
  * Copyright (C) 2017 NuclearCoder
@@ -86,6 +87,36 @@ public interface ChatClient {
      * Unregisters all client listeners.
      */
     void unregisterAllClientListeners();
+
+    /**
+     * Adds a new moderator.
+     *
+     * @param name the new moderator's Twitch name
+     * @return true if the moderator was added, false if they already were
+     */
+    boolean addModerator(String name);
+
+    /**
+     * Removes a moderator.
+     *
+     * @param name the moderator's Twitch name
+     * @return true if the moderator was removed, false if they were not
+     */
+    boolean removeModerator(String name);
+
+    /**
+     * Returns true if the given name is a moderator.
+     *
+     * @return true if the given name is a moderator
+     */
+    boolean isModerator(String name);
+
+    /**
+     * Returns an unmodifiable collection of moderators.
+     *
+     * @return an unmodifiable collection of moderators
+     */
+    Collection<String> getModerators();
 
     /**
      * Sends a chat message to the Twitch channel.

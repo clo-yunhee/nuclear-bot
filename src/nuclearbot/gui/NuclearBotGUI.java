@@ -259,7 +259,7 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
 
         m_chat.toggleSendButton(false);
 
-        m_commands.clearCommandList();
+        m_commands.unregisterCommands();
 
         if (m_doRestartClient)
         {

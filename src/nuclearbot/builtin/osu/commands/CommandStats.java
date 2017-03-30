@@ -1,5 +1,8 @@
 package nuclearbot.builtin.osu.commands;
 
+import nuclearbot.builtin.osu.OsuFetcher;
+import nuclearbot.builtin.osu.OsuPlugin;
+import nuclearbot.builtin.osu.data.DataUser;
 import nuclearbot.client.ChatClient;
 import nuclearbot.client.Command;
 import nuclearbot.plugin.CommandExecutor;

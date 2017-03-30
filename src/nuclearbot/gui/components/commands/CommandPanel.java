@@ -45,11 +45,6 @@ public class CommandPanel extends JPanel {
         add(m_editPanel);
     }
 
-    public void clearCommandList()
-    {
-        m_overviewPanel.clearCommandList();
-    }
-
     public void addCommandList(final String name)
     {
         m_overviewPanel.addCommand(name);
@@ -63,6 +58,11 @@ public class CommandPanel extends JPanel {
     public void registerCommands()
     {
         m_editPanel.registerCommands();
+    }
+
+    public void unregisterCommands()
+    {
+        m_overviewPanel.clearCommandList();
     }
 
 }
