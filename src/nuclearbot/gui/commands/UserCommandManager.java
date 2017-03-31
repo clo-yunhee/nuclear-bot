@@ -151,7 +151,7 @@ public class UserCommandManager {
     {
         try (final FileWriter writer = new FileWriter(m_file, false))
         {
-            writer.write(new Gson().toJson(m_commands.values(), Collection.class));
+            new Gson().toJson(m_commands.values(), Collection.class, writer);
         }
         catch (IOException e)
         {

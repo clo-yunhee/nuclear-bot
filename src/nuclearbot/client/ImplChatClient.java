@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,6 +47,8 @@ public class ImplChatClient implements ChatClient {
     private static final String SERVER = "irc.chat.twitch.tv";
     private static final int PORT = 6667;
 
+    private static final long SLEEP_DELAY = TimeUnit.MILLISECONDS.toMillis(500);
+
     private final String m_username;
     private final int m_usernameLength;
     private final String m_authToken;
@@ -55,7 +58,6 @@ public class ImplChatClient implements ChatClient {
 
     private final List<ClientListener> m_clientListeners;
 
-    private final Set<String> m_moderators;
     private final Map<String, Command> m_commands;
     private final CommandExecutor m_systemCallExecutor;
 
@@ -85,9 +87,6 @@ public class ImplChatClient implements ChatClient {
         m_plugin = plugin.getHandle();
         m_clientListeners = Collections.synchronizedList(new ArrayList<>());
 
-        // using tree set for ordering and checking
-        m_moderators = Collections.synchronizedSet(new TreeSet<>());
-
         m_commands = Collections.synchronizedMap(new HashMap<>());
         m_systemCallExecutor = new CommandSystemCalls();
 
@@ -96,9 +95,6 @@ public class ImplChatClient implements ChatClient {
         m_chatOut = null;
         m_doReconnect = false;
         m_doStop = false;
-
-        //TODO: proper persistent
-        m_moderators.add(m_username);
     }
 
 	/*- notifiers -*/
@@ -215,30 +211,6 @@ public class ImplChatClient implements ChatClient {
         Logger.info("(Twitch) Cleared all client listeners.");
     }
 
-    @Override
-    public boolean addModerator(final String name)
-    {
-        return m_moderators.add(name);
-    }
-
-    @Override
-    public boolean removeModerator(final String name)
-    {
-        return m_moderators.remove(name);
-    }
-
-    @Override
-    public boolean isModerator(final String name)
-    {
-        return m_moderators.contains(name);
-    }
-
-    @Override
-    public Collection<String> getModerators()
-    {
-        return Collections.unmodifiableCollection(m_moderators);
-    }
-
     private void send(final String msg)
     {
         m_chatOut.write(msg + "\r\n");
@@ -342,7 +314,14 @@ public class ImplChatClient implements ChatClient {
                     if (!m_reader.ready())
                     {
                         // we don't need it to run all the time
-                        Thread.yield();
+                        try
+                        {
+                            Thread.sleep(SLEEP_DELAY);
+                        }
+                        catch (InterruptedException ignored)
+                        {
+                            Thread.yield(); // yield instead (still better than just ignoring)
+                        }
                         continue;
                     }
 
@@ -481,7 +460,7 @@ public class ImplChatClient implements ChatClient {
         public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] params) throws IOException
         {
             // system calls (like in the Alicization arc SAO, lol)
-            if (isModerator(username))
+            if (Moderators.isModerator(username))
             {
                 if (label.equalsIgnoreCase("restart"))
                 {

@@ -17,6 +17,7 @@ package nuclearbot.gui.commands;/*
 
 import nuclearbot.client.ChatClient;
 import nuclearbot.client.Command;
+import nuclearbot.client.Moderators;
 import nuclearbot.plugin.CommandExecutor;
 
 import java.awt.*;
@@ -42,7 +43,7 @@ public class UserCommandModeration implements CommandExecutor {
     @Override
     public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
     {
-        if (!client.isModerator(username))
+        if (!Moderators.isModerator(username))
         {
             // fail silently
             return true;

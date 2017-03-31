@@ -6,6 +6,7 @@ import nuclearbot.client.Command;
 import nuclearbot.client.ImplChatClient;
 import nuclearbot.gui.components.ConfigPanel;
 import nuclearbot.gui.components.FooterPanel;
+import nuclearbot.gui.components.ModeratorPanel;
 import nuclearbot.gui.components.StatusPanel;
 import nuclearbot.gui.components.chat.ChatPanel;
 import nuclearbot.gui.components.commands.CommandPanel;
@@ -72,6 +73,7 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
     private final StatusPanel m_status;
     private final PluginPanel m_plugins;
     private final CommandPanel m_commands;
+    private final ModeratorPanel m_moderators;
     private final ChatPanel m_chat;
     private final ConfigPanel m_config;
     private final ConsolePanel m_console;
@@ -134,6 +136,7 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         m_status = new StatusPanel(this);
         m_plugins = new PluginPanel(this);
         m_commands = new CommandPanel(this);
+        m_moderators = new ModeratorPanel(this);
         m_chat = new ChatPanel(this);
         m_config = new ConfigPanel(this);
         m_console = new ConsolePanel(this, consoleDocument);
@@ -141,6 +144,7 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         m_body.addTab("Status", m_status);
         m_body.addTab("Plugins", m_plugins);
         m_body.addTab("Commands", m_commands);
+        m_body.addTab("Moderators", m_moderators);
         m_body.addTab("Chat", m_chat);
         m_body.addTab("Config", m_config);
         m_body.addTab("Console", m_console);
@@ -222,6 +226,8 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         m_status.toggleStopButton(false);
         m_status.toggleRestartButton(false);
 
+        m_commands.unregisterCommands();
+
         m_client.stop();
     }
 
@@ -265,16 +271,6 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         {
             startClient();
         }
-    }
-
-    private void commandRegistered(final String label, final Command command)
-    {
-        m_commands.addCommandList(label);
-    }
-
-    private void commandUnregistered(final String label)
-    {
-        m_commands.removeCommandList(label);
     }
 
     public void pluginChanged(final JavaPlugin plugin)
@@ -331,13 +327,13 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
     @Override
     public void onCommandRegistered(final ChatClient client, final String label, final Command command)
     {
-        SwingUtilities.invokeLater(() -> commandRegistered(label, command));
+        SwingUtilities.invokeLater(() -> m_commands.addCommandList(label));
     }
 
     @Override
     public void onCommandUnregistered(final ChatClient client, final String label)
     {
-        SwingUtilities.invokeLater(() -> commandUnregistered(label));
+        SwingUtilities.invokeLater(() -> m_commands.removeCommandList(label));
     }
 
 	/* **** client thread class **** */

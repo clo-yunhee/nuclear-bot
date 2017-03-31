@@ -181,16 +181,23 @@ public class CommandEditPanel extends JPanel {
     private void createCommand()
     {
         final String name = ((String) m_commandCombo.getSelectedItem()).trim().toLowerCase();
-        final String usage = m_usageField.getText().trim();
-        final String description = m_descriptionField.getText().trim();
-        final String response = m_responseField.getText().trim();
+        if (!name.isEmpty())
+        {
+            final String usage = m_usageField.getText().trim();
+            final String description = m_descriptionField.getText().trim();
+            final String response = m_responseField.getText().trim();
 
-        m_commands.createUserCommand(name, usage, description, response, false);
+            m_commands.createUserCommand(name, usage, description, response, false);
+        }
     }
 
     private void removeCommand()
     {
-        m_commands.removeCommand(((String) m_commandCombo.getSelectedItem()).trim().toLowerCase(), false);
+        final String name = ((String) m_commandCombo.getSelectedItem()).trim().toLowerCase();
+        if (!name.isEmpty())
+        {
+            m_commands.removeCommand(name, false);
+        }
     }
 
 }

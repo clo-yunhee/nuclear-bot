@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Basic IRC client for the osu! plugin.<br>
@@ -37,6 +38,9 @@ public class OsuClient {
 
     private static final String SERVER = "cho.ppy.sh";
     private static final int PORT = 6667;
+
+    private static final long PING_SLEEP = TimeUnit.SECONDS.toMillis(2);
+
     private final String m_username;
     private final String m_ircKey;
     private Thread m_shutdownHook;
@@ -158,10 +162,11 @@ public class OsuClient {
                         try
                         {
                             // this thread has very low priority, hence will almost never be active.
-                            Thread.sleep(800L);
+                            Thread.sleep(PING_SLEEP);
                         }
                         catch (InterruptedException ignored)
                         {
+                            Thread.yield();
                         }
                     }
                 }
