@@ -61,6 +61,7 @@ public class ImplChatClient implements ChatClient {
 
     private final Map<String, Command> m_commands;
     private final CommandExecutor m_systemCallExecutor;
+    private final CommandExecutor m_helpExecutor;
 
     private Thread m_shutdownHook;
     private Socket m_socket;
@@ -88,7 +89,9 @@ public class ImplChatClient implements ChatClient {
         m_clientListeners = Collections.synchronizedList(new ArrayList<>());
 
         m_commands = Collections.synchronizedMap(new HashMap<>());
+
         m_systemCallExecutor = new CommandSystemCalls();
+        m_helpExecutor = new CommandHelp();
 
         m_socket = null;
         m_reader = null;
@@ -211,6 +214,7 @@ public class ImplChatClient implements ChatClient {
 
         registerCommand("restart", "!restart", m_systemCallExecutor).setDescription("Soft-restarts the bot.");
         registerCommand("stop", "!stop", m_systemCallExecutor).setDescription("Stops the bot.");
+        registerCommand("help", "!help", m_helpExecutor).setDescription("Shows help, list of commands or detailed information.");
 
         try {
             // call the load listener
@@ -386,11 +390,49 @@ public class ImplChatClient implements ChatClient {
         Logger.info("(Twitch) Exiting client loop...");
     }
 
-    public class CommandSystemCalls implements CommandExecutor {
+    private class CommandHelp implements CommandExecutor {
 
         @Override
         public boolean onCommand(final ChatClient client, final String username, final Command command, final String label,
-                                 final String[] params) throws IOException {
+                                 final String[] args) throws IOException {
+            final StringBuilder sb = new StringBuilder();
+            // if there is no argument, list the commands
+            if (args.length == 1) {
+                sb.append("Commands: ");
+                synchronized (m_commands) {
+                    if (m_commands.isEmpty()) {
+                        sb.append("(empty)");
+                    } else {
+                        final Iterator<String> it = m_commands.keySet().iterator();
+                        sb.append(it.next()); // there's at least one!
+                        while (it.hasNext()) {
+                            sb.append(", ");
+                            sb.append(it.next());
+                        }
+                    }
+                }
+            } else if (!m_commands.containsKey(args[1])) {
+                sb.append("Command does not exist.");
+            } else {
+                final Command helpCommand = m_commands.get(args[1]);
+                sb.append("Usage: ");
+                sb.append(helpCommand.getUsage());
+                sb.append(" - ");
+                sb.append(helpCommand.getDescription());
+            }
+
+            client.sendMessage(sb.toString());
+
+            return true;
+        }
+
+    }
+
+    private class CommandSystemCalls implements CommandExecutor {
+
+        @Override
+        public boolean onCommand(final ChatClient client, final String username, final Command command, final String label,
+                                 final String[] args) throws IOException {
             // system calls (like in the Alicization arc SAO, lol)
             if (Moderators.isModerator(username)) {
                 if (label.equalsIgnoreCase("restart")) {
