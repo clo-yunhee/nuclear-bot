@@ -106,138 +106,111 @@ public class DataBeatmap {
     // The maximum combo a user can reach playing this beatmap.
     private int max_combo;
 
-    public int getApproved()
-    {
+    public int getApproved() {
         return approved;
     }
 
-    public String getApprovedDate()
-    {
+    public String getApprovedDate() {
         return approved_date;
     }
 
-    public String getLastUpdate()
-    {
+    public String getLastUpdate() {
         return last_update;
     }
 
-    public String getArtist()
-    {
+    public String getArtist() {
         return artist;
     }
 
-    public int getBeatmapId()
-    {
+    public int getBeatmapId() {
         return beatmap_id;
     }
 
-    public int getBeatmapsetId()
-    {
+    public int getBeatmapsetId() {
         return beatmapset_id;
     }
 
-    public int getBPM()
-    {
+    public int getBPM() {
         return Math.round(bpm);
     }
 
-    public String getCreator()
-    {
+    public String getCreator() {
         return creator;
     }
 
-    public float getDifficultyRating()
-    {
+    public float getDifficultyRating() {
         return difficultyrating;
     }
 
-    public float getDiffCS()
-    {
+    public float getDiffCS() {
         return diff_size;
     }
 
-    public float getDiffOD()
-    {
+    public float getDiffOD() {
         return diff_overall;
     }
 
-    public float getDiffAR()
-    {
+    public float getDiffAR() {
         return diff_approach;
     }
 
-    public float getDiffHP()
-    {
+    public float getDiffHP() {
         return diff_drain;
     }
 
-    public int getHitLength()
-    {
+    public int getHitLength() {
         return hit_length;
     }
 
-    public String getSource()
-    {
+    public String getSource() {
         return source;
     }
 
-    public int getGenreId()
-    {
+    public int getGenreId() {
         return genre_id;
     }
 
-    public int getLanguageId()
-    {
+    public int getLanguageId() {
         return language_id;
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
 
-    public int getTotalLength()
-    {
+    public int getTotalLength() {
         return total_length;
     }
 
-    public String getVersion()
-    {
+    public String getVersion() {
         return version;
     }
 
-    public String getFileMD5()
-    {
+    public String getFileMD5() {
         return file_md5;
     }
 
-    public int getMode()
-    {
+    public int getMode() {
         return mode;
     }
 
-    public List<String> getTags()
-    {
+    public List<String> getTags() {
         return Arrays.asList(tags.split(" "));
     }
 
-    public int getFavouriteCount()
-    {
+    public int getFavouriteCount() {
         return favourite_count;
     }
 
-    public int getPlayCount()
-    {
+    public int getPlayCount() {
         return playcount;
     }
 
-    public int getPassCount()
-    {
+    public int getPassCount() {
         return passcount;
     }
 
-    public int getMaxCombo()
-    {
+    public int getMaxCombo() {
         return max_combo;
     }
 

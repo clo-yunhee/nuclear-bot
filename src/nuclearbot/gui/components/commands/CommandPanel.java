@@ -34,8 +34,7 @@ public class CommandPanel extends JPanel {
     private final CommandOverviewPanel m_overviewPanel;
     private final CommandEditPanel m_editPanel;
 
-    public CommandPanel(final NuclearBotGUI gui)
-    {
+    public CommandPanel(final NuclearBotGUI gui) {
         super(new GridLayout(0, 2));
 
         m_overviewPanel = new CommandOverviewPanel(gui);
@@ -45,23 +44,19 @@ public class CommandPanel extends JPanel {
         add(m_editPanel);
     }
 
-    public void addCommandList(final String name)
-    {
+    public void addCommandList(final String name) {
         m_overviewPanel.addCommand(name);
     }
 
-    public void removeCommandList(final String name)
-    {
+    public void removeCommandList(final String name) {
         m_overviewPanel.removeCommand(name);
     }
 
-    public void registerCommands()
-    {
+    public void registerCommands() {
         m_editPanel.registerCommands();
     }
 
-    public void unregisterCommands()
-    {
+    public void unregisterCommands() {
         m_overviewPanel.clearCommandList();
     }
 

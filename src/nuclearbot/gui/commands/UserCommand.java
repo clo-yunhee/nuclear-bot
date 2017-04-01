@@ -41,17 +41,15 @@ public class UserCommand implements CommandExecutor {
      *
      * @param format the format string
      */
-    public UserCommand(final String format)
-    {
+    public UserCommand(final String format) {
         m_formatter = new ArgumentFormatter(format);
     }
 
     @Override
-    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
-    {
+    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args)
+            throws IOException {
         final String message = m_formatter.format(username, args);
-        if (message != null)
-        {
+        if (message != null) {
             client.sendMessage(message);
             return true;
         }

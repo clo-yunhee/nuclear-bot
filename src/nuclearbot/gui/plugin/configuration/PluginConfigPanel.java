@@ -50,16 +50,14 @@ public final class PluginConfigPanel extends JPanel {
      *
      * @param prefix the key prefix
      */
-    public PluginConfigPanel(final String prefix)
-    {
+    public PluginConfigPanel(final String prefix) {
         m_prefix = prefix;
         m_entries = new HashSet<>();
 
         setLayout(new VerticalLayout());
     }
 
-    private void addComponent(final String label, final ConfigEntry entry)
-    {
+    private void addComponent(final String label, final ConfigEntry entry) {
         final JPanel rowPanel = new JPanel();
         {
             rowPanel.add(new JLabel(label + ':'));
@@ -70,18 +68,15 @@ public final class PluginConfigPanel extends JPanel {
     }
 
     @Override
-    protected void addImpl(final Component component, final Object constraints, final int index)
-    {
+    protected void addImpl(final Component component, final Object constraints, final int index) {
         throw new IllegalStateException("Tried to add a component using add method. Please use the addXXX(String, String) methods");
     }
 
     /**
      * Sets the fields back to the current configuration.
      */
-    public void resetFields()
-    {
-        for (final ConfigEntry entry : m_entries)
-        {
+    public void resetFields() {
+        for (final ConfigEntry entry : m_entries) {
             final String key = m_prefix + '_' + entry.getKey();
             final String defaultValue = entry.getDefaultValue();
             entry.setValue(Config.get(key, defaultValue));
@@ -91,10 +86,8 @@ public final class PluginConfigPanel extends JPanel {
     /**
      * Sets the configuration to the values of the fields.
      */
-    public void saveFields()
-    {
-        for (final ConfigEntry entry : m_entries)
-        {
+    public void saveFields() {
+        for (final ConfigEntry entry : m_entries) {
             final String key = m_prefix + '_' + entry.getKey();
             Config.set(key, entry.getValue());
         }
@@ -108,8 +101,7 @@ public final class PluginConfigPanel extends JPanel {
      * @param key          the configuration key associated to this field
      * @param defaultValue the default value if the entry does not exist
      */
-    public void addTextField(final String label, final String key, final String defaultValue)
-    {
+    public void addTextField(final String label, final String key, final String defaultValue) {
         addComponent(label, new EntryTextField(key, defaultValue));
     }
 
@@ -121,8 +113,7 @@ public final class PluginConfigPanel extends JPanel {
      * @param key          the configuration key associated to this field
      * @param defaultValue the default value if the entry does not exist
      */
-    public void addPasswordField(final String label, final String key, final String defaultValue)
-    {
+    public void addPasswordField(final String label, final String key, final String defaultValue) {
         addComponent(label, new EntryPasswordField(key, defaultValue));
     }
 
@@ -134,8 +125,7 @@ public final class PluginConfigPanel extends JPanel {
      * @param key          the configuration key associated to this field
      * @param defaultValue the default value if the entry does not exist
      */
-    public void addCheckBox(final String label, final String key, final boolean defaultValue)
-    {
+    public void addCheckBox(final String label, final String key, final boolean defaultValue) {
         addComponent(label, new EntryCheckBox(key, Boolean.toString(defaultValue)));
     }
 

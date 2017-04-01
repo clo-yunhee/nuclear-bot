@@ -4,6 +4,9 @@ import nuclearbot.client.Moderators;
 import nuclearbot.gui.NuclearBotGUI;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
@@ -37,8 +40,7 @@ public class ModeratorPanel extends JPanel {
 
     private final DefaultListModel<String> m_moderators;
 
-    public ModeratorPanel(final NuclearBotGUI gui)
-    {
+    public ModeratorPanel(final NuclearBotGUI gui) {
         super(new BorderLayout());
 
         m_gui = gui;
@@ -48,20 +50,33 @@ public class ModeratorPanel extends JPanel {
         final JList<String> list = new JList<>(m_moderators);
         final JScrollPane listScroll = new JScrollPane(list);
 
+        list.setLayoutOrientation(JList.VERTICAL_WRAP);
+        list.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel cell = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                final Border border = BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("Table.gridColor"));
+                final Border margin = new EmptyBorder(0, 5, 0, 5);
+                cell.setBorder(new CompoundBorder(border, margin));
+                cell.setHorizontalAlignment(JLabel.CENTER);
+                cell.setVerticalAlignment(JLabel.CENTER);
+                return cell;
+            }
+        });
+
         listScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         listScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         final JPanel side = new JPanel(new FlowLayout());
         {
-            final JTextField nameField = new JTextField(10);
+            final JTextField nameField = new JTextField(20);
             final JButton addButton = new JButton("Add");
             final JButton removeButton = new JButton("Remove");
 
             final ActionListener addAction = e ->
             {
                 final String name = nameField.getText().toLowerCase().trim();
-                if (!name.isEmpty())
-                {
+                if (!name.isEmpty()) {
                     nameField.setText("");
                     addModerator(name);
                 }
@@ -70,8 +85,7 @@ public class ModeratorPanel extends JPanel {
             nameField.addActionListener(addAction);
             addButton.addActionListener(addAction);
 
-            removeButton.addActionListener(e ->
-                    list.getSelectedValuesList().forEach(this::removeModerator));
+            removeButton.addActionListener(e -> list.getSelectedValuesList().forEach(this::removeModerator));
 
             side.add(nameField);
             side.add(addButton);
@@ -85,48 +99,36 @@ public class ModeratorPanel extends JPanel {
         Moderators.getModerators().forEach(m_moderators::addElement);
     }
 
-    public void addModerator(final String name)
-    {
-        if (Moderators.isModerator(name))
-        {
+    public void addModerator(final String name) {
+        if (Moderators.isModerator(name)) {
             m_gui.getDialogs().warning("User \"" + name + "\" is already moderator.", "Already moderator");
-        }
-        else
-        {
+        } else {
             Moderators.addModerator(name);
 
             // this is to ensure the list remains sorted
-            if (m_moderators.isEmpty())
-            {
+            if (m_moderators.isEmpty()) {
                 m_moderators.addElement(name);
-            }
-            else
-            {
+            } else {
                 int index = 0;
                 String element;
-                do
-                {
+                do {
                     element = m_moderators.get(index);
                     if (element.compareTo(name) > 0) // insert the element at the right index
                     {
-                        m_moderators.add(index, name);
                         break;
                     }
                     index++;
                 }
                 while (index < m_moderators.size());
+                m_moderators.add(index, name);
             }
         }
     }
 
-    public void removeModerator(final String name)
-    {
-        if (!Moderators.isModerator(name))
-        {
+    public void removeModerator(final String name) {
+        if (!Moderators.isModerator(name)) {
             m_gui.getDialogs().warning("User \"" + name + "\" is not moderator.", "Not moderator");
-        }
-        else
-        {
+        } else {
             Moderators.removeModerator(name);
             m_moderators.removeElement(name);
         }

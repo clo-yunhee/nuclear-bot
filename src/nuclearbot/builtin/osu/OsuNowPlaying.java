@@ -39,63 +39,45 @@ public class OsuNowPlaying {
     private static final String ERROR = "An error occurred while fetching the song name.";
     private static final String NOW_PLAYING = "Now playing \"%s\".";
 
-    private static final Response parseTitle(final String windowTitle)
-    {
-        final String[] titleArray = windowTitle
-                .split(" - ", 2); // remove the heading 'osu! - ' prefix
-        if (titleArray.length == 1)
-        {
+    private static final Response parseTitle(final String windowTitle) {
+        final String[] titleArray = windowTitle.split(" - ", 2); // remove the heading 'osu! - ' prefix
+        if (titleArray.length == 1) {
             return new Response(NOTHING, null);
-        }
-        else
-        {
+        } else {
             return new Response(NOW_PLAYING, titleArray[1]);
         }
     }
 
-    private static final Response getLinux()
-    {
+    private static final Response getLinux() {
         String windowTitle = null;
         try // first, list osu! windows
         {
-            final Process windowProcess = Runtime.getRuntime()
-                    .exec("xdotool search --classname osu");
-            try (final BufferedReader windowReader = new BufferedReader(
-                    new InputStreamReader(windowProcess.getInputStream())))
-            {
+            final Process windowProcess = Runtime.getRuntime().exec("xdotool search --classname osu");
+            try (final BufferedReader windowReader = new BufferedReader(new InputStreamReader(windowProcess.getInputStream()))) {
                 String line;
-                while ((line = windowReader.readLine()) != null)
-                {
+                while ((line = windowReader.readLine()) != null) {
                     final int wId = Integer.parseInt(line.trim()); // for each window, check the title
                     final Process pTitle = Runtime.getRuntime().exec("xdotool getwindowname " + wId);
                     final String title;
 
-                    try (final BufferedReader rTitle = new BufferedReader(
-                            new InputStreamReader(pTitle.getInputStream())))
-                    {
+                    try (final BufferedReader rTitle = new BufferedReader(new InputStreamReader(pTitle.getInputStream()))) {
                         title = rTitle.readLine().trim();
                     }
 
                     // only one should have "osu!" in it (windows should be: X container, .NET container, actual osu! game)
-                    if (title.contains("osu!"))
-                    {
+                    if (title.contains("osu!")) {
                         windowTitle = title;
                         break;
                     }
                 }
             }
 
-            if (windowTitle == null)
-            {
+            if (windowTitle == null) {
                 return new Response(NOT_RUNNING, null);
             }
-        }
-        catch (NumberFormatException e)
-        {
+        } catch (NumberFormatException e) {
             return new Response(NOT_RUNNING, null);
-        }
-        catch (IOException | IllegalStateException e)
-        {
+        } catch (IOException | IllegalStateException e) {
             Logger.error(ERROR);
             Logger.printStackTrace(e);
             return new Response(ERROR, null);
@@ -104,35 +86,26 @@ public class OsuNowPlaying {
         return parseTitle(windowTitle);
     }
 
-    private static final Response getWindows()
-    {
+    private static final Response getWindows() {
         final String output;
         final StringBuilder builder = new StringBuilder();
-        try
-        {
-            final Process process = Runtime.getRuntime()
-                    .exec("tasklist /fo csv /nh /fi \"imagename eq osu!.exe\" /v");
-            try (final BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream())))
-            {
+        try {
+            final Process process = Runtime.getRuntime().exec("tasklist /fo csv /nh /fi \"imagename eq osu!.exe\" /v");
+            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
-                while ((line = reader.readLine()) != null)
-                {
+                while ((line = reader.readLine()) != null) {
                     builder.append(line);
                     builder.append('\n');
                 }
             }
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.error(ERROR);
             Logger.printStackTrace(e);
             return new Response(ERROR, null);
         }
         output = builder.toString();
 
-        if (!output.startsWith("\"osu!.exe\""))
-        {
+        if (!output.startsWith("\"osu!.exe\"")) {
             return new Response(NOT_RUNNING, null);
         }
 
@@ -143,10 +116,8 @@ public class OsuNowPlaying {
         return parseTitle(windowTitle);
     }
 
-    public static final Response getSong()
-    {
-        switch (OSUtils.getOS())
-        {
+    public static final Response getSong() {
+        switch (OSUtils.getOS()) {
             case LINUX:
                 return getLinux();
             case WINDOWS:
@@ -162,8 +133,7 @@ public class OsuNowPlaying {
         public final String text;
         public final String rawTitle;
 
-        private Response(final String text, final String raw)
-        {
+        private Response(final String text, final String raw) {
             this.text = text;
             this.rawTitle = raw;
         }

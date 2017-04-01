@@ -37,28 +37,23 @@ public class DataEvent {
     // How "epic" this event is (between 1 and 32)
     private int epicfactor;
 
-    public String getDisplayHTML()
-    {
+    public String getDisplayHTML() {
         return display_html;
     }
 
-    public int getBeatmapId()
-    {
+    public int getBeatmapId() {
         return beatmap_id;
     }
 
-    public int getBeatmapsetId()
-    {
+    public int getBeatmapsetId() {
         return beatmapset_id;
     }
 
-    public String getDate()
-    {
+    public String getDate() {
         return date;
     }
 
-    public int getEpicFactor()
-    {
+    public int getEpicFactor() {
         return epicfactor;
     }
 

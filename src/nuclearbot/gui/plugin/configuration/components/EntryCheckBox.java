@@ -30,20 +30,19 @@ public class EntryCheckBox extends ConfigEntry {
 
     private final JCheckBox m_checkBox;
 
-    public EntryCheckBox(final String key, final String defaultValue)
-    {
+    public EntryCheckBox(final String key, final String defaultValue) {
         super(new JCheckBox(), key, defaultValue);
 
         m_checkBox = getComponent();
     }
 
-    @Override public String getValue()
-    {
+    @Override
+    public String getValue() {
         return Boolean.toString(m_checkBox.isSelected());
     }
 
-    @Override public void setValue(final String value)
-    {
+    @Override
+    public void setValue(final String value) {
         m_checkBox.setSelected(Boolean.getBoolean(value));
     }
 

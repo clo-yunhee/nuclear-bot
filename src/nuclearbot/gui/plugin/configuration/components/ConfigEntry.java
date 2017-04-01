@@ -33,8 +33,7 @@ public abstract class ConfigEntry {
     private final String m_key;
     private final String m_default;
 
-    public ConfigEntry(final Component component, final String key, final String defaultValue)
-    {
+    public ConfigEntry(final Component component, final String key, final String defaultValue) {
         m_component = component;
         m_key = key;
         m_default = defaultValue;
@@ -45,8 +44,8 @@ public abstract class ConfigEntry {
      *
      * @return the wrapped component with the right type
      */
-    @SuppressWarnings("unchecked") public <T extends Component> T getComponent()
-    {
+    @SuppressWarnings("unchecked")
+    public <T extends Component> T getComponent() {
         return (T) m_component;
     }
 
@@ -55,8 +54,7 @@ public abstract class ConfigEntry {
      *
      * @return the entry key
      */
-    public String getKey()
-    {
+    public String getKey() {
         return m_key;
     }
 
@@ -65,8 +63,7 @@ public abstract class ConfigEntry {
      *
      * @return the entry value
      */
-    public String getDefaultValue()
-    {
+    public String getDefaultValue() {
         return m_default;
     }
 

@@ -53,8 +53,7 @@ public class UserCommandManager {
     // contains the commands that failed to register to the client
     private final Set<String> m_failedRegister;
 
-    public UserCommandManager(final NuclearBotGUI gui, final JComboBox<String> combo)
-    {
+    public UserCommandManager(final NuclearBotGUI gui, final JComboBox<String> combo) {
         m_gui = gui;
         m_commands = new HashMap<>();
         m_failedRegister = new HashSet<>();
@@ -67,22 +66,15 @@ public class UserCommandManager {
         createFileIfNeeded();
     }
 
-    private void createFileIfNeeded()
-    {
-        if (!m_file.exists() && m_file.mkdirs() && m_file.delete())
-        {
-            try
-            {
-                if (m_file.createNewFile())
-                {
-                    try (final FileWriter writer = new FileWriter(m_file, false))
-                    {
+    private void createFileIfNeeded() {
+        if (!m_file.exists() && m_file.mkdirs() && m_file.delete()) {
+            try {
+                if (m_file.createNewFile()) {
+                    try (final FileWriter writer = new FileWriter(m_file, false)) {
                         writer.write("[]");
                     }
                 }
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 Logger.warning("(uCmd) Could not create \"" + FILE_NAME + "\" for persistence.");
                 Logger.warning("(uCmd) User-defined commands will only last one lifetime.");
                 Logger.printStackTrace(e);
@@ -90,47 +82,34 @@ public class UserCommandManager {
         }
     }
 
-    public void createUserCommand(final String name, final String usage, final String description, final String response, final boolean silent)
-    {
+    public void createUserCommand(final String name, final String usage, final String description, final String response, final boolean silent) {
         final ChatClient client = m_gui.getClient();
 
-        if (m_commands.containsKey(name))
-        {
+        if (m_commands.containsKey(name)) {
             Logger.info("(uCmd) Updating command \"" + name + "\"...");
-            if (m_gui.isClientRunning())
-            {
+            if (m_gui.isClientRunning()) {
                 client.unregisterCommand(name);
             }
             m_commands.remove(name);
             m_combo.removeItem(name);
-        }
-        else
-        {
+        } else {
             Logger.info("(uCmd) Creating command \"" + name + "\"...");
         }
 
-        if (m_gui.isClientRunning())
-        {
-            if (!client.isCommandRegistered(name))
-            {
+        if (m_gui.isClientRunning()) {
+            if (!client.isCommandRegistered(name)) {
                 client.registerCommand(name, usage, new UserCommand(response)).setDescription(description);
                 m_failedRegister.remove(name);
-            }
-            else
-            {
+            } else {
                 Logger.warning("(uCmd) Command \"" + name + "\" is already registered.");
-                if (!silent)
-                {
+                if (!silent) {
                     m_dialogs.warning("Command \"" + name + "\" has already been registered.", "Command already registered");
                 }
                 m_failedRegister.add(name);
             }
-        }
-        else
-        {
+        } else {
             Logger.warning("(uCmd) Command \"" + name + "\" will be registered when the client starts.");
-            if (!silent)
-            {
+            if (!silent) {
                 m_dialogs.warning("Command \"" + name + "\" will be registered when the client starts.", "Client is not running");
             }
         }
@@ -141,102 +120,77 @@ public class UserCommandManager {
         saveCommands(silent);
 
         Logger.info("(uCmd) Command \"" + name + "\" created successfully.");
-        if (!silent)
-        {
+        if (!silent) {
             m_dialogs.info("Command \"" + name + "\" created.", "Command created");
         }
     }
 
-    private void saveCommands(final boolean silent)
-    {
-        try (final FileWriter writer = new FileWriter(m_file, false))
-        {
+    private void saveCommands(final boolean silent) {
+        try (final FileWriter writer = new FileWriter(m_file, false)) {
             new Gson().toJson(m_commands.values(), Collection.class, writer);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.error("(uCmd) Couldn't save persistent user command:");
             Logger.printStackTrace(e);
-            if (!silent)
-            {
+            if (!silent) {
                 m_dialogs.error("Couldn't save persistent user command. Check console for details.", "Couldn't save config");
             }
         }
     }
 
-    public void loadCommands()
-    {
+    public void loadCommands() {
         m_commands.clear();
 
-        try (final FileReader reader = new FileReader(m_file))
-        {
+        try (final FileReader reader = new FileReader(m_file)) {
             final Type type = new TypeToken<List<CommandInfo>>() {
             }.getType();
 
             final List<CommandInfo> entries = new Gson().fromJson(reader, type);
-            for (final CommandInfo command : entries)
-            {
+            for (final CommandInfo command : entries) {
                 createUserCommand(command.name, command.usage, command.description, command.response, true);
             }
-        }
-        catch (JsonSyntaxException | IOException e)
-        {
+        } catch (JsonSyntaxException | IOException e) {
             Logger.error("(uCmd) Error while loading user commands:");
             Logger.printStackTrace(e);
             m_dialogs.error("Error in the user commands configuration. Check console for details.", "JSON syntax error");
         }
     }
 
-    public CommandInfo getCommand(final String name)
-    {
+    public CommandInfo getCommand(final String name) {
         return m_commands.get(name);
     }
 
-    public void removeCommand(final String name, final boolean silent)
-    {
-        if (m_commands.containsKey(name))
-        {
+    public void removeCommand(final String name, final boolean silent) {
+        if (m_commands.containsKey(name)) {
             if (m_gui.isClientRunning() && !m_failedRegister.contains(name))
                 m_gui.getClient().unregisterCommand(name);
 
             m_commands.remove(name);
             m_combo.removeItem(name);
-            if (!silent)
-            {
+            if (!silent) {
                 Logger.info("(uCmd) Command \"" + name + "\" removed successfully.");
                 m_dialogs.info("Command \"" + name + "\" removed successfully.", "Command removed");
             }
-        }
-        else
-        {
-            if (!silent)
-            {
+        } else {
+            if (!silent) {
                 Logger.info("(uCmd) Command \"" + name + "\" is not a user command.");
                 m_dialogs.warning("Command \"" + name + "\" is not a user command.", "Not a user command");
             }
         }
     }
 
-    public boolean contains(String command)
-    {
+    public boolean contains(String command) {
         return m_commands.containsKey(command);
     }
 
-    public void registerCommands()
-    {
+    public void registerCommands() {
         m_failedRegister.clear();
-        for (final String name : m_commands.keySet())
-        {
+        for (final String name : m_commands.keySet()) {
             final CommandInfo command = m_commands.get(name);
             final UserCommand executor = new UserCommand(command.response);
 
-            try
-            {
-                m_gui.getClient().registerCommand(command.name, command.usage, executor)
-                        .setDescription(command.description);
-            }
-            catch (IllegalArgumentException e)
-            {
+            try {
+                m_gui.getClient().registerCommand(command.name, command.usage, executor).setDescription(command.description);
+            } catch (IllegalArgumentException e) {
                 Logger.warning("(uCmd) User command \"" + command.name + "\" was already registered by something else.");
                 m_dialogs.warning("User command \"" + command.name + "\" was already registered by something else.", "Command already registered");
                 m_failedRegister.add(name);
@@ -251,8 +205,7 @@ public class UserCommandManager {
         public final String description;
         public final String response;
 
-        private CommandInfo(String name, String usage, String description, String response)
-        {
+        private CommandInfo(String name, String usage, String description, String response) {
             this.name = name;
             this.usage = usage;
             this.description = description;

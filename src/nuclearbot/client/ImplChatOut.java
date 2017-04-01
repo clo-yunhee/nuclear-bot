@@ -46,8 +46,7 @@ public class ImplChatOut implements ChatOut {
 
     private volatile boolean m_running;
 
-    public ImplChatOut(final OutputStream stream, final String name)
-    {
+    public ImplChatOut(final OutputStream stream, final String name) {
         m_out = new BufferedWriter(new OutputStreamWriter(stream));
         m_queue = new ArrayBlockingQueue<>(QUEUE_SIZE, true);
         m_name = name;
@@ -57,58 +56,43 @@ public class ImplChatOut implements ChatOut {
     }
 
     @Override
-    public void write(final String str)
-    {
-        try
-        {
+    public void write(final String str) {
+        try {
             m_queue.add(str);
-        }
-        catch (IllegalStateException e)
-        {
+        } catch (IllegalStateException e) {
             Logger.error("Output queue for " + m_name + " is full:");
             Logger.printStackTrace(e);
         }
     }
 
     @Override
-    public void start(final String name)
-    {
+    public void start(final String name) {
         m_running = true;
         m_thread = new Thread(this, name + " out");
         m_thread.start();
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         m_running = false;
         m_thread.interrupt();
     }
 
     @Override
-    public void run()
-    {
-        try
-        {
-            while (m_running)
-            {
-                try
-                {
+    public void run() {
+        try {
+            while (m_running) {
+                try {
                     final String message = m_queue.take();
                     m_out.write(message);
                     m_out.flush();
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     Logger.error("Exception caught in output thread:");
                     Logger.printStackTrace(e);
                 }
             }
-        }
-        catch (InterruptedException ignored)
-        {
+        } catch (InterruptedException ignored) {
         }
     }
-
 
 }

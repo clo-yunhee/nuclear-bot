@@ -39,10 +39,8 @@ import java.awt.event.ItemEvent;
  */
 public class CommandEditPanel extends JPanel {
 
-    private static final String HELP_TEXT = "The convention for usage format is the following:\n"
-            + "- angle brackets for required arguments;\n"
-            + "- square brackets for optional arguments;\n"
-            + "but the GUI creator doesn't support optional arguments yet.\n"
+    private static final String HELP_TEXT = "The convention for usage format is the following:\n" + "- angle brackets for required arguments;\n"
+            + "- square brackets for optional arguments;\n" + "but the GUI creator doesn't support optional arguments yet.\n"
             + "Please only write arguments without the command in the usage field.\n\n"
             + "To include arguments in the response, use \"$n\" or \"{$n}\", where n is the argument index.\n"
             + "The zero-th argument is the sender's username.\n"
@@ -61,8 +59,7 @@ public class CommandEditPanel extends JPanel {
 
     private final CommandExecutor m_modCommands;
 
-    public CommandEditPanel(final NuclearBotGUI gui)
-    {
+    public CommandEditPanel(final NuclearBotGUI gui) {
         super(new VerticalLayout());
         setBorder(BorderFactory.createTitledBorder("Create/Update"));
 
@@ -83,8 +80,7 @@ public class CommandEditPanel extends JPanel {
             });
             m_commandCombo.addFocusListener(new FocusAdapter() {
                 @Override
-                public void focusLost(FocusEvent e)
-                {
+                public void focusLost(FocusEvent e) {
                     updateCommandInfo();
                 }
             });
@@ -130,8 +126,7 @@ public class CommandEditPanel extends JPanel {
 
             removeButton.addActionListener(e -> removeCommand());
 
-            helpButton.addActionListener(e ->
-                    m_gui.getDialogs().info(HELP_TEXT, "Command creation help"));
+            helpButton.addActionListener(e -> m_gui.getDialogs().info(HELP_TEXT, "Command creation help"));
 
             submitPanel.add(createButton);
             submitPanel.add(removeButton);
@@ -150,27 +145,22 @@ public class CommandEditPanel extends JPanel {
         m_commands.loadCommands();
     }
 
-    public void registerCommands()
-    {
+    public void registerCommands() {
         final ChatClient client = m_gui.getClient();
 
         client.registerCommand("cmdadd", "!cmdadd <name> <response>", m_modCommands)
                 .setDescription("Adds a command with the given name and response.");
 
-        client.registerCommand("cmdrem", "!cmdrem <name>", m_modCommands)
-                .setDescription("Removes a command with the given name.");
+        client.registerCommand("cmdrem", "!cmdrem <name>", m_modCommands).setDescription("Removes a command with the given name.");
 
-        client.registerCommand("cmdusage", "!cmdusage <name> <usage>", m_modCommands)
-                .setDescription("Sets the command usage.");
+        client.registerCommand("cmdusage", "!cmdusage <name> <usage>", m_modCommands).setDescription("Sets the command usage.");
 
-        client.registerCommand("cmddesc", "!cmddesc <name> <usage>", m_modCommands)
-                .setDescription("Sets the command description.");
+        client.registerCommand("cmddesc", "!cmddesc <name> <usage>", m_modCommands).setDescription("Sets the command description.");
 
         m_commands.registerCommands();
     }
 
-    private void updateCommandInfo()
-    {
+    private void updateCommandInfo() {
         final String label = String.valueOf(m_commandCombo.getSelectedItem()).trim().toLowerCase();
         final UserCommandManager.CommandInfo command = m_commands.getCommand(label);
         m_usageField.setText(command != null ? command.usage : "");
@@ -178,11 +168,9 @@ public class CommandEditPanel extends JPanel {
         m_responseField.setText(command != null ? command.response : "");
     }
 
-    private void createCommand()
-    {
+    private void createCommand() {
         final String name = ((String) m_commandCombo.getSelectedItem()).trim().toLowerCase();
-        if (!name.isEmpty())
-        {
+        if (!name.isEmpty()) {
             final String usage = m_usageField.getText().trim();
             final String description = m_descriptionField.getText().trim();
             final String response = m_responseField.getText().trim();
@@ -191,11 +179,9 @@ public class CommandEditPanel extends JPanel {
         }
     }
 
-    private void removeCommand()
-    {
+    private void removeCommand() {
         final String name = ((String) m_commandCombo.getSelectedItem()).trim().toLowerCase();
-        if (!name.isEmpty())
-        {
+        if (!name.isEmpty()) {
             m_commands.removeCommand(name, false);
         }
     }

@@ -39,36 +39,25 @@ public class HyperlinkListener extends MouseAdapter {
 
     private URI m_uri;
 
-    public HyperlinkListener(final String url)
-    {
-        try
-        {
+    public HyperlinkListener(final String url) {
+        try {
             m_uri = new URL(url).toURI();
-        }
-        catch (MalformedURLException | URISyntaxException e)
-        {
+        } catch (MalformedURLException | URISyntaxException e) {
             Logger.error("(GUI) Bad URL \"" + url + "\":");
             Logger.printStackTrace(e);
         }
     }
 
     @Override
-    public void mouseClicked(final MouseEvent event)
-    {
-        if (m_uri != null && Desktop.isDesktopSupported())
-        {
-            try
-            {
+    public void mouseClicked(final MouseEvent event) {
+        if (m_uri != null && Desktop.isDesktopSupported()) {
+            try {
                 Desktop.getDesktop().browse(m_uri);
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 Logger.error("(GUI) Browser issued an I/O exception (\"" + m_uri.toString() + "\"):");
                 Logger.printStackTrace(e);
             }
-        }
-        else
-        {
+        } else {
             Logger.error("(GUI) Desktop not supported.");
         }
     }

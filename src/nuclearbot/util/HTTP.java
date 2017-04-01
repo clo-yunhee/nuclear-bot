@@ -45,11 +45,9 @@ public class HTTP {
      * @param <T>       the type of the returned object
      * @return the parsed output
      */
-    public static <T> T fetchData(final String targetUrl, final String paramData, final Class<T> classOfT)
-    {
+    public static <T> T fetchData(final String targetUrl, final String paramData, final Class<T> classOfT) {
         HttpURLConnection connection = null;
-        try
-        {
+        try {
             final URL url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST"); // for higher param length limit
@@ -57,27 +55,20 @@ public class HTTP {
             connection.setDoOutput(true);
 
             // send post data
-            try (final DataOutputStream out = new DataOutputStream(connection.getOutputStream()))
-            {
+            try (final DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
                 out.writeBytes(paramData);
             }
 
             // now the response
-            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream())))
-            {
+            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 return new Gson().fromJson(reader, classOfT);
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Logger.error("An error occurred while sending an HTTP request.");
             Logger.printStackTrace(e);
             return null;
-        }
-        finally
-        {
-            if (connection != null)
-            {
+        } finally {
+            if (connection != null) {
                 connection.disconnect();
             }
         }

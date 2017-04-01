@@ -40,8 +40,7 @@ public class Watcher {
     private static final long DELAY = TimeUnit.SECONDS.toMillis(0);
     private static final long PERIOD = TimeUnit.SECONDS.toMillis(3);
 
-    private Watcher()
-    {
+    private Watcher() {
     }
 
     /**
@@ -52,14 +51,11 @@ public class Watcher {
      * @param predicate the predicate to tell whether to run the task or not
      * @param task      the task to run if the predicate is true
      */
-    public static final void schedule(final String name, final BooleanSupplier predicate,
-            final Runnable task)
-    {
-        if (!tasks.containsKey(name))
-        {
+    public static final void schedule(final String name, final BooleanSupplier predicate, final Runnable task) {
+        if (!tasks.containsKey(name)) {
             final TimerTask timerTask = new TimerTask() {
-                @Override public void run()
-                {
+                @Override
+                public void run() {
                     if (predicate.getAsBoolean())
                         task.run();
                 }
@@ -75,10 +71,8 @@ public class Watcher {
      *
      * @param name the name of the task
      */
-    public static final void cancel(final String name)
-    {
-        if (tasks.containsKey(name))
-        {
+    public static final void cancel(final String name) {
+        if (tasks.containsKey(name)) {
             tasks.remove(name).cancel();
             timer.purge();
         }

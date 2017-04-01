@@ -35,8 +35,7 @@ public abstract class ImplJavaPlugin implements JavaPlugin {
 
     private final String m_className;
 
-    public ImplJavaPlugin(final Plugin plugin, final boolean builtin)
-    {
+    public ImplJavaPlugin(final Plugin plugin, final boolean builtin) {
         m_plugin = plugin;
         m_builtin = builtin;
 
@@ -44,44 +43,37 @@ public abstract class ImplJavaPlugin implements JavaPlugin {
     }
 
     @Override
-    public void onLoad(final ChatClient client) throws IOException
-    {
+    public void onLoad(final ChatClient client) throws IOException {
         m_plugin.onLoad(client);
     }
 
     @Override
-    public void onStart(final ChatClient client) throws IOException
-    {
+    public void onStart(final ChatClient client) throws IOException {
         m_plugin.onStart(client);
     }
 
     @Override
-    public void onStop(final ChatClient client) throws IOException
-    {
+    public void onStop(final ChatClient client) throws IOException {
         m_plugin.onStop(client);
     }
 
     @Override
-    public void onMessage(final ChatClient client, final String username, final String message) throws IOException
-    {
+    public void onMessage(final ChatClient client, final String username, final String message) throws IOException {
         m_plugin.onMessage(client, username, message);
     }
 
     @Override
-    public String getClassName()
-    {
+    public String getClassName() {
         return m_className;
     }
 
     @Override
-    public boolean isBuiltin()
-    {
+    public boolean isBuiltin() {
         return m_builtin;
     }
 
     @Override
-    public Plugin getHandle()
-    {
+    public Plugin getHandle() {
         return m_plugin;
     }
 

@@ -60,8 +60,7 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
      *
      * @param message the message to send
      */
-    public void sendPrivateMessage(final String message)
-    {
+    public void sendPrivateMessage(final String message) {
         m_client.sendPrivateMessage(message);
     }
 
@@ -70,8 +69,7 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
      *
      * @return the bot's osu! username
      */
-    public String getUsername()
-    {
+    public String getUsername() {
         return m_username;
     }
 
@@ -80,14 +78,12 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
      *
      * @return the bot's osu! API fetcher
      */
-    public OsuFetcher getFetcher()
-    {
+    public OsuFetcher getFetcher() {
         return m_fetcher;
     }
 
     @Override
-    public PluginConfigPanel getConfigPanel()
-    {
+    public PluginConfigPanel getConfigPanel() {
         final PluginConfigPanel configPanel = new PluginConfigPanel("osu");
         configPanel.addTextField("osu! user name", "user", "");
         configPanel.addPasswordField("osu! API key", "api_key", "");
@@ -96,64 +92,51 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
         return configPanel;
     }
 
-    @Override public void onLoad(final ChatClient client) throws IOException
-    {
+    @Override
+    public void onLoad(final ChatClient client) throws IOException {
         m_apiKey = Config.get("osu_api_key");
         m_username = Config.get("osu_user");
 
         m_client = new OsuClient(m_username, Config.get("osu_irc_key"));
         m_fetcher = new OsuFetcher(m_apiKey);
 
-        client.registerCommand("np", "!np", new CommandNowPlaying())
-                .setDescription("Displays the song playing in osu!.\nOnly works when in game.");
+        client.registerCommand("np", "!np", new CommandNowPlaying()).setDescription("Displays the song playing in osu!.\nOnly works when in game.");
 
         client.registerCommand("req", "!req <url> [comments]", new CommandRequest(this))
                 .setDescription("Requests a song to be played,\nwith optional comments.");
 
-        client.registerCommand("stats", "!stats [user]", new CommandStats(this))
-                .setDescription("Displays info about an osu! player.");
+        client.registerCommand("stats", "!stats [user]", new CommandStats(this)).setDescription("Displays info about an osu! player.");
 
         // check if we can watch and write to the path
         final String watcherPath = Config.get("osu_np_path");
         m_watcherFile = new File(watcherPath);
 
-        m_doWatchSong =
-                (m_watcherFile.exists() || (!m_watcherFile.exists() && m_watcherFile.mkdirs()
-                        && m_watcherFile.delete() && m_watcherFile.createNewFile()))
-                        && m_watcherFile.canWrite();
+        m_doWatchSong = (m_watcherFile.exists() || (!m_watcherFile.exists() && m_watcherFile.mkdirs() && m_watcherFile.delete() && m_watcherFile
+                .createNewFile())) && m_watcherFile.canWrite();
     }
 
-    @Override public void onStart(final ChatClient client) throws IOException
-    {
-        try
-        {
+    @Override
+    public void onStart(final ChatClient client) throws IOException {
+        try {
             m_client.connect();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.error("(osu!) Unable to connect the osu! IRC client.");
             Logger.printStackTrace(e);
         }
 
         // watch the playing song
-        if (m_doWatchSong)
-        {
-            Logger.info("(osu!) Watching the now playing song and writing to \"" + m_watcherFile
-                    .getAbsolutePath() + "\"");
+        if (m_doWatchSong) {
+            Logger.info("(osu!) Watching the now playing song and writing to \"" + m_watcherFile.getAbsolutePath() + "\"");
 
             Watcher.schedule("np-watcher", () -> m_doWatchSong, () ->
             {
-                try
-                {
+                try {
                     final OsuNowPlaying.Response song = OsuNowPlaying.getSong();
                     final String text = song.rawTitle != null ? song.rawTitle : "Not playing";
-                    try (final FileWriter writer = new FileWriter(m_watcherFile, false))
-                    {
+                    try (final FileWriter writer = new FileWriter(m_watcherFile, false)) {
                         writer.write(text);
                     }
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     Logger.warning("(osu!) Could not write the now playing song to the file:");
                     Logger.printStackTrace(e);
                 }
@@ -161,31 +144,24 @@ public class OsuPlugin implements Plugin, HasConfigPanel {
         }
     }
 
-    @Override public void onStop(final ChatClient client) throws IOException
-    {
+    @Override
+    public void onStop(final ChatClient client) throws IOException {
         Logger.info("(osu!) Releasing resources...");
 
-        if (m_doWatchSong)
-        {
+        if (m_doWatchSong) {
             Watcher.cancel("np-watcher");
         }
 
-        try
-        {
+        try {
             m_client.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.error("(osu!) Unable to disconnect the osu! IRC client.");
             Logger.printStackTrace(e);
         }
     }
 
     @Override
-    public void onMessage(final ChatClient client, final String username,
-                          final String message) throws IOException
-    {
+    public void onMessage(final ChatClient client, final String username, final String message) throws IOException {
     }
-
 
 }

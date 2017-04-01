@@ -34,8 +34,8 @@ import java.io.IOException;
 public class CommandNowPlaying implements CommandExecutor {
 
     @Override
-    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
-    {
+    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args)
+            throws IOException {
         final OsuNowPlaying.Response song = OsuNowPlaying.getSong();
         client.sendMessage(String.format(song.text, song.rawTitle));
         return true;

@@ -35,25 +35,19 @@ public class Config {
     private static final Properties prop;
     private static final File configFile;
 
-    static
-    {
+    static {
         Runtime.getRuntime().addShutdownHook(new Thread(new ConfigShutdownHook()));
 
         configFile = new File("config.properties");
 
-        if (configFile.isDirectory())
-        {
+        if (configFile.isDirectory()) {
             Logger.error("Couldn't write to config.properties in the program's directory.");
             System.exit(1);
         }
-        if (!configFile.exists() && configFile.mkdirs() && configFile.delete())
-        { // create an empty config file if it doesn't exist
-            try
-            {
+        if (!configFile.exists() && configFile.mkdirs() && configFile.delete()) { // create an empty config file if it doesn't exist
+            try {
                 configFile.createNewFile();
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 Logger.error("An error occurred while creating config file.");
                 Logger.printStackTrace(e);
                 System.exit(1);
@@ -62,12 +56,9 @@ public class Config {
 
         prop = new Properties();
 
-        try (final FileReader in = new FileReader(configFile))
-        {
+        try (final FileReader in = new FileReader(configFile)) {
             prop.load(in);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.error("An error occurred while loading config.");
             Logger.printStackTrace(e);
         }
@@ -80,10 +71,8 @@ public class Config {
      *                     rather than a regular file, does not exist but cannot be
      *                     created, or cannot be opened for any other reason
      */
-    public static void saveConfig() throws IOException
-    {
-        try (final FileWriter writer = new FileWriter(configFile))
-        {
+    public static void saveConfig() throws IOException {
+        try (final FileWriter writer = new FileWriter(configFile)) {
             prop.store(writer, "please do not attempt to edit anything manually unless explicitly directed otherwise");
         }
     }
@@ -95,10 +84,8 @@ public class Config {
      *                     a directory rather than a regular file, or for some other
      *                     reason cannot be opened for reading.
      */
-    public static void reloadConfig() throws IOException
-    {
-        try (final FileReader reader = new FileReader(configFile))
-        {
+    public static void reloadConfig() throws IOException {
+        try (final FileReader reader = new FileReader(configFile)) {
             prop.load(reader);
         }
     }
@@ -112,14 +99,10 @@ public class Config {
      * @param defaultValue the default value
      * @return the value in this property list with the specified key
      */
-    public static String get(final String key, final String defaultValue)
-    {
-        if (prop.containsKey(key))
-        {
+    public static String get(final String key, final String defaultValue) {
+        if (prop.containsKey(key)) {
             return prop.getProperty(key);
-        }
-        else
-        {
+        } else {
             prop.setProperty(key, defaultValue);
             return defaultValue;
         }
@@ -133,8 +116,7 @@ public class Config {
      * @param key the property key
      * @return the value in this property list with the specified key
      */
-    public static String get(final String key)
-    {
+    public static String get(final String key) {
         return get(key, "");
     }
 
@@ -147,23 +129,18 @@ public class Config {
      * @param value the new value
      * @return the previous value, or null
      */
-    public static String set(final String key, final String value)
-    {
+    public static String set(final String key, final String value) {
         return (String) prop.setProperty(key, value);
     }
 
     private static class ConfigShutdownHook implements Runnable {
 
         @Override
-        public void run()
-        {
+        public void run() {
             Logger.info("(Exit) Saving config...");
-            try
-            {
+            try {
                 saveConfig();
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 Logger.error("(Exit) Couldn't save config.");
                 Logger.printStackTrace(e);
             }

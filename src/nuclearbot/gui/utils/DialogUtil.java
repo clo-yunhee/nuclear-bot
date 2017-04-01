@@ -43,8 +43,7 @@ public class DialogUtil {
      *
      * @param container the parent for the created dialogs
      */
-    public DialogUtil(final JFrame container)
-    {
+    public DialogUtil(final JFrame container) {
         m_container = container;
         m_queue = new ArrayDeque<>();
         m_doQueue = true;
@@ -56,23 +55,19 @@ public class DialogUtil {
      *
      * @param doQueue the new queueing status
      */
-    public void setQueueDialogs(final boolean doQueue)
-    {
+    public void setQueueDialogs(final boolean doQueue) {
         m_doQueue = doQueue;
-        if (!doQueue)
-        {
+        if (!doQueue) {
             synchronized (m_queue) // if we're not queueing anymore, process all previously queued dialogs
             {
-                while (!m_queue.isEmpty())
-                {
+                while (!m_queue.isEmpty()) {
                     m_queue.poll().process();
                 }
             }
         }
     }
 
-    private void dialog(final String message, final String title, final int type)
-    {
+    private void dialog(final String message, final String title, final int type) {
         new DialogCall(message, title, type).process();
     }
 
@@ -82,8 +77,7 @@ public class DialogUtil {
      * @param message the dialog message
      * @param title   the dialog title
      */
-    public void info(final String message, final String title)
-    {
+    public void info(final String message, final String title) {
         dialog(message, title, JOptionPane.INFORMATION_MESSAGE);
     }
 
@@ -93,8 +87,7 @@ public class DialogUtil {
      * @param message the dialog message
      * @param title   the dialog title
      */
-    public void warning(final String message, final String title)
-    {
+    public void warning(final String message, final String title) {
         dialog(message, title, JOptionPane.WARNING_MESSAGE);
     }
 
@@ -104,8 +97,7 @@ public class DialogUtil {
      * @param message the dialog message
      * @param title   the dialog title
      */
-    public void error(final String message, final String title)
-    {
+    public void error(final String message, final String title) {
         dialog(message, title, JOptionPane.ERROR_MESSAGE);
     }
 
@@ -115,35 +107,29 @@ public class DialogUtil {
         private final String m_title;
         private final int m_type;
 
-        public DialogCall(final String message, final String title, final int type)
-        {
+        public DialogCall(final String message, final String title, final int type) {
             m_message = message;
             m_title = title;
             m_type = type;
         }
 
-        private void process()
-        {
+        private void process() {
             if (m_doQueue) // if we're queueing, append to queue
             {
-                synchronized (m_queue)
-                {
+                synchronized (m_queue) {
                     m_queue.add(this);
                 }
-            }
-            else if (EventQueue.isDispatchThread()) // we're not queueing and we're in the EDT
+            } else if (EventQueue.isDispatchThread()) // we're not queueing and we're in the EDT
             {
                 run();
-            }
-            else // if not, do it
+            } else // if not, do it
             {
                 EventQueue.invokeLater(this);
             }
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             JOptionPane.showMessageDialog(m_container, m_message, m_title, m_type);
         }
 

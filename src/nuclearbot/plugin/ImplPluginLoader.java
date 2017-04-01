@@ -57,126 +57,94 @@ public class ImplPluginLoader implements PluginLoader {
 
     private JavaPlugin m_plugin;
 
-    public ImplPluginLoader()
-    {
+    public ImplPluginLoader() {
         m_defaultClassLoader = ImplPluginLoader.class.getClassLoader();
 
         // look for built-in plugins in the 'builtin' package
         final List<String> classes = new ArrayList<>(5);
-        try
-        {
+        try {
             final URL resource = m_defaultClassLoader.getResource(BUILTIN_PACKAGE_PATH);
-            if (resource == null)
-            {
+            if (resource == null) {
                 throw new NullPointerException("Builtin package is not present.");
             }
-            if (resource.toString().startsWith("jar:"))
-            {
+            if (resource.toString().startsWith("jar:")) {
                 classes.addAll(findPluginsJar(resource, BUILTIN_PACKAGE_PATH));
-            }
-            else
-            {
+            } else {
                 classes.addAll(findPluginsDir(new File(resource.toURI()), BUILTIN_PACKAGE_PATH));
             }
-        }
-        catch (URISyntaxException | NullPointerException e)
-        {
+        } catch (URISyntaxException | NullPointerException e) {
             Logger.printStackTrace(e);
         }
         m_builtinPlugins = classes.toArray(new String[classes.size()]);
 
         // load the last loaded plugin
         final String lastLoadedPlugin = Config.get("last_plugin", DummyPlugin.class.getName());
-        if (lastLoadedPlugin == null || lastLoadedPlugin.isEmpty())
-        {
+        if (lastLoadedPlugin == null || lastLoadedPlugin.isEmpty()) {
             loadPlugin(DummyPlugin.class.getName());
-        }
-        else if (lastLoadedPlugin.startsWith(CONFIG_DELIMITER))
-        {
+        } else if (lastLoadedPlugin.startsWith(CONFIG_DELIMITER)) {
             loadPlugin(lastLoadedPlugin.substring(CONFIG_DELIMITER.length()));
-        }
-        else
-        {
+        } else {
             loadPlugin(new File(lastLoadedPlugin));
         }
     }
 
-    private List<String> findPluginsJar(final URL resource, String packageName)
-    {
+    private List<String> findPluginsJar(final URL resource, String packageName) {
         final List<String> classes = new ArrayList<>();
         final String packagePath = packageName.replace('.', '/');
         final String filename = resource.getPath().replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
 
-        try (final JarFile jarFile = new JarFile(filename))
-        {
+        try (final JarFile jarFile = new JarFile(filename)) {
             final Enumeration<JarEntry> entries = jarFile.entries();
-            while (entries.hasMoreElements())
-            {
+            while (entries.hasMoreElements()) {
                 final JarEntry entry = entries.nextElement();
                 final String entryName = entry.getName();
-                if (entryName.startsWith(packagePath) && entryName.endsWith(".class"))
-                {
+                if (entryName.startsWith(packagePath) && entryName.endsWith(".class")) {
                     final String className = entryName.substring(0, entryName.length() - 6).replace('/', '.').replace('\\', '.');
-                    try
-                    {
+                    try {
                         final Class<?> classFound = Class.forName(className, false, m_defaultClassLoader);
                         final String classError = isPluginClass(classFound);
-                        if (classError == null)
-                        {
-                            Logger.info("(ploader) Built-in plugin found: " + classFound.getName());
+                        if (classError == null) {
+                            Logger.info("(pLoader) Built-in plugin found: " + classFound.getName());
                             classes.add(className);
                         }
-                    }
-                    catch (ClassNotFoundException e)
-                    {
+                    } catch (ClassNotFoundException e) {
                         Logger.printStackTrace(e);
                     }
                 }
             }
-        }
-        catch (IOException e)
-        {
-            Logger.error("(ploader) Exception while searching for built-in plugins:");
+        } catch (IOException e) {
+            Logger.error("(pLoader) Exception while searching for built-in plugins:");
             Logger.printStackTrace(e);
         }
 
         return classes;
     }
 
-    private List<String> findPluginsDir(final File directory, final String packageName)
-    {
+    private List<String> findPluginsDir(final File directory, final String packageName) {
         final List<String> classes = new ArrayList<>();
         final File[] files = directory.listFiles();
         if (files == null) // not a directory or I/O error
         {
-            Logger.error("(ploader) Error while listing package.");
+            Logger.error("(pLoader) Error while listing package.");
             return classes;
         }
 
-        for (final File file : files)
-        {
+        for (final File file : files) {
             final String filename = file.getName();
-            if (file.isDirectory())
-            {
+            if (file.isDirectory()) {
                 classes.addAll(findPluginsDir(file, packageName + '.' + file.getName()));
-            }
-            else if (filename.endsWith(".class"))
-            {
+            } else if (filename.endsWith(".class")) {
                 final String filePath = packageName + '/' + filename;
                 // remove the .class extension
                 final String className = filePath.substring(0, filePath.length() - 6).replace('/', '.');
-                try
-                {
+                try {
                     final Class<?> classFound = Class.forName(className, false, m_defaultClassLoader);
                     final String classError = isPluginClass(classFound);
-                    if (classError == null)
-                    {
-                        Logger.info("(ploader) Built-in plugin found: " + classFound.getName());
+                    if (classError == null) {
+                        Logger.info("(pLoader) Built-in plugin found: " + classFound.getName());
                         classes.add(className);
                     }
-                }
-                catch (ClassNotFoundException e)
-                {
+                } catch (ClassNotFoundException e) {
                     Logger.printStackTrace(e);
                 }
             }
@@ -185,118 +153,88 @@ public class ImplPluginLoader implements PluginLoader {
     }
 
     // returns a String with the error, or null if it is a plugin
-    private String isPluginClass(final Class<?> pluginClass)
-    {
+    private String isPluginClass(final Class<?> pluginClass) {
         final String className = pluginClass.getName();
 
         // check if it implements Plugin
         final Class<?>[] interfaces = pluginClass.getInterfaces();
         boolean isPlugin = false;
-        for (Class<?> impl : interfaces)
-        {
-            if (impl == Plugin.class)
-            {
+        for (Class<?> impl : interfaces) {
+            if (impl == Plugin.class) {
                 isPlugin = true;
                 break;
             }
         }
-        if (!isPlugin)
-        {
+        if (!isPlugin) {
             return "Class " + className + " must implement " + Plugin.class.getName() + " with a nullary constructor.";
-        }
-        else
-        {
+        } else {
             final int mod = pluginClass.getModifiers();
-            if (Modifier.isAbstract(mod) || Modifier.isInterface(mod))
-            {
+            if (Modifier.isAbstract(mod) || Modifier.isInterface(mod)) {
                 return "Class " + className + " must not be abstract or interface.";
             }
-            try
-            {
-                if (Modifier.isPublic(mod))
-                {
+            try {
+                if (Modifier.isPublic(mod)) {
                     pluginClass.getDeclaredConstructor();
                     return null;
                 }
                 return "Class " + className + " must be public.";
-            }
-            catch (NoSuchMethodException e)
-            {
+            } catch (NoSuchMethodException e) {
                 return "Class " + className + " must have a nullary constructor.";
             }
         }
     }
-    private ClassLoader getJarLoader(final File file)
-    {
-        try
-        {
+
+    private ClassLoader getJarLoader(final File file) {
+        try {
             return new URLClassLoader(new URL[]{file.toURI().toURL()}); // FIXME: potential leak
-        }
-        catch (MalformedURLException e)
-        {
+        } catch (MalformedURLException e) {
             return null;
         }
     }
 
-    private Plugin loadPlugin(final String className, final ClassLoader classLoader)
-    {
+    private Plugin loadPlugin(final String className, final ClassLoader classLoader) {
         Plugin plugin = null;
-        try
-        {
+        try {
             final Class<?> pluginClass = Class.forName(className, true, classLoader);
             final String classError = isPluginClass(pluginClass);
-            if (classError != null)
-            {
-                Logger.error("(ploader) " + classError);
-            }
-            else
-            {
+            if (classError != null) {
+                Logger.error("(pLoader) " + classError);
+            } else {
                 // finally load it
-                try
-                {
+                try {
                     final Constructor<?> ctor = pluginClass.getDeclaredConstructor();
                     ctor.setAccessible(true);
                     plugin = (Plugin) ctor.newInstance();
-                }
-                catch (InstantiationException | NoSuchMethodException | IllegalArgumentException
-                        | IllegalAccessException | SecurityException | InvocationTargetException e)
-                {
+                } catch (InstantiationException | NoSuchMethodException | IllegalArgumentException | IllegalAccessException | SecurityException | InvocationTargetException e) {
                     // We should never reach this block.
                 }
             }
-        }
-        catch (ClassNotFoundException e)
-        {
-            Logger.error("(ploader) Class " + className + " was not found:");
+        } catch (ClassNotFoundException e) {
+            Logger.error("(pLoader) Class " + className + " was not found:");
             Logger.printStackTrace(e);
         }
         return plugin;
     }
 
-    private void writeConfig(String value)
-    {
+    private void writeConfig(String value) {
         Config.set("last_plugin", value);
     }
 
     @Override
-    public String[] getBuiltinPlugins()
-    {
+    public String[] getBuiltinPlugins() {
         return m_builtinPlugins;
     }
 
     @Override
-    public JavaPlugin getPlugin()
-    {
+    public JavaPlugin getPlugin() {
         return m_plugin;
     }
 
     @Override
-    public boolean loadPlugin(final String className)
-    {
+    public boolean loadPlugin(final String className) {
         final Plugin plugin = loadPlugin(className, m_defaultClassLoader);
         final boolean success = (plugin != null);
-        if (success)
-        {
+        if (success) {
             m_plugin = new ClasspathPlugin(plugin);
             writeConfig(CONFIG_DELIMITER + className);
         }
@@ -304,45 +242,34 @@ public class ImplPluginLoader implements PluginLoader {
     }
 
     @Override
-    public boolean loadPlugin(final File file)
-    {
+    public boolean loadPlugin(final File file) {
         boolean success;
         final Plugin plugin;
-        try (final JarFile jar = new JarFile(file))
-        {
+        try (final JarFile jar = new JarFile(file)) {
             final JarEntry entry = jar.getJarEntry("plugin.properties");
-            if (entry != null)
-            {
+            if (entry != null) {
                 final Properties properties = new Properties();
                 properties.load(jar.getInputStream(entry));
 
                 final String className = properties.getProperty("main");
-                if (className != null)
-                {
+                if (className != null) {
                     final ClassLoader classLoader = getJarLoader(file);
                     plugin = loadPlugin(className, classLoader);
                     success = (plugin != null);
-                    if (success)
-                    {
+                    if (success) {
                         m_plugin = new JarPlugin(plugin, properties);
                         writeConfig(file.getAbsolutePath());
                     }
-                }
-                else
-                {
-                    Logger.error("(ploader) There is no \"main\" entry in the plugin.properties file.");
+                } else {
+                    Logger.error("(pLoader) There is no \"main\" entry in the plugin.properties file.");
                     success = false;
                 }
-            }
-            else
-            {
-                Logger.error("(ploader) Jar file \"" + file.getAbsolutePath() + "\" didn't contain a plugin.properties file.");
+            } else {
+                Logger.error("(pLoader) Jar file \"" + file.getAbsolutePath() + "\" didn't contain a plugin.properties file.");
                 success = false;
             }
-        }
-        catch (IOException e)
-        {
-            Logger.error("(ploader) I/O exception while reading plugin.properties in jar file \"" + file.getAbsolutePath() + "\":");
+        } catch (IOException e) {
+            Logger.error("(pLoader) I/O exception while reading plugin.properties in jar file \"" + file.getAbsolutePath() + "\":");
             Logger.printStackTrace(e);
             success = false;
         }

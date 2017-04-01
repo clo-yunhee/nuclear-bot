@@ -46,8 +46,7 @@ public class PluginPanel extends JScrollPane {
     private final JTextField m_pathTextField;
     private final JComboBox<String> m_builtinCombo;
 
-    public PluginPanel(final NuclearBotGUI gui)
-    {
+    public PluginPanel(final NuclearBotGUI gui) {
         m_gui = gui;
         m_pluginLoader = gui.getPluginLoader();
 
@@ -64,12 +63,12 @@ public class PluginPanel extends JScrollPane {
             m_pluginLabel.setComponentPopupMenu(gui.getTextPopupMenu());
 
             loadedPluginPanel.setBorder(BorderFactory.createTitledBorder("Current plugin"));
-            loadedPluginPanel.add(m_pluginLabel);
+            loadedPluginPanel.add(m_pluginLabel, BorderLayout.CENTER);
         }
 
         final JPanel externalPanel = new JPanel(new FlowLayout());
         {
-            m_pathTextField = new JTextField(16);
+            m_pathTextField = new JTextField(30);
             final JButton browseButton = new JButton("Browse...");
             final JButton externalButton = new JButton("Load");
 
@@ -80,8 +79,8 @@ public class PluginPanel extends JScrollPane {
             externalButton.addActionListener(e -> loadExternal());
 
             externalPanel.setBorder(BorderFactory.createTitledBorder("Load an external plugin"));
-            externalPanel.add(m_pathTextField);
             externalPanel.add(browseButton);
+            externalPanel.add(m_pathTextField);
             externalPanel.add(externalButton);
         }
 
@@ -110,45 +109,36 @@ public class PluginPanel extends JScrollPane {
         setViewportView(container);
     }
 
-    public void setPluginText(final String text, final String tooltipText)
-    {
+    public void setPluginText(final String text, final String tooltipText) {
         m_pluginLabel.setText(text);
         m_pluginLabel.setToolTipText(tooltipText);
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         m_fileDialog.dispose();
     }
 
-    private void chooseFile()
-    {
+    private void chooseFile() {
         Logger.info("(GUI) Opening plugin file dialog...");
 
         m_fileDialog.setVisible(true);
         final String filename = m_fileDialog.getFile();
-        if (filename != null)
-        {
+        if (filename != null) {
             m_pathTextField.setText(new File(m_fileDialog.getDirectory(), filename).getAbsolutePath());
         }
     }
 
-    private void loadExternal()
-    {
+    private void loadExternal() {
         final File file = new File(m_pathTextField.getText());
-        if (file.isFile())
-        {
+        if (file.isFile()) {
             m_gui.pluginChanged(m_pluginLoader.loadPlugin(file) ? m_pluginLoader.getPlugin() : null);
-        }
-        else
-        {
+        } else {
             Logger.error("(GUI) Provided path \"" + file.getAbsolutePath() + "\" that wasn't a file.");
             m_gui.getDialogs().error("This is not a file!", "Not a file");
         }
     }
 
-    private void loadBuiltin()
-    {
+    private void loadBuiltin() {
         final String pluginClassName = (String) m_builtinCombo.getSelectedItem();
         m_gui.pluginChanged(m_pluginLoader.loadPlugin(pluginClassName) ? m_pluginLoader.getPlugin() : null);
     }

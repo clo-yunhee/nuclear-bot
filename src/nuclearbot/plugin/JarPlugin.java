@@ -31,22 +31,19 @@ public class JarPlugin extends ImplJavaPlugin {
     private final String m_name;
     private final String m_version;
 
-    public JarPlugin(final Plugin plugin, final Properties properties)
-    {
+    public JarPlugin(final Plugin plugin, final Properties properties) {
         super(plugin, false);
         m_name = properties.getProperty("name", getClassName());
         m_version = properties.getProperty("version", "external");
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return m_name;
     }
 
     @Override
-    public String getVersion()
-    {
+    public String getVersion() {
         return m_version;
     }
 

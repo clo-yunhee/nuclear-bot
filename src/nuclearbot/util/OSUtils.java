@@ -31,20 +31,14 @@ public class OSUtils {
     private static final OSType os;
     private static final String workingDir;
 
-    static
-    {
+    static {
         final String osName = System.getProperty("os.name");
 
-        if (osName.equals("Linux"))
-        {
+        if (osName.equals("Linux")) {
             os = OSType.LINUX;
-        }
-        else if (osName.contains("Windows"))
-        {
+        } else if (osName.contains("Windows")) {
             os = OSType.WINDOWS;
-        }
-        else
-        {
+        } else {
             os = OSType.UNKNOWN;
         }
 
@@ -56,8 +50,7 @@ public class OSUtils {
      *
      * @return a OSType enum value
      */
-    public static OSType getOS()
-    {
+    public static OSType getOS() {
         return os;
     }
 
@@ -67,8 +60,7 @@ public class OSUtils {
      *
      * @return the working directory path
      */
-    public static String workingDir()
-    {
+    public static String workingDir() {
         return workingDir;
     }
 
@@ -76,12 +68,10 @@ public class OSUtils {
         /**
          * Unknown, undefined, or malformed os.name property
          */
-        UNKNOWN,
-        /**
+        UNKNOWN, /**
          * GNU/Linux
          */
-        LINUX,
-        /**
+        LINUX, /**
          * Windows
          */
         WINDOWS

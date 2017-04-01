@@ -33,19 +33,15 @@ import java.io.IOException;
  */
 public class Main implements Runnable {
 
-    public static void main(final String[] args) throws IOException
-    {
+    public static void main(final String[] args) throws IOException {
         Logger.class.getName(); // run Logger class static init block
 
         Logger.info("(GUI) Attempting to use BeautyEye look-and-feel...");
-        try
-        {
+        try {
             BeautyEyeLNFHelper.frameBorderStyle = BeautyEyeLNFHelper.FrameBorderStyle.generalNoTranslucencyShadow;
             BeautyEyeLNFHelper.launchBeautyEyeLNF();
             UIManager.put("RootPane.setupButtonVisible", Boolean.FALSE);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Logger.warning("(GUI) Exception while setting look-and-feel, falling back to default:");
             Logger.printStackTrace(e);
         }
@@ -54,8 +50,7 @@ public class Main implements Runnable {
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         new NuclearBotGUI().open();
     }
 

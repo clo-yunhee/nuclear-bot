@@ -35,8 +35,7 @@ public class ChatPanel extends JPanel {
     private final LimitedStringList m_chatHistory;
     private final ChatSendPanel m_sendPanel;
 
-    public ChatPanel(final NuclearBotGUI gui)
-    {
+    public ChatPanel(final NuclearBotGUI gui) {
         super(new BorderLayout());
 
         final JScrollPane chatScrollPane = new JScrollPane();
@@ -54,13 +53,11 @@ public class ChatPanel extends JPanel {
         add(m_sendPanel, BorderLayout.SOUTH);
     }
 
-    public void addMessage(final String username, final String message)
-    {
+    public void addMessage(final String username, final String message) {
         m_chatHistory.add("<html><strong>" + username + " :</strong> " + HTML.escapeText(message) + "</html>");
     }
 
-    public void toggleSendButton(final boolean enable)
-    {
+    public void toggleSendButton(final boolean enable) {
         m_sendPanel.toggleSendButton(enable);
     }
 

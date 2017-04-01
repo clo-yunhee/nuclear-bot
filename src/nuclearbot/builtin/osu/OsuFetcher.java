@@ -37,15 +37,11 @@ public class OsuFetcher {
     private final String m_apiKey;
 
     @SuppressWarnings("deprecated")
-    public OsuFetcher(final String apiKey)
-    {
+    public OsuFetcher(final String apiKey) {
         String encoded;
-        try
-        {
+        try {
             encoded = URLEncoder.encode(apiKey, "UTF-8");
-        }
-        catch (UnsupportedEncodingException e)
-        {
+        } catch (UnsupportedEncodingException e) {
             Logger.warning("(osu!) Encoding UTF-8 was not found, falling back to default encoding.");
             encoded = URLEncoder.encode(apiKey);
         }
@@ -53,8 +49,7 @@ public class OsuFetcher {
     }
 
     // osu data fetchers
-    private <T> T get(final String page, final String urlParameters, final Class<T> clazz)
-    {
+    private <T> T get(final String page, final String urlParameters, final Class<T> clazz) {
         return HTTP.fetchData("http://osu.ppy.sh/api/" + page, "k=" + m_apiKey + '&' + urlParameters, clazz);
     }
 
@@ -65,8 +60,7 @@ public class OsuFetcher {
      * @param beatmapsetId the set id
      * @return the beatmap set
      */
-    public DataBeatmap[] getBeatmapset(final int beatmapsetId)
-    {
+    public DataBeatmap[] getBeatmapset(final int beatmapsetId) {
         return get("get_beatmaps", "s=" + beatmapsetId, DataBeatmap[].class);
     }
 
@@ -77,14 +71,10 @@ public class OsuFetcher {
      * @param beatmapId the beatmap id
      * @return data about the beatmap
      */
-    public DataBeatmap getBeatmap(final int beatmapId)
-    {
-        try
-        {
+    public DataBeatmap getBeatmap(final int beatmapId) {
+        try {
             return get("get_beatmaps", "b=" + beatmapId, DataBeatmap[].class)[0];
-        }
-        catch (IndexOutOfBoundsException e)
-        {
+        } catch (IndexOutOfBoundsException e) {
             return null;
         }
     }
@@ -96,14 +86,10 @@ public class OsuFetcher {
      * @param username the username
      * @return data about the user
      */
-    public DataUser getUser(final String username)
-    {
-        try
-        {
+    public DataUser getUser(final String username) {
+        try {
             return get("get_user", "type=string&u=" + URLEncoder.encode(username, "UTF-8"), DataUser[].class)[0];
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return null;
         }
     }

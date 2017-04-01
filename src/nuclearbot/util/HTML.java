@@ -34,29 +34,20 @@ public class HTML {
      * @param s the string to HTML-escape
      * @return the corrected string
      */
-    public static String escapeText(final String s)
-    {
+    public static String escapeText(final String s) {
         final int length = s.length();
         final char[] chars = s.toCharArray();
         final StringBuilder sb = new StringBuilder(Math.max(16, length));
         char ch;
-        for (int i = 0; i < length; i++)
-        {
+        for (int i = 0; i < length; i++) {
             ch = chars[i];
-            if (ch == '&')
-            {
+            if (ch == '&') {
                 sb.append("&amp;");
-            }
-            else if (ch == '<')
-            {
+            } else if (ch == '<') {
                 sb.append("&lt;");
-            }
-            else if (ch == '>')
-            {
+            } else if (ch == '>') {
                 sb.append("&gt;");
-            }
-            else
-            {
+            } else {
                 sb.append(ch);
             }
         }

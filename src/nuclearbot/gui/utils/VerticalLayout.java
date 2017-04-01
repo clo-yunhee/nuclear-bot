@@ -78,8 +78,7 @@ public class VerticalLayout implements LayoutManager {
      * Constructs an instance of VerticalLayout with a vertical gap of 5px,
      * horizontal stretching and anchored to the top of the display area.
      */
-    public VerticalLayout()
-    {
+    public VerticalLayout() {
         this(5, BOTH, TOP);
     }
 
@@ -89,8 +88,7 @@ public class VerticalLayout implements LayoutManager {
      *
      * @param vgap the vertical gap between components
      */
-    public VerticalLayout(final int vgap)
-    {
+    public VerticalLayout(final int vgap) {
         this(vgap, BOTH, TOP);
     }
 
@@ -101,8 +99,7 @@ public class VerticalLayout implements LayoutManager {
      * @param vgap      the vertical gap between components
      * @param alignment an int value of <code>RIGHT, LEFT, CENTER, BOTH</code>
      */
-    public VerticalLayout(final int vgap, final int alignment)
-    {
+    public VerticalLayout(final int vgap, final int alignment) {
         this(vgap, alignment, TOP);
     }
 
@@ -114,26 +111,21 @@ public class VerticalLayout implements LayoutManager {
      * @param alignment an int value of <code>RIGHT, LEFT, CENTER, BOTH</code>
      * @param anchor    an int value of <code>TOP, BOTTOM, CENTER</code>
      */
-    public VerticalLayout(final int vgap, final int alignment, final int anchor)
-    {
+    public VerticalLayout(final int vgap, final int alignment, final int anchor) {
         this.vgap = vgap;
         this.alignment = alignment;
         this.anchor = anchor;
     }
 
-    private Dimension layoutSize(final Container parent, final boolean minimum)
-    {
+    private Dimension layoutSize(final Container parent, final boolean minimum) {
         final Dimension dim = new Dimension(0, 0);
         Dimension d;
-        synchronized (parent.getTreeLock())
-        {
+        synchronized (parent.getTreeLock()) {
             final Component[] comps = parent.getComponents();
             final int n = parent.getComponentCount();
-            for (int i = 0; i < n; i++)
-            {
+            for (int i = 0; i < n; i++) {
                 final Component c = comps[i];
-                if (c.isVisible())
-                {
+                if (c.isVisible()) {
                     d = minimum ? c.getMinimumSize() : c.getPreferredSize();
                     dim.width = Math.max(dim.width, d.width);
                     dim.height += d.height;
@@ -148,51 +140,37 @@ public class VerticalLayout implements LayoutManager {
         return dim;
     }
 
-    public void layoutContainer(final Container parent)
-    {
+    public void layoutContainer(final Container parent) {
         final Insets insets = parent.getInsets();
-        synchronized (parent.getTreeLock())
-        {
+        synchronized (parent.getTreeLock()) {
             final Component[] comps = parent.getComponents();
             final int n = parent.getComponentCount();
             final Dimension parentDim = parent.getSize();
             int y = 0;
             // work out the total size
-            for (int i = 0; i < n; i++)
-            {
+            for (int i = 0; i < n; i++) {
                 final Dimension dim = comps[i].getPreferredSize();
                 y += dim.height + vgap;
             }
             y -= vgap; // otherwise there's a vgap too many
             // work out the anchor paint
-            if (anchor == TOP)
-            {
+            if (anchor == TOP) {
                 y = insets.top;
-            }
-            else if (anchor == CENTER)
-            {
+            } else if (anchor == CENTER) {
                 y = (parentDim.height - y) / 2;
-            }
-            else
-            {
+            } else {
                 y = parentDim.height - y - insets.bottom;
             }
             // do layout
-            for (int i = 0; i < n; i++)
-            {
+            for (int i = 0; i < n; i++) {
                 final Dimension d = comps[i].getPreferredSize();
                 int x = insets.left;
                 int width = d.width;
-                if (alignment == CENTER)
-                {
+                if (alignment == CENTER) {
                     x = (parentDim.width - d.width) / 2;
-                }
-                else if (alignment == RIGHT)
-                {
+                } else if (alignment == RIGHT) {
                     x = parentDim.width - d.width - insets.right;
-                }
-                else if (alignment == BOTH)
-                {
+                } else if (alignment == BOTH) {
                     width = parentDim.width - insets.left - insets.right;
                 }
                 comps[i].setBounds(x, y, width, d.height);
@@ -201,28 +179,23 @@ public class VerticalLayout implements LayoutManager {
         }
     }
 
-    public Dimension minimumLayoutSize(final Container parent)
-    {
+    public Dimension minimumLayoutSize(final Container parent) {
         return layoutSize(parent, false);
     }
 
-    public Dimension preferredLayoutSize(final Container parent)
-    {
+    public Dimension preferredLayoutSize(final Container parent) {
         return layoutSize(parent, false);
     }
 
-    public void addLayoutComponent(final String name, final Component comp)
-    {
+    public void addLayoutComponent(final String name, final Component comp) {
         // Not used.
     }
 
-    public void removeLayoutComponent(final Component comp)
-    {
+    public void removeLayoutComponent(final Component comp) {
         // Not used.
     }
 
-    public String toString()
-    {
+    public String toString() {
         return getClass().getName() + "[vgap=" + vgap + " align=" + alignment + " anchor=" + anchor + "]";
     }
 }

@@ -36,8 +36,7 @@ public class ChatSendPanel extends JPanel {
     private final JTextField m_messageField;
     private final JButton m_sendButton;
 
-    public ChatSendPanel(final NuclearBotGUI gui)
-    {
+    public ChatSendPanel(final NuclearBotGUI gui) {
         super(new BorderLayout());
 
         m_gui = gui;
@@ -56,21 +55,17 @@ public class ChatSendPanel extends JPanel {
         add(m_sendButton, BorderLayout.EAST);
     }
 
-    private void sendMessage()
-    {
-        if (m_gui.isClientRunning())
-        {
+    private void sendMessage() {
+        if (m_gui.isClientRunning()) {
             final String message = m_messageField.getText().trim();
-            if (!message.isEmpty())
-            {
+            if (!message.isEmpty()) {
                 m_gui.getClient().sendMessage(message);
                 m_messageField.setText("");
             }
         }
     }
 
-    public void toggleSendButton(final boolean enable)
-    {
+    public void toggleSendButton(final boolean enable) {
         m_sendButton.setEnabled(enable);
     }
 

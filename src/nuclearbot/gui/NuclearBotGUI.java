@@ -87,8 +87,7 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
     private ChatClient m_client;
 
     // constructor
-    public NuclearBotGUI()
-    {
+    public NuclearBotGUI() {
         final Document consoleDocument = new PlainDocument();
         { // do that first in order to log the most we can
             Logger.info("(GUI) Linking GUI console to system console...");
@@ -114,13 +113,11 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         m_container.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         m_container.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(final WindowEvent event)
-            {
+            public void windowClosing(final WindowEvent event) {
                 m_isFrameClosing = true;
                 m_plugins.dispose();
                 m_container.dispose();
-                if (m_client != null)
-                {
+                if (m_client != null) {
                     stopClient();
                 }
             }
@@ -154,59 +151,52 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         add(new FooterPanel(), BorderLayout.SOUTH);
 
         m_container.setContentPane(this);
-        m_container.pack();
+
+        final Dimension size = new Dimension(640, 480);
+        m_container.setSize(size);
+        m_container.setPreferredSize(size);
 
         pluginChanged(m_pluginLoader.getPlugin());
     }
 
-    public void open()
-    {
+    public void open() {
         m_container.setVisible(true);
         m_dialogs.setQueueDialogs(false);
     }
 
-    public boolean isClientRunning()
-    {
+    public boolean isClientRunning() {
         return m_isClientRunning;
     }
 
-    public ChatClient getClient()
-    {
+    public ChatClient getClient() {
         return m_client;
     }
 
-    public DialogUtil getDialogs()
-    {
+    public DialogUtil getDialogs() {
         return m_dialogs;
     }
 
-    public JPopupMenu getTextPopupMenu()
-    {
+    public JPopupMenu getTextPopupMenu() {
         return m_textComponentPopupMenu;
     }
 
-    public PluginLoader getPluginLoader()
-    {
+    public PluginLoader getPluginLoader() {
         return m_pluginLoader;
     }
 
-    public void setRestartClient(final boolean restart)
-    {
+    public void setRestartClient(final boolean restart) {
         m_doRestartClient = restart;
     }
 
-    public JFrame getFrame()
-    {
+    public JFrame getFrame() {
         return m_container;
     }
 
-    public void selectTab(final int index)
-    {
+    public void selectTab(final int index) {
         m_body.setSelectedIndex(index);
     }
 
-    public void startClient()
-    {
+    public void startClient() {
         m_status.toggleStartButton(false);
 
         Logger.info("(GUI) Starting client...");
@@ -219,8 +209,7 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         m_clientThread.start();
     }
 
-    public void stopClient()
-    {
+    public void stopClient() {
         Logger.info("(GUI) Stopping client...");
 
         m_status.toggleStopButton(false);
@@ -231,8 +220,7 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         m_client.stop();
     }
 
-    private void clientStarted()
-    {
+    private void clientStarted() {
         m_isClientRunning = true;
 
         m_status.setStatusText("Running");
@@ -244,18 +232,14 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
 
         m_doRestartClient = false;
 
-        if (m_isFrameClosing)
-        {
+        if (m_isFrameClosing) {
             stopClient();
-        }
-        else
-        {
+        } else {
             m_commands.registerCommands();
         }
     }
 
-    private void clientStopped()
-    {
+    private void clientStopped() {
         m_isClientRunning = false;
 
         m_status.setStatusText("Not running");
@@ -267,16 +251,13 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
 
         m_commands.unregisterCommands();
 
-        if (m_doRestartClient)
-        {
+        if (m_doRestartClient) {
             startClient();
         }
     }
 
-    public void pluginChanged(final JavaPlugin plugin)
-    {
-        if (plugin != null)
-        {
+    public void pluginChanged(final JavaPlugin plugin) {
+        if (plugin != null) {
             // italic name if built-in plugin
             final String pluginName = HTML.escapeText(plugin.getName());
             final String pluginClassName = plugin.getClassName();
@@ -287,18 +268,16 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
 
             m_config.setPluginPanel(plugin.getHandle());
 
-            if (m_isClientRunning)
-            { // ask to restart if the client is already running
-                final int restart = JOptionPane.showConfirmDialog(m_container, "The changes will be effective after a restart.\nRestart now?", "Restart?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (restart == JOptionPane.YES_OPTION)
-                {
+            if (m_isClientRunning) { // ask to restart if the client is already running
+                final int restart = JOptionPane
+                        .showConfirmDialog(m_container, "The changes will be effective after a restart.\nRestart now?", "Restart?",
+                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (restart == JOptionPane.YES_OPTION) {
                     m_doRestartClient = true;
                     stopClient();
                 }
             }
-        }
-        else
-        {
+        } else {
             selectTab(TAB_CONSOLE);
             m_dialogs.error("Couldn't load the plugin. Check console for details.", "Error while loading plugin");
         }
@@ -307,32 +286,27 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
 	/* **** client listener methods **** */
 
     @Override
-    public void onConnected(final ChatClient client)
-    {
+    public void onConnected(final ChatClient client) {
         SwingUtilities.invokeLater(this::clientStarted);
     }
 
     @Override
-    public void onDisconnected(final ChatClient client)
-    {
+    public void onDisconnected(final ChatClient client) {
         SwingUtilities.invokeLater(this::clientStopped);
     }
 
     @Override
-    public void onMessage(final ChatClient client, final String username, final String message)
-    {
+    public void onMessage(final ChatClient client, final String username, final String message) {
         SwingUtilities.invokeLater(() -> m_chat.addMessage(username, message));
     }
 
     @Override
-    public void onCommandRegistered(final ChatClient client, final String label, final Command command)
-    {
+    public void onCommandRegistered(final ChatClient client, final String label, final Command command) {
         SwingUtilities.invokeLater(() -> m_commands.addCommandList(label));
     }
 
     @Override
-    public void onCommandUnregistered(final ChatClient client, final String label)
-    {
+    public void onCommandUnregistered(final ChatClient client, final String label) {
         SwingUtilities.invokeLater(() -> m_commands.removeCommandList(label));
     }
 
@@ -343,27 +317,21 @@ public class NuclearBotGUI extends JPanel implements ClientListener {
         private final ChatClient m_client;
         private Thread m_thread;
 
-        public ClientThread(final ChatClient client)
-        {
+        public ClientThread(final ChatClient client) {
             m_client = client;
             m_thread = null;
         }
 
-        public void start()
-        {
+        public void start() {
             m_thread = new Thread(this, "client");
             m_thread.start();
         }
 
         @Override
-        public void run()
-        {
-            try
-            {
+        public void run() {
+            try {
                 m_client.connect();
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 Logger.error("(GUI) Exception caught in client thread:");
                 Logger.printStackTrace(e);
                 m_doRestartClient = false;

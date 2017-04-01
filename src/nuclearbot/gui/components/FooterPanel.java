@@ -33,11 +33,10 @@ public class FooterPanel extends JPanel {
 
     private static final String GITHUB_URL = "https://github.com/NuclearCoder/nuclear-bot/";
 
-    public FooterPanel()
-    {
+    public FooterPanel() {
         super(new BorderLayout());
 
-        final JLabel copyrightAndLicenseLabel = new JLabel("Copyright \u00a9 2016 NuclearCoder. Licensed under A-GPLv3.");
+        final JLabel copyrightAndLicenseLabel = new JLabel("Copyright \u00a9 2017 NuclearCoder. Licensed under A-GPLv3.");
         final JLabel sourceLinkLabel = new JLabel("<html><a href=\"\">Source code here</a></html>");
 
         copyrightAndLicenseLabel.setFont(copyrightAndLicenseLabel.getFont().deriveFont(10F));

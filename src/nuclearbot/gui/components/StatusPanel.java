@@ -4,6 +4,7 @@ import nuclearbot.gui.NuclearBotGUI;
 import nuclearbot.gui.utils.VerticalLayout;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /*
@@ -38,8 +39,7 @@ public class StatusPanel extends JPanel {
     private final JButton m_restartButton;
     private final JLabel m_pluginLabel;
 
-    public StatusPanel(final NuclearBotGUI gui)
-    {
+    public StatusPanel(final NuclearBotGUI gui) {
         super(new VerticalLayout());
 
         final JPanel controls = new JPanel(new FlowLayout());
@@ -49,6 +49,7 @@ public class StatusPanel extends JPanel {
             m_stopButton = new JButton("Stop");
             m_restartButton = new JButton("Restart");
 
+            m_statusLabel.setBorder(new EmptyBorder(0, 0, 0, 3));
             m_statusLabel.setFont(m_statusLabel.getFont().deriveFont(Font.ITALIC));
             m_startButton.setEnabled(true);
             m_stopButton.setEnabled(false);
@@ -91,29 +92,24 @@ public class StatusPanel extends JPanel {
         add(currentPlugin);
     }
 
-    public void setStatusText(final String text)
-    {
+    public void setStatusText(final String text) {
         m_statusLabel.setText(text);
     }
 
-    public void setPluginText(final String text, final String tooltipText)
-    {
+    public void setPluginText(final String text, final String tooltipText) {
         m_pluginLabel.setText(text);
         m_pluginLabel.setToolTipText(tooltipText);
     }
 
-    public void toggleStartButton(final boolean enable)
-    {
+    public void toggleStartButton(final boolean enable) {
         m_startButton.setEnabled(enable);
     }
 
-    public void toggleStopButton(final boolean enable)
-    {
+    public void toggleStopButton(final boolean enable) {
         m_stopButton.setEnabled(enable);
     }
 
-    public void toggleRestartButton(final boolean enable)
-    {
+    public void toggleRestartButton(final boolean enable) {
         m_restartButton.setEnabled(enable);
     }
 

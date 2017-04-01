@@ -38,8 +38,7 @@ public class Logger {
     private static final DateFormat timeFormat;
     private static final PrintWriter fileOut = initFileOut();
 
-    static
-    {
+    static {
         if (fileOut != null) // we don't need a shutdown hook if we didn't open the log file
         {
             Runtime.getRuntime().addShutdownHook(new Thread(new LoggerShutdownHook()));
@@ -48,14 +47,10 @@ public class Logger {
         timeFormat = new SimpleDateFormat("yyyy-MM-d hh:mm:ss");
     }
 
-    private static PrintWriter initFileOut()
-    {
-        try
-        {
+    private static PrintWriter initFileOut() {
+        try {
             return new PrintWriter(new FileWriter("nuclearbot.log", true), true);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             System.err.println("Couldn't open the log file. Logging to console only.");
             e.printStackTrace();
             return null;
@@ -67,8 +62,7 @@ public class Logger {
      *
      * @param string the text to log
      */
-    public synchronized static void write(String string)
-    {
+    public synchronized static void write(String string) {
         System.out.print(string);
         if (fileOut != null)
             fileOut.print(string);
@@ -79,8 +73,7 @@ public class Logger {
      *
      * @param string the text to log
      */
-    public synchronized static void writeln(String string)
-    {
+    public synchronized static void writeln(String string) {
         System.out.println(string);
         if (fileOut != null)
             fileOut.println(string);
@@ -92,8 +85,7 @@ public class Logger {
      * @param string the text to log
      * @param level  the prefix to put
      */
-    public synchronized static void log(String string, String level)
-    {
+    public synchronized static void log(String string, String level) {
         writeln(String.format(LOG, timeFormat.format(new Date()), level, string));
     }
 
@@ -102,8 +94,7 @@ public class Logger {
      *
      * @param string the text to log
      */
-    public synchronized static void info(String string)
-    {
+    public synchronized static void info(String string) {
         log(string, "INFO");
     }
 
@@ -112,8 +103,7 @@ public class Logger {
      *
      * @param string the text to log
      */
-    public synchronized static void warning(String string)
-    {
+    public synchronized static void warning(String string) {
         log(string, "WARNING");
     }
 
@@ -122,8 +112,7 @@ public class Logger {
      *
      * @param string the text to log
      */
-    public synchronized static void error(String string)
-    {
+    public synchronized static void error(String string) {
         log(string, "ERROR");
     }
 
@@ -132,8 +121,7 @@ public class Logger {
      *
      * @param throwable the Throwable to log
      */
-    public synchronized static void printStackTrace(Throwable throwable)
-    {
+    public synchronized static void printStackTrace(Throwable throwable) {
         throwable.printStackTrace(System.out);
         if (fileOut != null)
             throwable.printStackTrace(fileOut);
@@ -142,8 +130,7 @@ public class Logger {
     private static class LoggerShutdownHook implements Runnable {
 
         @Override
-        public void run()
-        {
+        public void run() {
             Logger.info("(Exit) Closing log file...");
             fileOut.close();
         }
@@ -153,8 +140,7 @@ public class Logger {
     private static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
         @Override
-        public void uncaughtException(final Thread thread, final Throwable throwable)
-        {
+        public void uncaughtException(final Thread thread, final Throwable throwable) {
             Logger.error("Uncaught exception in thread \"" + thread.getName() + "\":");
             Logger.printStackTrace(throwable);
             System.exit(1);

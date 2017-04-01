@@ -42,8 +42,7 @@ public class DocumentOutputStream extends OutputStream {
      * @param document     the document to copy output to
      * @param outputStream the original output stream
      */
-    public DocumentOutputStream(final Document document, final OutputStream outputStream)
-    {
+    public DocumentOutputStream(final Document document, final OutputStream outputStream) {
         m_outputStream = outputStream;
         m_document = document;
     }
@@ -53,57 +52,44 @@ public class DocumentOutputStream extends OutputStream {
      *
      * @param document the document to redirect to
      */
-    public synchronized static void redirectSystemOut(final Document document)
-    {
+    public synchronized static void redirectSystemOut(final Document document) {
         System.setOut(new PrintStream(new DocumentOutputStream(document, System.out), true));
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         m_outputStream.close();
     }
 
     @Override
-    public void flush() throws IOException
-    {
+    public void flush() throws IOException {
         m_outputStream.flush();
     }
 
     @Override
-    public synchronized void write(int b) throws IOException
-    {
+    public synchronized void write(int b) throws IOException {
         write(new byte[]{(byte) b}, 0, 1);
     }
 
     @Override
-    public synchronized void write(byte cbuf[], int off, int len) throws IOException
-    {
+    public synchronized void write(byte cbuf[], int off, int len) throws IOException {
         m_outputStream.write(cbuf, off, len);
-        try
-        {
+        try {
             int start = off;
             int end = start + 1;
-            while (end < off + len)
-            {
-                if (cbuf[end] == '\n')
-                {
+            while (end < off + len) {
+                if (cbuf[end] == '\n') {
                     m_document.insertString(m_document.getLength(), new String(cbuf, start, end - start), null);
                     start = end++;
                 }
                 ++end;
             }
-            if (cbuf[start] == '\n')
-            {
+            if (cbuf[start] == '\n') {
                 m_document.insertString(m_document.getLength(), "\n", null);
-            }
-            else if (start < off + len)
-            {
+            } else if (start < off + len) {
                 m_document.insertString(m_document.getLength(), new String(cbuf, start, len - start - off), null);
             }
-        }
-        catch (BadLocationException e)
-        {
+        } catch (BadLocationException e) {
             throw new IOException(e.getMessage());
         }
     }

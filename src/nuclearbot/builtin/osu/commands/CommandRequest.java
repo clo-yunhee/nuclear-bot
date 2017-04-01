@@ -53,53 +53,39 @@ public class CommandRequest implements CommandExecutor {
     private final OsuPlugin m_osu;
     private final OsuFetcher m_fetcher;
 
-    public CommandRequest(final OsuPlugin osu)
-    {
+    public CommandRequest(final OsuPlugin osu) {
         m_osu = osu;
         m_fetcher = osu.getFetcher();
     }
 
     @Override
-    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
-    {
-        if (args.length < 2)
-        {
+    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args)
+            throws IOException {
+        if (args.length < 2) {
             return false;
-        }
-        else
-        {
+        } else {
             final String beatmapUrl = args[1].toLowerCase();
             final Matcher matcher = REGEX_BEATMAP_URL.matcher(beatmapUrl);
-            if (matcher.matches())
-            {
+            if (matcher.matches()) {
                 final boolean isBeatmapset = matcher.group(1).equalsIgnoreCase("s");
                 final int id = Integer.parseInt(matcher.group(2));
-                if (isBeatmapset)
-                {
+                if (isBeatmapset) {
                     final DataBeatmap[] beatmapset = m_fetcher.getBeatmapset(id);
-                    if (beatmapset == null || beatmapset.length == 0)
-                    {
+                    if (beatmapset == null || beatmapset.length == 0) {
                         client.sendMessage(MSG_REQUEST_NOT_FOUND);
                         return true;
-                    }
-                    else
-                    {
+                    } else {
                         final String artist = beatmapset[0].getArtist();
                         final String title = beatmapset[0].getTitle();
                         client.sendMessage(String.format(MSG_REQUEST_BEATMAPSET, artist, title, beatmapset.length));
                         m_osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_BEATMAPSET, username, beatmapUrl, artist, title, beatmapset.length));
                     }
-                }
-                else
-                {
+                } else {
                     final DataBeatmap beatmap = m_fetcher.getBeatmap(id);
-                    if (beatmap == null)
-                    {
+                    if (beatmap == null) {
                         client.sendMessage(MSG_REQUEST_NOT_FOUND);
                         return true;
-                    }
-                    else
-                    {
+                    } else {
                         final String artist = beatmap.getArtist();
                         final String title = beatmap.getTitle();
                         final String version = beatmap.getVersion();
@@ -108,19 +94,16 @@ public class CommandRequest implements CommandExecutor {
                         final float diffAR = beatmap.getDiffAR();
                         final float difficultyRating = beatmap.getDifficultyRating();
                         client.sendMessage(String.format(MSG_REQUEST_BEATMAP, artist, title, version, creator, bpm, diffAR, difficultyRating));
-                        m_osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_BEATMAP, username, beatmapUrl, artist, title, bpm, diffAR, difficultyRating));
+                        m_osu.sendPrivateMessage(
+                                String.format(PRIVMSG_REQUEST_BEATMAP, username, beatmapUrl, artist, title, bpm, diffAR, difficultyRating));
                     }
                 }
-            }
-            else
-            {
+            } else {
                 client.sendMessage(String.format(MSG_REQUEST_OTHER, beatmapUrl));
                 m_osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_OTHER, username, beatmapUrl));
             }
-            if (args.length > 2)
-            {
-                m_osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_MESSAGE,
-                        String.join(" ", Arrays.copyOfRange(args, 2, args.length))));
+            if (args.length > 2) {
+                m_osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_MESSAGE, String.join(" ", Arrays.copyOfRange(args, 2, args.length))));
             }
             return true;
         }

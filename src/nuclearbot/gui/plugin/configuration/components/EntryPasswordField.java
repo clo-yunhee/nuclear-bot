@@ -30,20 +30,20 @@ public class EntryPasswordField extends ConfigEntry {
 
     private final JPasswordField m_field;
 
-    public EntryPasswordField(final String key, final String defaultValue)
-    {
-        super(new JPasswordField(12), key, defaultValue);
+    public EntryPasswordField(final String key, final String defaultValue) {
+        super(new JPasswordField(18), key, defaultValue);
 
         m_field = getComponent();
     }
 
-    @Override @SuppressWarnings("deprecated") public String getValue()
-    {
+    @Override
+    @SuppressWarnings("deprecated")
+    public String getValue() {
         return m_field.getText();
     }
 
-    @Override public void setValue(final String value)
-    {
+    @Override
+    public void setValue(final String value) {
         m_field.setText(value);
     }
 

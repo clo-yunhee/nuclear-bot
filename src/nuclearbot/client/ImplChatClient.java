@@ -42,7 +42,8 @@ import java.util.regex.Pattern;
 public class ImplChatClient implements ChatClient {
 
     // only compile the regex once
-    private static final Pattern REGEX_MESSAGE = Pattern.compile("^:([a-zA-Z0-9_]+)![a-zA-Z0-9_]+@[a-zA-Z0-9_]+\\.tmi\\.twitch\\.tv PRIVMSG #[a-zA-Z0-9_]+ :(.+)$");
+    private static final Pattern REGEX_MESSAGE = Pattern
+            .compile("^:([a-zA-Z0-9_]+)![a-zA-Z0-9_]+@[a-zA-Z0-9_]+\\.tmi\\.twitch\\.tv PRIVMSG #[a-zA-Z0-9_]+ :(.+)$");
 
     private static final String SERVER = "irc.chat.twitch.tv";
     private static final int PORT = 6667;
@@ -67,7 +68,7 @@ public class ImplChatClient implements ChatClient {
     private ChatOut m_chatOut;
 
     private boolean m_doReconnect; // true to attempt to reconnect when the socket is closed
-    private boolean m_doStop; // if true, the client will exit at next loop.
+    private volatile boolean m_doStop; // if true, the client will exit at next loop.
 
     /**
      * Constructs a Twitch client with specified Twitch IRC account.
@@ -76,8 +77,7 @@ public class ImplChatClient implements ChatClient {
      *
      * @param plugin the plugin to use for this lifetime
      */
-    public ImplChatClient(final JavaPlugin plugin)
-    {
+    public ImplChatClient(final JavaPlugin plugin) {
         // user name and channel must be lower-case
         m_username = Config.get("twitch_user").toLowerCase();
         m_authToken = Config.get("twitch_oauth_key");
@@ -99,42 +99,32 @@ public class ImplChatClient implements ChatClient {
 
 	/*- notifiers -*/
 
-    private void notifyConnected()
-    {
-        for (ClientListener listener : m_clientListeners)
-        {
+    private void notifyConnected() {
+        for (ClientListener listener : m_clientListeners) {
             listener.onConnected(this);
         }
     }
 
-    private void notifyDisconnected()
-    {
-        for (ClientListener listener : m_clientListeners)
-        {
+    private void notifyDisconnected() {
+        for (ClientListener listener : m_clientListeners) {
             listener.onDisconnected(this);
         }
     }
 
-    private void notifyMessage(final String username, final String message)
-    {
-        for (ClientListener listener : m_clientListeners)
-        {
+    private void notifyMessage(final String username, final String message) {
+        for (ClientListener listener : m_clientListeners) {
             listener.onMessage(this, username, message);
         }
     }
 
-    private void notifyCommandRegistered(final String label, final Command command)
-    {
-        for (ClientListener listener : m_clientListeners)
-        {
+    private void notifyCommandRegistered(final String label, final Command command) {
+        for (ClientListener listener : m_clientListeners) {
             listener.onCommandRegistered(this, label, command);
         }
     }
 
-    private void notifyCommandUnregistered(final String label)
-    {
-        for (ClientListener listener : m_clientListeners)
-        {
+    private void notifyCommandUnregistered(final String label) {
+        for (ClientListener listener : m_clientListeners) {
             listener.onCommandUnregistered(this, label);
         }
     }
@@ -142,16 +132,13 @@ public class ImplChatClient implements ChatClient {
 	/*- registries -*/
 
     @Override
-    public Command getCommand(final String label)
-    {
+    public Command getCommand(final String label) {
         return m_commands.get(label);
     }
 
     @Override
-    public Command registerCommand(final String label, final String usage, final CommandExecutor executor)
-    {
-        if (m_commands.containsKey(label))
-        {
+    public Command registerCommand(final String label, final String usage, final CommandExecutor executor) {
+        if (m_commands.containsKey(label)) {
             throw new IllegalArgumentException("Registered an already registered command \"" + label + "\".");
         }
         final Command command = new ImplCommand(label, usage, executor);
@@ -162,10 +149,8 @@ public class ImplChatClient implements ChatClient {
     }
 
     @Override
-    public void unregisterCommand(final String label)
-    {
-        if (!m_commands.containsKey(label))
-        {
+    public void unregisterCommand(final String label) {
+        if (!m_commands.containsKey(label)) {
             throw new IllegalArgumentException("Unregistered not-registered command \"" + label + "\".");
         }
         m_commands.remove(label);
@@ -174,19 +159,13 @@ public class ImplChatClient implements ChatClient {
     }
 
     @Override
-    public boolean isCommandRegistered(final String label)
-    {
-        synchronized (m_commands)
-        {
-            return m_commands.containsKey(label);
-        }
+    public boolean isCommandRegistered(final String label) {
+        return m_commands.containsKey(label);
     }
 
     @Override
-    public void registerClientListener(final ClientListener listener)
-    {
-        if (m_clientListeners.contains(listener))
-        {
+    public void registerClientListener(final ClientListener listener) {
+        if (m_clientListeners.contains(listener)) {
             throw new IllegalArgumentException("Registered an already registered ClientListener.");
         }
         m_clientListeners.add(listener);
@@ -194,10 +173,8 @@ public class ImplChatClient implements ChatClient {
     }
 
     @Override
-    public void unregisterClientListener(final ClientListener listener)
-    {
-        if (!m_clientListeners.contains(listener))
-        {
+    public void unregisterClientListener(final ClientListener listener) {
+        if (!m_clientListeners.contains(listener)) {
             throw new IllegalArgumentException("Unregistered a not-registered ClientListener.");
         }
         m_clientListeners.remove(listener);
@@ -205,34 +182,29 @@ public class ImplChatClient implements ChatClient {
     }
 
     @Override
-    public void unregisterAllClientListeners()
-    {
+    public void unregisterAllClientListeners() {
         m_clientListeners.clear();
         Logger.info("(Twitch) Cleared all client listeners.");
     }
 
-    private void send(final String msg)
-    {
+    private void send(final String msg) {
         m_chatOut.write(msg + "\r\n");
     }
 
     @Override
-    public void sendMessage(final String msg)
-    {
+    public void sendMessage(final String msg) {
         m_chatOut.write("PRIVMSG " + m_channel + " :" + msg + "\r\n");
 
         notifyMessage(m_username, msg);
     }
 
     @Override
-    public synchronized void stop()
-    {
+    public void stop() {
         m_doStop = true;
     }
 
     @Override
-    public void connect() throws IOException
-    {
+    public void connect() throws IOException {
         String line;
 
         m_commands.clear();
@@ -240,19 +212,16 @@ public class ImplChatClient implements ChatClient {
         registerCommand("restart", "!restart", m_systemCallExecutor).setDescription("Soft-restarts the bot.");
         registerCommand("stop", "!stop", m_systemCallExecutor).setDescription("Stops the bot.");
 
-        try
-        {
+        try {
             // call the load listener
             m_plugin.onLoad(this);
-        }
-        catch (Exception e) // catch exceptions here to not leave the loop
+        } catch (Exception e) // catch exceptions here to not leave the loop
         {
             Logger.error("(Twitch) Exception in listener onLoad:");
             Logger.printStackTrace(e);
         }
 
-        do
-        {
+        do {
             Logger.info("(Twitch) Connecting...");
 
             Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ShutdownHookRunnable()));
@@ -268,24 +237,20 @@ public class ImplChatClient implements ChatClient {
             send("NICK " + m_username);
 
             // wait for response
-            while ((line = m_reader.readLine()) != null)
-            {
+            while ((line = m_reader.readLine()) != null) {
                 // skip the prefix which is ':tmi.twitch.tv ' (15 characters long)
                 if (line.startsWith("376", 15)) // this is the code of MOTD's last line
                 {
                     Logger.info("(Twitch) Connected!");
                     m_doStop = false;
                     break; // we're in
-                }
-                else if (line.startsWith("NOTICE * :", 15))
-                {
+                } else if (line.startsWith("NOTICE * :", 15)) {
                     Logger.info("(Twitch) Couldn't connect: " + line.substring(25));
                     break;
                 }
             }
 
-            if (!m_doStop)
-            {
+            if (!m_doStop) {
                 Logger.info("(Twitch) Requesting reconnect message capability...");
                 // ask for commands, allows for RECONNECT message
                 send("CAP REQ :twitch.tv/commands");
@@ -296,12 +261,10 @@ public class ImplChatClient implements ChatClient {
 
                 sendMessage("Bot running...");
 
-                try
-                {
+                try {
                     // call the start listener
                     m_plugin.onStart(this);
-                }
-                catch (Exception e) // catch exceptions here to not leave the loop
+                } catch (Exception e) // catch exceptions here to not leave the loop
                 {
                     Logger.error("(Twitch) Exception in listener onStart:");
                     Logger.printStackTrace(e);
@@ -309,17 +272,12 @@ public class ImplChatClient implements ChatClient {
 
                 notifyConnected();
 
-                while (!m_doStop)
-                {
-                    if (!m_reader.ready())
-                    {
+                while (!m_doStop) {
+                    if (!m_reader.ready()) {
                         // we don't need it to run all the time
-                        try
-                        {
+                        try {
                             Thread.sleep(SLEEP_DELAY);
-                        }
-                        catch (InterruptedException ignored)
-                        {
+                        } catch (InterruptedException ignored) {
                             Thread.yield(); // yield instead (still better than just ignoring)
                         }
                         continue;
@@ -330,18 +288,13 @@ public class ImplChatClient implements ChatClient {
                     if (line.startsWith("PING")) // ping request
                     {
                         send("PONG " + line.substring(5));
-                    }
-                    else if (line.startsWith("RECONNECT")) // twitch reconnect message
+                    } else if (line.startsWith("RECONNECT")) // twitch reconnect message
                     {
                         m_doReconnect = true;
                         Logger.info("(Twitch) Received a reconnect notice!");
-                    }
-                    else if (line.startsWith("CAP * ACK", 15))
-                    {
+                    } else if (line.startsWith("CAP * ACK", 15)) {
                         Logger.info("(Twitch) Request for commands capability validated.");
-                    }
-                    else
-                    {
+                    } else {
                         final Matcher matcher = REGEX_MESSAGE.matcher(line);
                         if (matcher.matches()) // if the message is a chat message
                         {
@@ -356,39 +309,29 @@ public class ImplChatClient implements ChatClient {
 
                                 Logger.info(String.format("(Twitch) Command from %s: %s", username, Arrays.toString(args)));
 
-                                try
-                                {
+                                try {
                                     final Command command = m_commands.get(label);
 
                                     // call the command listener
-                                    if (command != null)
-                                    {
-                                        if (!command.getExecutor().onCommand(this, username, command, label, args))
-                                        {
+                                    if (command != null) {
+                                        if (!command.getExecutor().onCommand(this, username, command, label, args)) {
                                             sendMessage("Usage: " + command.getUsage());
                                         }
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         Logger.info("(Twitch) Unknown command.");
                                         //sendMessage("Unknown command.");
                                     }
-                                }
-                                catch (Exception e) // catch exceptions here to not leave the loop
+                                } catch (Exception e) // catch exceptions here to not leave the loop
                                 {
                                     Logger.error("(Twitch) Exception in listener onCommand:");
                                     Logger.printStackTrace(e);
                                 }
-                            }
-                            else
-                            {
+                            } else {
                                 Logger.info(String.format("(Twitch) Message from %s: %s", username, message));
-                                try
-                                {
+                                try {
                                     // call the message listener
                                     m_plugin.onMessage(this, username, message);
-                                }
-                                catch (Exception e) // catch exceptions here to not leave the loop
+                                } catch (Exception e) // catch exceptions here to not leave the loop
                                 {
                                     Logger.error("(Twitch) Exception in listener onMessage:");
                                     Logger.printStackTrace(e);
@@ -396,27 +339,19 @@ public class ImplChatClient implements ChatClient {
 
                                 notifyMessage(username, message);
                             }
-                        }
-                        else if (line.startsWith("353", 16 + m_usernameLength)
-                                || line.startsWith("366", 16 + m_usernameLength)
-                                || line.startsWith("ROOMSTATE", 15)
-                                || line.startsWith("USERSTATE", 15))
-                        {
+                        } else if (line.startsWith("353", 16 + m_usernameLength) || line.startsWith("366", 16 + m_usernameLength) || line
+                                .startsWith("ROOMSTATE", 15) || line.startsWith("USERSTATE", 15)) {
                             // ignore these messages
-                        }
-                        else
-                        {
+                        } else {
                             Logger.info("(Twitch) " + line);
                         }
                     }
                 }
 
-                try
-                {
+                try {
                     // call the stop listener
                     m_plugin.onStop(this);
-                }
-                catch (Exception e) // catch exceptions here to not leave the method
+                } catch (Exception e) // catch exceptions here to not leave the method
                 {
                     Logger.error("(Twith) Exception in listener onStop:");
                     Logger.printStackTrace(e);
@@ -425,12 +360,9 @@ public class ImplChatClient implements ChatClient {
 
             sendMessage(m_doReconnect ? "Restarting bot..." : "Stopping bot...");
 
-            try
-            {
+            try {
                 Thread.sleep(800L); // give it some time to finish tasks
-            }
-            catch (InterruptedException ignored)
-            {
+            } catch (InterruptedException ignored) {
             }
 
             Logger.info("(Twitch) Releasing resources...");
@@ -457,26 +389,20 @@ public class ImplChatClient implements ChatClient {
     public class CommandSystemCalls implements CommandExecutor {
 
         @Override
-        public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] params) throws IOException
-        {
+        public boolean onCommand(final ChatClient client, final String username, final Command command, final String label,
+                                 final String[] params) throws IOException {
             // system calls (like in the Alicization arc SAO, lol)
-            if (Moderators.isModerator(username))
-            {
-                if (label.equalsIgnoreCase("restart"))
-                {
+            if (Moderators.isModerator(username)) {
+                if (label.equalsIgnoreCase("restart")) {
                     Logger.info("(Twitch) Restart command issued.");
                     m_doReconnect = true;
                     m_doStop = true;
-                }
-                else if (label.equalsIgnoreCase("stop"))
-                {
+                } else if (label.equalsIgnoreCase("stop")) {
                     Logger.info("(Twitch) Stop command issued.");
                     m_doReconnect = false;
                     m_doStop = true;
                 }
-            }
-            else
-            {
+            } else {
                 Logger.warning("(Twitch) Unauthorized command.");
                 //sendMessage("Unauthorized command.");
             }
@@ -488,23 +414,17 @@ public class ImplChatClient implements ChatClient {
     private class ShutdownHookRunnable implements Runnable {
 
         @Override
-        public void run()
-        {
+        public void run() {
             Logger.info("(Exit) (Twitch) Closing resources...");
 
-            if (m_chatOut != null)
-            {
+            if (m_chatOut != null) {
                 m_chatOut.close(); // attempt to close output thread cleanly
             }
-            try
-            {
-                if (m_socket != null)
-                {
+            try {
+                if (m_socket != null) {
                     m_socket.close(); // close socket
                 }
-            }
-            catch (IOException ignored)
-            {
+            } catch (IOException ignored) {
             }
         }
 

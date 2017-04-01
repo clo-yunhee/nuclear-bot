@@ -44,35 +44,28 @@ public class ArgumentFormatter {
      *
      * @param format the format string
      */
-    public ArgumentFormatter(final String format)
-    {
+    public ArgumentFormatter(final String format) {
         m_formatStringArray = parse(format);
         m_out = null;
     }
 
-    private FormatString[] parse(final String format)
-    {
+    private FormatString[] parse(final String format) {
         final List<FormatString> list = new ArrayList<>();
         final Matcher matcher = PATTERN_ARG.matcher(format);
         final int length = format.length();
-        for (int i = 0; i < length; )
-        {
-            if (matcher.find(i))
-            {
+        for (int i = 0; i < length; ) {
+            if (matcher.find(i)) {
                 // Anything between the start of the string and the beginning
                 // of the format specifier is either fixed text or contains
                 // an invalid format string.
-                if (matcher.start() != i)
-                {
+                if (matcher.start() != i) {
                     // Assume previous characters were fixed text
                     list.add(new FixedString(format.substring(i, matcher.start())));
                 }
 
                 list.add(new FormatSpecifier(matcher));
                 i = matcher.end();
-            }
-            else
-            {
+            } else {
                 // The rest of the string is fixed text
                 list.add(new FixedString(format.substring(i)));
                 break;
@@ -88,16 +81,13 @@ public class ArgumentFormatter {
      * @param args     the argument array as given by the onCommand method
      * @return the formatted string
      */
-    public String format(final String username, final String... args)
-    {
+    public String format(final String username, final String... args) {
         m_out = new StringBuilder();
-        for (FormatString formatString : m_formatStringArray)
-        {
+        for (FormatString formatString : m_formatStringArray) {
             final int index = formatString.index();
             final String arg;
 
-            switch (index)
-            {
+            switch (index) {
                 case -2: // fixed text
                     arg = null;
                     break;
@@ -128,18 +118,15 @@ public class ArgumentFormatter {
 
         private final String m_str;
 
-        public FixedString(final String str)
-        {
+        public FixedString(final String str) {
             m_str = str;
         }
 
-        public int index()
-        {
+        public int index() {
             return -2;
         }
 
-        public void print(final String arg)
-        {
+        public void print(final String arg) {
             m_out.append(m_str);
         }
 
@@ -149,37 +136,27 @@ public class ArgumentFormatter {
 
         private int m_index;
 
-        public FormatSpecifier(final Matcher matcher)
-        {
+        public FormatSpecifier(final Matcher matcher) {
             String indexStr = matcher.group(1);
-            if (indexStr == null)
-            {
+            if (indexStr == null) {
                 indexStr = matcher.group(2);
             }
-            if (indexStr != null)
-            {
-                try
-                {
+            if (indexStr != null) {
+                try {
                     m_index = Integer.parseInt(indexStr);
-                }
-                catch (NumberFormatException x)
-                {
+                } catch (NumberFormatException x) {
                     m_index = -1;
                 }
-            }
-            else
-            {
+            } else {
                 m_index = -1;
             }
         }
 
-        public int index()
-        {
+        public int index() {
             return m_index;
         }
 
-        public void print(final String arg)
-        {
+        public void print(final String arg) {
             m_out.append(arg);
         }
 

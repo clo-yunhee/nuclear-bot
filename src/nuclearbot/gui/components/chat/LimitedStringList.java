@@ -37,8 +37,7 @@ public class LimitedStringList extends JList<String> {
      * Constructs a LimitedStringList instance
      * with a default capacity of 50 lines.
      */
-    public LimitedStringList()
-    {
+    public LimitedStringList() {
         this(50);
     }
 
@@ -48,8 +47,7 @@ public class LimitedStringList extends JList<String> {
      *
      * @param capacity the maximum number of lines to keep at once
      */
-    public LimitedStringList(final int capacity)
-    {
+    public LimitedStringList(final int capacity) {
         super();
         m_listModel = new LimitedStringList.Model(capacity);
         setModel(m_listModel);
@@ -63,8 +61,7 @@ public class LimitedStringList extends JList<String> {
      *
      * @param text the line to add to the list
      */
-    public void add(final String text)
-    {
+    public void add(final String text) {
         m_listModel.add(text);
     }
 
@@ -84,8 +81,7 @@ public class LimitedStringList extends JList<String> {
          *
          * @param capacity the highest number of elements this model can have
          */
-        public Model(final int capacity)
-        {
+        public Model(final int capacity) {
             m_arrayList = new ArrayList<>(capacity);
             m_capacity = capacity;
         }
@@ -98,17 +94,13 @@ public class LimitedStringList extends JList<String> {
          *
          * @param text the line to add to the list
          */
-        public void add(final String text)
-        {
+        public void add(final String text) {
             int index0, index1;
-            if (m_arrayList.size() == m_capacity)
-            {
+            if (m_arrayList.size() == m_capacity) {
                 index0 = 0;
                 index1 = m_capacity - 1;
                 m_arrayList.remove(0);
-            }
-            else
-            {
+            } else {
                 index0 = index1 = m_arrayList.size();
             }
             m_arrayList.add(text);
@@ -116,14 +108,12 @@ public class LimitedStringList extends JList<String> {
         }
 
         @Override
-        public int getSize()
-        {
+        public int getSize() {
             return m_arrayList.size();
         }
 
         @Override
-        public String getElementAt(int index)
-        {
+        public String getElementAt(int index) {
             return m_arrayList.get(index);
         }
 

@@ -31,8 +31,7 @@ import java.awt.*;
  */
 public class PluginFileDialog extends FileDialog {
 
-    public PluginFileDialog(final JFrame container)
-    {
+    public PluginFileDialog(final JFrame container) {
         super(container, "Choose a file", FileDialog.LOAD);
         setLocationRelativeTo(container);
         setDirectory(OSUtils.workingDir());

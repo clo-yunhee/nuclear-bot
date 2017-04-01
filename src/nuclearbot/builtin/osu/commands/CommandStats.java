@@ -43,25 +43,20 @@ public class CommandStats implements CommandExecutor {
     private final OsuFetcher m_fetcher;
     private final String m_username;
 
-    public CommandStats(final OsuPlugin plugin)
-    {
+    public CommandStats(final OsuPlugin plugin) {
         m_fetcher = plugin.getFetcher();
         m_username = plugin.getUsername();
     }
 
     @Override
-    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args) throws IOException
-    {
-        final String requestUser = (args.length < 2) ?
-                m_username : String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+    public boolean onCommand(final ChatClient client, final String username, final Command command, final String label, final String[] args)
+            throws IOException {
+        final String requestUser = (args.length < 2) ? m_username : String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
         final DataUser user = m_fetcher.getUser(requestUser);
-        if (user == null)
-        {
+        if (user == null) {
             client.sendMessage(UNKNOWN_USER);
-        }
-        else
-        {
+        } else {
             client.sendMessage(String.format(Locale.US, STATS, user.getName(), user.getPP(), user.getRank(), user.getAccuracy()));
         }
         return true;

@@ -75,93 +75,75 @@ public class DataUser {
     // Contains events for this user
     private List<DataEvent> events;
 
-    public int getUserId()
-    {
+    public int getUserId() {
         return user_id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return username;
     }
 
-    public int getCount300()
-    {
+    public int getCount300() {
         return count300;
     }
 
-    public int getCount100()
-    {
+    public int getCount100() {
         return count100;
     }
 
-    public int getCount50()
-    {
+    public int getCount50() {
         return count50;
     }
 
-    public int getPlayCount()
-    {
+    public int getPlayCount() {
         return playcount;
     }
 
-    public long getRankedScore()
-    {
+    public long getRankedScore() {
         return ranked_score;
     }
 
-    public long getTotalScore()
-    {
+    public long getTotalScore() {
         return total_score;
     }
 
-    public int getRank()
-    {
+    public int getRank() {
         return pp_rank;
     }
 
-    public float getLevel()
-    {
+    public float getLevel() {
         return level;
     }
 
-    public float getPP()
-    {
+    public float getPP() {
         return pp_raw;
     }
 
-    public float getAccuracy()
-    {
+    public float getAccuracy() {
         return accuracy;
     }
 
-    public int getCountRankSS()
-    {
+    public int getCountRankSS() {
         return count_rank_ss;
     }
 
-    public int getCountRankS()
-    {
+    public int getCountRankS() {
         return count_rank_s;
     }
 
-    public int getCountRankA()
-    {
+    public int getCountRankA() {
         return count_rank_a;
     }
 
-    public String getCountry()
-    {
+    public String getCountry() {
         return country;
     }
 
-    public int getCountryRank()
-    {
+    public int getCountryRank() {
         return pp_country_rank;
     }
 
-    public List<DataEvent> getEvents()
-    {
+    public List<DataEvent> getEvents() {
         return events;
     }
 

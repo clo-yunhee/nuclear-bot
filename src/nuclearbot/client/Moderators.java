@@ -45,25 +45,18 @@ public class Moderators {
     private static final File file;
     private static final SortedSet<String> moderators;
 
-    static
-    {
+    static {
         file = new File(FILE_NAME);
         moderators = Collections.synchronizedSortedSet(new TreeSet<>());
 
-        if (!file.exists() && file.mkdirs() && file.delete())
-        {
-            try
-            {
-                if (file.createNewFile())
-                {
-                    try (final FileWriter writer = new FileWriter(file, false))
-                    {
+        if (!file.exists() && file.mkdirs() && file.delete()) {
+            try {
+                if (file.createNewFile()) {
+                    try (final FileWriter writer = new FileWriter(file, false)) {
                         writer.write("[]");
                     }
                 }
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 Logger.warning("(mod) Could not create \"" + FILE_NAME + "\" for persistence.");
                 Logger.warning("(mod) Moderators will only last one lifetime.");
                 Logger.printStackTrace(e);
@@ -73,57 +66,44 @@ public class Moderators {
         loadModerators();
     }
 
-    public static final void loadModerators()
-    {
-        try (final FileReader reader = new FileReader(file))
-        {
+    public static final void loadModerators() {
+        try (final FileReader reader = new FileReader(file)) {
             final Type listType = new TypeToken<List<String>>() {
             }.getType();
             final List<String> list = new Gson().fromJson(reader, listType);
 
             list.forEach(Moderators::addModerator);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.warning("(mod) Could not load the moderator list.");
             Logger.printStackTrace(e);
         }
     }
 
-    public static final void saveModerators()
-    {
-        try (final FileWriter writer = new FileWriter(file))
-        {
+    public static final void saveModerators() {
+        try (final FileWriter writer = new FileWriter(file)) {
             new Gson().toJson(moderators, List.class, writer);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.warning("(mod) Could not save the moderator list.");
             Logger.printStackTrace(e);
         }
     }
 
-    public static final void addModerator(final String name)
-    {
+    public static final void addModerator(final String name) {
         moderators.add(name);
         saveModerators();
     }
 
-    public static final void removeModerator(final String name)
-    {
+    public static final void removeModerator(final String name) {
         moderators.remove(name);
         saveModerators();
     }
 
-    public static final boolean isModerator(final String name)
-    {
+    public static final boolean isModerator(final String name) {
         return moderators.contains(name);
     }
 
-    public static final SortedSet<String> getModerators()
-    {
+    public static final SortedSet<String> getModerators() {
         return Collections.unmodifiableSortedSet(moderators);
     }
-
 
 }

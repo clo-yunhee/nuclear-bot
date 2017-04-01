@@ -44,8 +44,7 @@ public class ConfigPanel extends JScrollPane {
 
     private PluginConfigPanel m_pluginPanel;
 
-    public ConfigPanel(final NuclearBotGUI gui)
-    {
+    public ConfigPanel(final NuclearBotGUI gui) {
         m_gui = gui;
 
         m_configPanel = new JPanel(new VerticalLayout());
@@ -83,78 +82,59 @@ public class ConfigPanel extends JScrollPane {
         resetFields();
     }
 
-    public void setPluginPanel(final Plugin handle)
-    {
-        if (m_pluginPanel != null)
-        {
+    public void setPluginPanel(final Plugin handle) {
+        if (m_pluginPanel != null) {
             m_configPanel.remove(m_pluginPanel);
         }
-        if (handle instanceof HasConfigPanel)
-        {
-            try
-            {
+        if (handle instanceof HasConfigPanel) {
+            try {
                 m_pluginPanel = ((HasConfigPanel) handle).getConfigPanel();
                 m_pluginPanel.resetFields();
                 m_configPanel.add(m_pluginPanel);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Logger.error("(GUI) Exception caught while changing plugin configuration panel:");
                 Logger.printStackTrace(e);
-                m_gui.getDialogs().error("Exception caught while changing plugin configuration panel. Check console for details.", "Exception while updating config panel");
+                m_gui.getDialogs().error("Exception caught while changing plugin configuration panel. Check console for details.",
+                        "Exception while updating config panel");
             }
-        }
-        else
-        {
+        } else {
             m_pluginPanel = null;
         }
 
     }
 
-    private void setFields()
-    {
+    private void setFields() {
         final Component[] components;
-        synchronized (m_configPanel.getTreeLock())
-        {
+        synchronized (m_configPanel.getTreeLock()) {
             components = m_configPanel.getComponents();
         }
 
-        for (final Component component : components)
-        {
-            if (component instanceof PluginConfigPanel)
-            {
+        for (final Component component : components) {
+            if (component instanceof PluginConfigPanel) {
                 ((PluginConfigPanel) component).saveFields();
             }
         }
     }
 
-    private void resetFields()
-    {
+    private void resetFields() {
         final Component[] components;
-        synchronized (m_configPanel.getTreeLock())
-        {
+        synchronized (m_configPanel.getTreeLock()) {
             components = m_configPanel.getComponents();
         }
 
-        for (final Component component : components)
-        {
-            if (component instanceof PluginConfigPanel)
-            {
+        for (final Component component : components) {
+            if (component instanceof PluginConfigPanel) {
                 ((PluginConfigPanel) component).resetFields();
             }
         }
     }
 
-    private void saveConfig()
-    {
-        try
-        {
+    private void saveConfig() {
+        try {
             setFields();
             Config.saveConfig();
             m_gui.getDialogs().info("Config saved successfully.", "Config saved");
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.error("(GUI) Exception while saving config:");
             Logger.printStackTrace(e);
             m_gui.selectTab(NuclearBotGUI.TAB_CONSOLE);
@@ -162,15 +142,11 @@ public class ConfigPanel extends JScrollPane {
         }
     }
 
-    private void reloadConfig()
-    {
-        try
-        {
+    private void reloadConfig() {
+        try {
             Config.reloadConfig();
             m_gui.getDialogs().info("Config reloaded successfully.", "Config reloaded");
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.error("(GUI) Exception while reloading config:");
             Logger.printStackTrace(e);
             m_gui.selectTab(NuclearBotGUI.TAB_CONSOLE);

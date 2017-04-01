@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class OsuClient {
 
-    private static final String SERVER = "cho.ppy.sh";
+    private static final String SERVER = "irc.ppy.sh";
     private static final int PORT = 6667;
 
     private static final long PING_SLEEP = TimeUnit.SECONDS.toMillis(2);
@@ -50,8 +50,7 @@ public class OsuClient {
 
     private PingRunnable m_pingThread;
 
-    public OsuClient(final String username, final String ircKey)
-    {
+    public OsuClient(final String username, final String ircKey) {
         m_username = username;
         m_ircKey = ircKey;
 
@@ -61,15 +60,13 @@ public class OsuClient {
         m_pingThread = null;
     }
 
-    public void connect() throws IOException
-    {
+    public void connect() throws IOException {
         String line;
 
         Logger.info("(osu!) Connecting...");
 
         // open connection and I/O objects
-        Runtime.getRuntime()
-                .addShutdownHook(m_shutdownHook = new Thread(new ShutdownHookRunnable()));
+        Runtime.getRuntime().addShutdownHook(m_shutdownHook = new Thread(new ShutdownHookRunnable()));
         m_socket = new Socket(SERVER, PORT);
         m_reader = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
         m_chatOut = new ImplChatOut(m_socket.getOutputStream(), "osu");
@@ -79,16 +76,13 @@ public class OsuClient {
         sendMessage("NICK " + m_username);
 
         // wait for response
-        while ((line = m_reader.readLine()) != null)
-        {
+        while ((line = m_reader.readLine()) != null) {
             // skip the prefix which is ':cho.ppy.sh ' (12 characters long)
             if (line.startsWith("376", 12)) // this is the code for the last line of MOTD
             {
                 Logger.info("(osu!) Connected!");
                 break; // we're in
-            }
-            else if (line.startsWith("464", 12))
-            {
+            } else if (line.startsWith("464", 12)) {
                 Logger.info("(osu!) Bad authentication token.");
                 m_chatOut.close();
                 return;
@@ -99,8 +93,7 @@ public class OsuClient {
         m_pingThread.start();
     }
 
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         // close resources and socket
         m_pingThread.stop();
         m_chatOut.close();
@@ -114,13 +107,11 @@ public class OsuClient {
         Runtime.getRuntime().removeShutdownHook(m_shutdownHook);
     }
 
-    void sendPrivateMessage(final String msg)
-    {
+    void sendPrivateMessage(final String msg) {
         m_chatOut.write("PRIVMSG " + m_username + " :" + msg + "\r\n");
     }
 
-    private void sendMessage(final String msg)
-    {
+    private void sendMessage(final String msg) {
         m_chatOut.write(msg + "\r\n");
     }
 
@@ -130,49 +121,36 @@ public class OsuClient {
 
         private volatile boolean m_running;
 
-        private void start()
-        {
+        private void start() {
             m_running = true;
             m_thread = new Thread(this, "osu ping");
             m_thread.start();
         }
 
-        private void stop()
-        {
+        private void stop() {
             m_running = false;
         }
 
         @Override
-        public void run()
-        {
-            try
-            {
-                while (m_running)
-                {
-                    if (m_reader.ready())
-                    {
+        public void run() {
+            try {
+                while (m_running) {
+                    if (m_reader.ready()) {
                         final String line = m_reader.readLine();
                         if (line.startsWith("PING")) // ping request
                         {
                             sendMessage("PONG " + line.substring(5));
                         }
-                    }
-                    else
-                    {
-                        try
-                        {
+                    } else {
+                        try {
                             // this thread has very low priority, hence will almost never be active.
                             Thread.sleep(PING_SLEEP);
-                        }
-                        catch (InterruptedException ignored)
-                        {
+                        } catch (InterruptedException ignored) {
                             Thread.yield();
                         }
                     }
                 }
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 Logger.error("(osu!) Exception caught in ping thread:");
                 Logger.printStackTrace(e);
             }
@@ -183,22 +161,16 @@ public class OsuClient {
     private class ShutdownHookRunnable implements Runnable {
 
         @Override
-        public void run()
-        {
+        public void run() {
             Logger.info("(Exit) (osu!) Closing resources...");
-            if (m_chatOut != null)
-            {
+            if (m_chatOut != null) {
                 m_chatOut.close();
             }
-            try
-            {
-                if (m_socket != null)
-                {
+            try {
+                if (m_socket != null) {
                     m_socket.close();
                 }
-            }
-            catch (IOException ignored)
-            {
+            } catch (IOException ignored) {
             } // we don't really care
         }
 

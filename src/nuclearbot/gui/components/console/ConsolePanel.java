@@ -33,8 +33,7 @@ import java.awt.*;
  */
 public class ConsolePanel extends JScrollPane {
 
-    public ConsolePanel(final NuclearBotGUI gui, final Document consoleDocument)
-    {
+    public ConsolePanel(final NuclearBotGUI gui, final Document consoleDocument) {
         final JTextArea consoleTextArea = new JTextArea(consoleDocument);
         final DefaultCaret caret = new DefaultCaret();
 
@@ -44,8 +43,8 @@ public class ConsolePanel extends JScrollPane {
         consoleTextArea.setEditable(false);
         consoleTextArea.setCaret(caret);
         consoleTextArea.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-        consoleTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
         consoleTextArea.setComponentPopupMenu(gui.getTextPopupMenu());
+        consoleTextArea.setFont(new Font("Courier New", Font.PLAIN, 14));
 
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);

@@ -31,44 +31,35 @@ public class ClasspathPlugin extends ImplJavaPlugin {
     private final String m_name;
     private final String m_version;
 
-    public ClasspathPlugin(final Plugin plugin)
-    {
+    public ClasspathPlugin(final Plugin plugin) {
         super(plugin, true);
 
         String name;
-        try
-        {
+        try {
             final Field field = plugin.getClass().getField("PLUGIN_NAME");
             name = (String) field.get(plugin);
-        }
-        catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e)
-        {
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
             name = plugin.getClass().getName();
         }
         m_name = name;
 
         String version;
-        try
-        {
+        try {
             final Field field = plugin.getClass().getField("PLUGIN_VERSION");
             version = (String) field.get(plugin);
-        }
-        catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e)
-        {
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
             version = "";
         }
         m_version = version;
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return m_name;
     }
 
     @Override
-    public String getVersion()
-    {
+    public String getVersion() {
         return m_version;
     }
 

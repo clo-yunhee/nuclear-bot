@@ -40,8 +40,7 @@ public class CommandOverviewPanel extends JPanel {
     private final JLabel m_usageLabel;
     private final JLabel m_descriptionLabel;
 
-    public CommandOverviewPanel(final NuclearBotGUI gui)
-    {
+    public CommandOverviewPanel(final NuclearBotGUI gui) {
         super(new VerticalLayout());
         setBorder(BorderFactory.createTitledBorder("Overview"));
 
@@ -89,25 +88,21 @@ public class CommandOverviewPanel extends JPanel {
         add(descriptionPanel);
     }
 
-    public void addCommand(final String name)
-    {
+    public void addCommand(final String name) {
         m_commandList.addItem(name);
         updateCommandInfo();
     }
 
-    public void removeCommand(final String name)
-    {
+    public void removeCommand(final String name) {
         m_commandList.removeItem(name);
         updateCommandInfo();
     }
 
-    public void clearCommandList()
-    {
+    public void clearCommandList() {
         m_commandList.removeAllItems();
     }
 
-    private void updateCommandInfo()
-    {
+    private void updateCommandInfo() {
         final String label = (String) m_commandList.getSelectedItem();
         final Command command = m_gui.getClient().getCommand(label);
 

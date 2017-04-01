@@ -30,20 +30,19 @@ public class EntryTextField extends ConfigEntry {
 
     private final JTextField m_field;
 
-    public EntryTextField(final String key, final String defaultValue)
-    {
-        super(new JTextField(12), key, defaultValue);
+    public EntryTextField(final String key, final String defaultValue) {
+        super(new JTextField(18), key, defaultValue);
 
         m_field = getComponent();
     }
 
-    @Override public String getValue()
-    {
+    @Override
+    public String getValue() {
         return m_field.getText();
     }
 
-    @Override public void setValue(final String value)
-    {
+    @Override
+    public void setValue(final String value) {
         m_field.setText(value);
     }
 

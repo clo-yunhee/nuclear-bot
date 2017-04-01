@@ -33,8 +33,7 @@ public class ImplCommand implements Command {
     private final CommandExecutor m_executor;
     private String m_description;
 
-    public ImplCommand(final String label, final String usage, final CommandExecutor executor)
-    {
+    public ImplCommand(final String label, final String usage, final CommandExecutor executor) {
         m_label = label;
         m_usage = usage;
         m_description = "";
@@ -42,32 +41,27 @@ public class ImplCommand implements Command {
     }
 
     @Override
-    public String getLabel()
-    {
+    public String getLabel() {
         return m_label;
     }
 
     @Override
-    public String getUsage()
-    {
+    public String getUsage() {
         return m_usage;
     }
 
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return m_description;
     }
 
     @Override
-    public void setDescription(final String description)
-    {
+    public void setDescription(final String description) {
         m_description = description != null ? description : "";
     }
 
     @Override
-    public CommandExecutor getExecutor()
-    {
+    public CommandExecutor getExecutor() {
         return m_executor;
     }
 
