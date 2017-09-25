@@ -46,7 +46,9 @@ class OsuFetcher(apiKey: String) {
 
     // osu data fetchers
     private inline fun <reified T> get(page: String, urlParameters: String): T? {
-        return HTTP.fetchData("http://osu.ppy.sh/api/$page", "k=$apiKey&$urlParameters", T::class.java)
+        return HTTP.fetchData(
+                "http://osu.ppy.sh/api/$page",
+                "k=$apiKey&$urlParameters", T::class.java)
     }
 
     /**
@@ -57,7 +59,8 @@ class OsuFetcher(apiKey: String) {
      *
      * @return the beatmap set
      */
-    fun getBeatmapset(beatmapsetId: Int) = get<Array<DataBeatmap>>("get_beatmaps", "s=$beatmapsetId")
+    fun getBeatmapset(beatmapsetId: Int) =
+            get<Array<DataBeatmap>>("get_beatmaps", "s=$beatmapsetId")
 
     /**
      * Fetches data about a beatmap with the specified id.
@@ -67,7 +70,9 @@ class OsuFetcher(apiKey: String) {
      *
      * @return data about the beatmap
      */
-    fun getBeatmap(beatmapId: Int) = get<Array<DataBeatmap>>("get_beatmaps", "b=$beatmapId")?.getOrNull(0)
+    fun getBeatmap(beatmapId: Int) =
+            get<Array<DataBeatmap>>("get_beatmaps", "b=$beatmapId")
+                    ?.getOrNull(0)
 
     /**
      * Fetches data about a user with the specified username.
@@ -77,6 +82,8 @@ class OsuFetcher(apiKey: String) {
      *
      * @return data about the user
      */
-    fun getUser(username: String) = get<Array<DataUser>>("get_user", "type=string&u=${safeEncode(username)}")?.getOrNull(0)
+    fun getUser(username: String) =
+            get<Array<DataUser>>("get_user", "type=string&u=${safeEncode(username)}")
+                    ?.getOrNull(0)
 
 }

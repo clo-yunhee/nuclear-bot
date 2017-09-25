@@ -5,16 +5,7 @@ import nuclearbot.gui.NuclearBotGUI
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
-import javax.swing.BorderFactory
-import javax.swing.DefaultListCellRenderer
-import javax.swing.DefaultListModel
-import javax.swing.JButton
-import javax.swing.JLabel
-import javax.swing.JList
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTextField
-import javax.swing.UIManager
+import javax.swing.*
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 
@@ -50,9 +41,13 @@ class ModeratorPanel(private val gui: NuclearBotGUI) : JPanel(BorderLayout()) {
         val list = JList(moderators).apply {
             layoutOrientation = JList.VERTICAL_WRAP
             setCellRenderer(object : DefaultListCellRenderer() {
-                override fun getListCellRendererComponent(list: JList<*>, value: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) =
-                        (super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus) as JLabel).apply {
-                            val matteBorder = BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("Table.gridColor"))
+                override fun getListCellRendererComponent(list: JList<*>, value: Any?,
+                                                          index: Int, isSelected: Boolean,
+                                                          cellHasFocus: Boolean) =
+                        (super.getListCellRendererComponent(list, value, index,
+                                isSelected, cellHasFocus) as JLabel).apply {
+                            val matteBorder = BorderFactory.createMatteBorder(1, 1, 1, 1,
+                                    UIManager.getColor("Table.gridColor"))
                             val margin = EmptyBorder(0, 5, 0, 5)
                             border = CompoundBorder(matteBorder, margin)
                             horizontalAlignment = JLabel.CENTER

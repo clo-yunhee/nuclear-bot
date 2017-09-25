@@ -33,7 +33,9 @@ class UserCommand(format: String) : CommandExecutor {
 
     private val formatter = ArgumentFormatter(format)
 
-    override fun onCommand(client: ChatClient, username: String, command: Command, label: String, args: Array<String>): Boolean {
+    override fun onCommand(client: ChatClient, username: String,
+                           command: Command, label: String,
+                           args: Array<String>): Boolean {
         val message = formatter.format(username, args)
         if (message != null) {
             client.sendMessage(message)

@@ -50,8 +50,10 @@ object OsuNowPlaying {
         // for each window, check the title
         // only one should have "osu!" in it (windows should be: X container, .NET container, actual osu! game)
         return try {
-            Runtime.getRuntime().exec("xdotool search --classname osu").inputStream.bufferedReader().readLines().forEach {
-                Runtime.getRuntime().exec("xdotool getwindowname ${it.trim().toInt()}").inputStream.bufferedReader().readLines().forEach {
+            Runtime.getRuntime().exec("xdotool search --classname osu")
+                    .inputStream.bufferedReader().readLines().forEach {
+                Runtime.getRuntime().exec("xdotool getwindowname ${it.trim().toInt()}")
+                        .inputStream.bufferedReader().readLines().forEach {
                     return if ("osu!" in it) {
                         parseTitle(it)
                     } else {
@@ -76,7 +78,8 @@ object OsuNowPlaying {
     private fun getWindows(): Response {
         try {
             // parse csv
-            Runtime.getRuntime().exec("tasklist /fo csv /nh /fi \"imagename eq osu!.exe\" /v").inputStream.bufferedReader().readText().let {
+            Runtime.getRuntime().exec("tasklist /fo csv /nh /fi \"imagename eq osu!.exe\" /v")
+                    .inputStream.bufferedReader().readText().let {
                 if (!it.startsWith("\"osu!.exe\"")) {
                     return Response(NOT_RUNNING, null)
                 }
@@ -95,12 +98,10 @@ object OsuNowPlaying {
     }
 
     val song: Response
-        get() {
-            when (OSUtils.os) {
-                OSUtils.OSType.LINUX -> return getLinux()
-                OSUtils.OSType.WINDOWS -> return getWindows()
-                OSUtils.OSType.UNKNOWN -> return Response(UNKNOWN_OS, null)
-            }
+        get() = when (OSUtils.os) {
+            OSUtils.OSType.LINUX -> getLinux()
+            OSUtils.OSType.WINDOWS -> getWindows()
+            OSUtils.OSType.UNKNOWN -> Response(UNKNOWN_OS, null)
         }
 
     class Response(val text: String, val rawTitle: String?)

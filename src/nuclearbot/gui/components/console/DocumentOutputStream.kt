@@ -39,7 +39,7 @@ class DocumentOutputStream(private val document: Document, private val outputStr
 
          * @param document the document to redirect to
          */
-        @Synchronized fun redirectSystemOut(document: Document) {
+        fun redirectSystemOut(document: Document) {
             System.setOut(PrintStream(DocumentOutputStream(document, System.out), true))
         }
     }

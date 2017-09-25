@@ -60,10 +60,14 @@ interface ChatClient {
      *
      * @throws IllegalArgumentException if the command was already registered
      */
-    fun registerCommand(label: String, executor: (ChatClient, String, Command, String, Array<String>) -> Boolean) = registerCommand(label, object : CommandExecutor {
-        override fun onCommand(client: ChatClient, username: String, command: Command, label: String, args: Array<String>): Boolean {
-            return executor(client, username, command, label, args)
-        }
+    fun registerCommand(label: String,
+                        executor: (ChatClient, String,
+                                   Command, String,
+                                   Array<String>) -> Boolean) = registerCommand(label, object : CommandExecutor {
+        override fun onCommand(client: ChatClient, username: String,
+                               command: Command, label: String,
+                               args: Array<String>): Boolean =
+                executor(client, username, command, label, args)
     })
 
     /**

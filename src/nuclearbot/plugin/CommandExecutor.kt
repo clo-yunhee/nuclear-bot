@@ -2,8 +2,8 @@ package nuclearbot.plugin
 
 import nuclearbot.client.ChatClient
 import nuclearbot.client.Command
-
 import java.io.IOException
+import java.util.*
 
 /*
  * Copyright (C) 2017 NuclearCoder
@@ -44,5 +44,14 @@ import java.io.IOException
      *
      * @throws IOException delegate exception handling to the client
      */
-    fun onCommand(client: ChatClient, username: String, command: Command, label: String, args: Array<String>): Boolean
+    fun onCommand(client: ChatClient, username: String,
+                  command: Command, label: String, args: Array<String>): Boolean
+
+}
+
+fun Array<String>.joinFrom(from: Int): String = StringJoiner(" ").run {
+    for (i in from..lastIndex) {
+        add(get(i))
+    }
+    toString()
 }

@@ -87,20 +87,20 @@ class DialogUtil(private val container: JFrame) {
         dialog(message, title, JOptionPane.ERROR_MESSAGE)
     }
 
-    private inner class DialogCall(private val message: String, private val title: String, private val type: Int) : Runnable {
+    private inner class DialogCall(private val message: String,
+                                   private val title: String,
+                                   private val type: Int) : Runnable {
 
         fun process() {
-            if (doQueue) {
+            when {
                 // if we're queueing, append to queue
-                synchronized(queue) {
+                doQueue -> synchronized(queue) {
                     queue.add(this)
                 }
-            } else if (EventQueue.isDispatchThread()) {
                 // we're not queueing and we're in the EDT
-                run()
-            } else {
+                EventQueue.isDispatchThread() -> run()
                 // if not, do it
-                EventQueue.invokeLater(this)
+                else -> EventQueue.invokeLater(this)
             }
         }
 

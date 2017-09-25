@@ -5,6 +5,7 @@ import nuclearbot.builtin.osu.data.DataBeatmap
 import nuclearbot.client.ChatClient
 import nuclearbot.client.Command
 import nuclearbot.plugin.CommandExecutor
+import nuclearbot.plugin.joinFrom
 
 /*
  * Copyright (C) 2017 NuclearCoder
@@ -33,7 +34,9 @@ import nuclearbot.plugin.CommandExecutor
 class CommandRequest(private val osu: OsuPlugin) : CommandExecutor {
     private val fetcher = osu.fetcher
 
-    override fun onCommand(client: ChatClient, username: String, command: Command, label: String, args: Array<String>): Boolean {
+    override fun onCommand(client: ChatClient, username: String,
+                           command: Command, label: String,
+                           args: Array<String>): Boolean {
         if (args.size < 2) {
             return false
         }
@@ -44,16 +47,22 @@ class CommandRequest(private val osu: OsuPlugin) : CommandExecutor {
             if (matcher.group(1).equals("s", ignoreCase = true)) {
                 fetcher.getBeatmapset(id)?.takeIf(Array<DataBeatmap>::isNotEmpty)?.let {
                     val beatmap = it.first()
-                    client.sendMessage(String.format(MSG_REQUEST_BEATMAPSET, beatmap.artist, beatmap.title, it.size))
-                    osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_BEATMAPSET, username, beatmapUrl, beatmap.artist, beatmap.title, it.size))
+
+                    client.sendMessage(String.format(MSG_REQUEST_BEATMAPSET,
+                            beatmap.artist, beatmap.title, it.size))
+                    osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_BEATMAPSET,
+                            username, beatmapUrl, beatmap.artist, beatmap.title, it.size))
+
                 } ?: run {
                     client.sendMessage(MSG_REQUEST_NOT_FOUND)
                     return true
                 }
             } else {
                 fetcher.getBeatmap(id)?.let {
-                    client.sendMessage(String.format(MSG_REQUEST_BEATMAP, it.artist, it.title, it.version, it.creator, it.bpm, it.diffAR, it.difficultyRating))
-                    osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_BEATMAP, username, beatmapUrl, it.artist, it.title, it.bpm, it.diffAR, it.difficultyRating))
+                    client.sendMessage(String.format(MSG_REQUEST_BEATMAP,
+                            it.artist, it.title, it.version, it.creator, it.bpm, it.diffAR, it.difficultyRating))
+                    osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_BEATMAP,
+                            username, beatmapUrl, it.artist, it.title, it.bpm, it.diffAR, it.difficultyRating))
                 } ?: run {
                     client.sendMessage(MSG_REQUEST_NOT_FOUND)
                     return true
@@ -64,7 +73,7 @@ class CommandRequest(private val osu: OsuPlugin) : CommandExecutor {
             osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_OTHER, username, beatmapUrl))
         }
         if (args.size > 2) {
-            osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_MESSAGE, args.copyOfRange(2, args.size).joinToString(" ")))
+            osu.sendPrivateMessage(String.format(PRIVMSG_REQUEST_MESSAGE, args.joinFrom(2)))
         }
         return true
     }

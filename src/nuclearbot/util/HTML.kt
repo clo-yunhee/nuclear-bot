@@ -35,16 +35,15 @@ object HTML {
      *
      * @return the corrected string
      */
-    fun escapeText(string: String) = StringBuilder(Math.max(16, string.length)).let { sb ->
+    fun escapeText(string: String): CharSequence = StringBuilder(Math.max(16, string.length)).apply {
         string.forEach {
-            sb.append(when (it) {
+            append(when (it) {
                 '&' -> "&amp;"
                 '<' -> "&lt;"
                 '>' -> "&gt;"
                 else -> it
             })
         }
-        sb.toString()
     }
 
 }

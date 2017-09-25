@@ -29,7 +29,8 @@ import kotlin.reflect.KProperty
 
  * @author NuclearCoder (contact on the GitHub repo)
  */
-class PropertyWrapper<T>(private val wrapped: KMutableProperty0<T>) : ReadWriteProperty<Any?, T> {
+class PropertyWrapper<T>(private val wrapped: KMutableProperty0<T>)
+    : ReadWriteProperty<Any?, T> {
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
         return wrapped.get()
     }
@@ -39,7 +40,9 @@ class PropertyWrapper<T>(private val wrapped: KMutableProperty0<T>) : ReadWriteP
     }
 }
 
-class JavaWrapper<T>(private val getter: KFunction<T>, private val setter: KFunction<Unit>) : ReadWriteProperty<Any?, T> {
+class JavaWrapper<T>(private val getter: KFunction<T>,
+                     private val setter: KFunction<Unit>)
+    : ReadWriteProperty<Any?, T> {
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
         return getter.call()
     }

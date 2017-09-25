@@ -4,6 +4,7 @@ import nuclearbot.builtin.osu.OsuPlugin
 import nuclearbot.client.ChatClient
 import nuclearbot.client.Command
 import nuclearbot.plugin.CommandExecutor
+import nuclearbot.plugin.joinFrom
 import java.util.*
 
 /*
@@ -35,8 +36,10 @@ class CommandStats(plugin: OsuPlugin) : CommandExecutor {
     private val fetcher = plugin.fetcher
     private val username = plugin.username
 
-    override fun onCommand(client: ChatClient, username: String, command: Command, label: String, args: Array<String>): Boolean {
-        val requestUser = if (args.size < 2) this.username else args.copyOfRange(1, args.size).joinToString(" ")
+    override fun onCommand(client: ChatClient, username: String,
+                           command: Command, label: String,
+                           args: Array<String>): Boolean {
+        val requestUser = if (args.size < 2) this.username else args.joinFrom(1)
 
         val user = fetcher.getUser(requestUser)
         if (user == null) {

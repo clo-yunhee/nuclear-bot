@@ -31,7 +31,9 @@ import nuclearbot.plugin.CommandExecutor
  */
 class CommandNowPlaying : CommandExecutor {
 
-    override fun onCommand(client: ChatClient, username: String, command: Command, label: String, args: Array<String>): Boolean {
+    override fun onCommand(client: ChatClient, username: String,
+                           command: Command, label: String,
+                           args: Array<String>): Boolean {
         OsuNowPlaying.song.let {
             client.sendMessage(String.format(it.text, it.rawTitle))
         }

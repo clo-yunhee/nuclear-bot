@@ -21,8 +21,8 @@ import nuclearbot.client.ChatClient
 import nuclearbot.client.Command
 import nuclearbot.client.Moderators
 import nuclearbot.plugin.CommandExecutor
+import nuclearbot.plugin.joinFrom
 import java.awt.EventQueue
-import java.util.*
 
 /**
  * Command registered by the GUI for moderation of user-defined commands.<br></br>
@@ -33,7 +33,9 @@ import java.util.*
  */
 class UserCommandModeration(private val commands: UserCommandManager) : CommandExecutor {
 
-    override fun onCommand(client: ChatClient, username: String, command: Command, label: String, args: Array<String>): Boolean {
+    override fun onCommand(client: ChatClient, username: String,
+                           command: Command, label: String,
+                           args: Array<String>): Boolean {
         if (!Moderators.isModerator(username)) {
             // fail silently
             return true
@@ -41,18 +43,18 @@ class UserCommandModeration(private val commands: UserCommandManager) : CommandE
 
         if (label.equals("cmdadd", ignoreCase = true) && args.size >= 3) {
             // usage: !cmdadd <name> <response>
-            val response = Arrays.copyOfRange(args, 2, args.size).joinToString(" ")
+            val response = args.joinFrom(2)
             addCommand(client, username, args[1], response)
         } else if (label.equals("cmdrem", ignoreCase = true) && args.size >= 2) {
             // usage: !cmdrem <name>
             removeCommand(client, username, args[1])
         } else if (label.equals("cmdusage", ignoreCase = true) && args.size >= 3) {
             // usage: !cmdusage <name> <usage>
-            val usage = Arrays.copyOfRange(args, 2, args.size).joinToString(" ")
+            val usage = args.joinFrom(2)
             setUsage(client, username, args[1], usage)
         } else if (label.equals("cmddesc", ignoreCase = true) && args.size >= 3) {
             // usage: !cmddesc <name> <description>
-            val description = Arrays.copyOfRange(args, 2, args.size).joinToString(" ")
+            val description = args.joinFrom(2)
             setDescription(client, username, args[1], description)
         } else {
             return false

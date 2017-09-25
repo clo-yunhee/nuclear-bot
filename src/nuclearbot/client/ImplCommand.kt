@@ -26,7 +26,8 @@ import nuclearbot.plugin.CommandExecutor
 
  * @author NuclearCoder (contact on the GitHub repo)
  */
-class ImplCommand(override val label: String, override var executor: CommandExecutor) : Command {
+class ImplCommand(override val label: String,
+                  override var executor: CommandExecutor) : Command {
 
     override var usage: String = '!' + label
 

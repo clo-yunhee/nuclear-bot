@@ -48,7 +48,8 @@ class ImplPluginLoader : PluginLoader {
         // look for built-in plugins in the 'builtin' package
         builtinPlugins = mutableListOf<String>().let {
             try {
-                val resource = defaultClassLoader.getResource(BUILTIN_PACKAGE_PATH) ?: throw IllegalStateException("Builtin package is not present.")
+                val resource = defaultClassLoader.getResource(BUILTIN_PACKAGE_PATH)
+                        ?: throw IllegalStateException("Builtin package is not present.")
 
                 it.addAll(if (resource.toString().startsWith("jar:")) {
                     findPluginsJar(resource, BUILTIN_PACKAGE_PATH)
@@ -78,7 +79,9 @@ class ImplPluginLoader : PluginLoader {
     private fun findPluginsJar(resource: URL, packageName: String): List<String> {
         val classes = mutableListOf<String>()
         val packagePath = packageName.replace('.', '/')
-        val filename = resource.path.replaceFirst("[.]jar[!].*".toRegex(), ".jar").replaceFirst("file:".toRegex(), "")
+        val filename = resource.path
+                .replaceFirst("[.]jar[!].*".toRegex(), ".jar")
+                .replaceFirst("file:".toRegex(), "")
 
         try {
             JarFile(filename).use { jarFile ->
@@ -87,7 +90,10 @@ class ImplPluginLoader : PluginLoader {
                     val entry = entries.nextElement()
                     val entryName = entry.name
                     if (entryName.startsWith(packagePath) && entryName.endsWith(".class")) {
-                        val className = entryName.substring(0, entryName.length - 6).replace('/', '.').replace('\\', '.')
+                        val className = entryName
+                                .substring(0, entryName.length - 6)
+                                .replace('/', '.')
+                                .replace('\\', '.')
                         try {
                             val classFound = Class.forName(className, false, defaultClassLoader)
                             val classError = isPluginClass(classFound)
@@ -126,7 +132,8 @@ class ImplPluginLoader : PluginLoader {
             } else if (filename.endsWith(".class")) {
                 val filePath = "$packageName/$filename"
                 // remove the .class extension
-                val className = filePath.substring(0, filePath.length - 6).replace('/', '.')
+                val className = filePath.substring(0, filePath.length - 6)
+                        .replace('/', '.')
                 try {
                     val classFound = Class.forName(className, false, defaultClassLoader)
                     val classError = isPluginClass(classFound)

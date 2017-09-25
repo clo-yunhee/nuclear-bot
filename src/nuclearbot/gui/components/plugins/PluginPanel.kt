@@ -8,14 +8,7 @@ import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.Font
 import java.io.File
-import javax.swing.BorderFactory
-import javax.swing.JButton
-import javax.swing.JComboBox
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTextField
-import javax.swing.SwingConstants
+import javax.swing.*
 import kotlin.reflect.jvm.jvmName
 
 /*
@@ -136,7 +129,10 @@ class PluginPanel(private val gui: NuclearBotGUI) : JScrollPane() {
     }
 
     private fun loadBuiltin() {
-        gui.pluginChanged(if (pluginLoader.loadPlugin(builtinCombo.selectedItem as String)) pluginLoader.plugin else null)
+        if (pluginLoader.loadPlugin(builtinCombo.selectedItem as String))
+            gui.pluginChanged(pluginLoader.plugin)
+        else
+            gui.pluginChanged(null)
     }
 
 }

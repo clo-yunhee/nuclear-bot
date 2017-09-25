@@ -196,8 +196,10 @@ class ImplChatClient(plugin: JavaPlugin) : ChatClient {
                         Logger.info("(Twitch) Received a reconnect notice.")
                     } else if (line.startsWith("CAP * ACK", 15)) {
                         Logger.info("(Twitch) Request for commands capability acknowledged.")
-                    } else if (line.startsWith("353", 16 + username.length) || line.startsWith("366", 16 + username.length) || line
-                            .startsWith("ROOMSTATE", 15) || line.startsWith("USERSTATE", 15)) {
+                    } else if (line.startsWith("353", 16 + username.length) ||
+                            line.startsWith("366", 16 + username.length) ||
+                            line.startsWith("ROOMSTATE", 15) ||
+                            line.startsWith("USERSTATE", 15)) {
                         // ignore these
                     } else {
                         processMessage(line)
@@ -343,7 +345,8 @@ class ImplChatClient(plugin: JavaPlugin) : ChatClient {
 
     private inner class CommandHelp : CommandExecutor {
 
-        override fun onCommand(client: ChatClient, username: String, command: Command, label: String,
+        override fun onCommand(client: ChatClient, username: String,
+                               command: Command, label: String,
                                args: Array<String>): Boolean {
             // if there is no argument, list the commands
             val message = if (args.size == 1) {

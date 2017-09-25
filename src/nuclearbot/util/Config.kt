@@ -69,7 +69,10 @@ object Config {
      *                     created, or cannot be opened for any other reason
      */
     @Throws(IOException::class)
-    fun saveConfig() = FileWriter(configFile).use { prop.store(it, "please do not attempt to edit anything manually unless asked otherwise") }
+    fun saveConfig() = FileWriter(configFile).use {
+        prop.store(it,
+                "please do not attempt to edit anything manually unless asked otherwise")
+    }
 
     /**
      * Reloads the configuration from the file.

@@ -102,7 +102,9 @@ class OsuPlugin : Plugin, HasConfigPanel {
         watcherFile = File(Config["osu_np_path", ""])
 
         try {
-            doWatchSong = (watcherFile.exists() || !watcherFile.exists() && watcherFile.mkdirs() && watcherFile.delete() && watcherFile.createNewFile()) && watcherFile.canWrite()
+            doWatchSong = (watcherFile.exists() ||
+                    !watcherFile.exists() && watcherFile.parentFile.mkdirs() &&
+                            watcherFile.createNewFile()) && watcherFile.canWrite()
         } catch (ignored: IOException) {
         }
     }
@@ -121,7 +123,9 @@ class OsuPlugin : Plugin, HasConfigPanel {
 
             Watcher.schedule("np-watcher", BooleanSupplier { doWatchSong }, Runnable {
                 try {
-                    FileWriter(watcherFile, false).use { it.write(OsuNowPlaying.song.rawTitle ?: "Not playing") }
+                    FileWriter(watcherFile, false).use {
+                        it.write(OsuNowPlaying.song.rawTitle ?: "Not playing")
+                    }
                 } catch (e: IOException) {
                     Logger.warning("(osu!) Could not write the now playing song to the file:")
                     Logger.printStackTrace(e)

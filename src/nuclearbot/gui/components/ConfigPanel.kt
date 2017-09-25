@@ -111,7 +111,8 @@ class ConfigPanel(private val gui: NuclearBotGUI) : JScrollPane() {
             Logger.error("(GUI) Exception while saving config:")
             Logger.printStackTrace(e)
             gui.selectTab(NuclearBotGUI.TAB_CONSOLE)
-            gui.dialogs.error("Exception while saving config. Check console for details.", "Couldn't save config")
+            gui.dialogs.error("Exception while saving config. Check console for details.",
+                    "Couldn't save config")
         }
 
     }
@@ -124,7 +125,8 @@ class ConfigPanel(private val gui: NuclearBotGUI) : JScrollPane() {
             Logger.error("(GUI) Exception while reloading config:")
             Logger.printStackTrace(e)
             gui.selectTab(NuclearBotGUI.TAB_CONSOLE)
-            gui.dialogs.error("Exception while reloading config. Check console for details.", "Couldn't reload config")
+            gui.dialogs.error("Exception while reloading config. Check console for details.",
+                    "Couldn't reload config")
         }
 
     }

@@ -61,7 +61,8 @@ object Moderators {
     fun loadModerators() {
         try {
             FileReader(file).use {
-                Gson().fromJson<List<String>>(it, object : TypeToken<List<String>>() {}.type).forEach(this::addModerator)
+                Gson().fromJson<List<String>>(it, object : TypeToken<List<String>>() {}.type)
+                        .forEach(this::addModerator)
             }
         } catch (e: IOException) {
             Logger.warning("(mod) Could not load the moderator list.")

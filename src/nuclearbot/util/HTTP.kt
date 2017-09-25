@@ -58,16 +58,17 @@ object HTTP {
         connection.useCaches = false
         connection.doOutput = true
 
-        try {
+        return try {
             // send post data
             DataOutputStream(connection.outputStream).use { it.writeBytes(paramData) }
 
             // now the response
-            return BufferedReader(InputStreamReader(connection.inputStream)).use { Gson().fromJson(it, classOfT) }
+            BufferedReader(InputStreamReader(connection.inputStream))
+                    .use { Gson().fromJson(it, classOfT) }
         } catch (e: Exception) {
             Logger.error("An error occurred while sending HTTP request.")
             Logger.printStackTrace(e)
-            return null
+            null
         }
 
     }
