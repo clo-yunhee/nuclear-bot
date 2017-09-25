@@ -73,8 +73,7 @@ class ConfigPanel(private val gui: NuclearBotGUI) : JScrollPane() {
         pluginPanel?.let(configPanel::remove)
         if (handle is HasConfigPanel) {
             try {
-                (handle as HasConfigPanel).getConfigPanel().resetFields()
-                configPanel.add(pluginPanel)
+                configPanel.add(handle.getConfigPanel())
             } catch (e: Exception) {
                 Logger.error("(GUI) Exception caught while changing plugin configuration panel:")
                 Logger.printStackTrace(e)

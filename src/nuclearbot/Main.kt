@@ -31,20 +31,29 @@ import javax.swing.UIManager
  * @author NuclearCoder (contact on the GitHub repo)
  */
 
-fun main(args: Array<String>) {
-    Logger::class // run Logger class static init block
+object Main {
 
-    Logger.info("(GUI) Attempting to use BeautyEye look-and-feel...")
-    try {
-        BeautyEyeLNFHelper.frameBorderStyle = BeautyEyeLNFHelper.FrameBorderStyle.generalNoTranslucencyShadow
-        BeautyEyeLNFHelper.launchBeautyEyeLNF()
-        UIManager.put("RootPane.setupButtonVisible", java.lang.Boolean.FALSE)
-    } catch (e: Exception) {
-        Logger.warning("(GUI) Exception while setting look-and-feel, falling back to default:")
-        Logger.printStackTrace(e)
+    @JvmStatic
+    fun main(args: Array<String>) {
+        Logger::class // run Logger class static init block
+
+        trySetLNF()
+
+        SwingUtilities.invokeLater {
+            NuclearBotGUI().open()
+        }
     }
 
-    SwingUtilities.invokeLater {
-        NuclearBotGUI().open()
+    private fun trySetLNF() {
+        Logger.info("(GUI) Attempting to use BeautyEye look-and-feel...")
+        try {
+            BeautyEyeLNFHelper.frameBorderStyle = BeautyEyeLNFHelper.FrameBorderStyle.generalNoTranslucencyShadow
+            BeautyEyeLNFHelper.launchBeautyEyeLNF()
+            UIManager.put("RootPane.setupButtonVisible", java.lang.Boolean.FALSE)
+        } catch (e: Exception) {
+            Logger.warning("(GUI) Exception while setting look-and-feel, falling back to default:")
+            Logger.printStackTrace(e)
+        }
     }
+
 }
